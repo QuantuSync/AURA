@@ -23,6 +23,49 @@
 
 import { Interval } from '../intervals/types';
 
+/**
+ * SUBCLASE DE SCM QUE AURA IMPLEMENTA: ruido aditivo acotado.
+ *
+ * ⚠ Declaración explícita de una hipótesis que el paper deja tácita — ver
+ * docs/ERRATA.md §4 (clase ERRATA, menor, de rigor).
+ *
+ * La Definición 4.1 / Definición 4.3 de papers/AURA_v2.pdf escribe la ecuación
+ * estructural con el ruido como ARGUMENTO de f_i:
+ *
+ *     V_i = f_i(pa(V_i), U_i)
+ *
+ * pero la Ecuación (24) y el paso "sumando el error de modelo" de la
+ * demostración del Teorema 4.1 lo tratan como un término ADITIVO:
+ *
+ *     [V_i] = f_i([pa(V_i)]) ⊕ [−ε_i, ε_i]                              (24)
+ *
+ * Ambas lecturas solo coinciden si f_i tiene la forma f̃_i(pa(V_i)) + U_i. Con
+ * un error no aditivo —multiplicativo, V_i = f̃_i(pa)·(1 + U_i), por ejemplo—
+ * el paso de la demostración no vale tal cual: haría falta acotar
+ * |f_i(pa, u) − f̃_i(pa)| ≤ ε_i UNIFORMEMENTE sobre todo el intervalo de los
+ * padres, no solo |u_i| ≤ ε_i.
+ *
+ * **AURA implementa la subclase con ruido aditivo acotado:**
+ *
+ *     V_i = f_i(pa(V_i)) + U_i,     |U_i| ≤ ε_i
+ *
+ * Es decir: `compute` implementa f_i (determinista, sin ruido) y
+ * {@link StructuralEquation.modelErrorBound} declara ε_i por separado; la
+ * propagación aplica el ⊕ [−ε_i, ε_i]. La lectura aditiva es además la única
+ * consistente con la calibración de la Definición 4.4, que calibra sobre el
+ * residuo v_i^(k) − f_i(x^(k)).
+ *
+ * Consecuencia para quien modele con errores NO aditivos: es legítimo usar este
+ * DAG, pero ε_i debe entonces acotar la discrepancia
+ * |f_i(pa, U_i) − f_i(pa)| sobre TODO [pa(V_i)], y la calibración de la
+ * Definición 4.4 debe hacerse sobre esa discrepancia y no sobre el residuo. El
+ * código no puede verificarlo: es parte de H2 del Teorema 6.1.
+ *
+ * La v3 del paper debe hacer explícita esta hipótesis en la Definición 4.1.
+ *
+ * @see docs/ERRATA.md §4
+ */
+
 export interface DAGNode {
   id: string;
   label: string;

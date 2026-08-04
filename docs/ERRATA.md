@@ -301,8 +301,9 @@ del paper se heredaba en el código.
 
 ## 5 · Definición 3.9 / Ecuación (10) — el marco con cola infinita produce un intervalo credal no acotado
 
-**Clase:** EXTENSIÓN (hallazgo nuevo de esta iteración; el código lo resuelve de forma NO sound)
-**Ubicación:** §3.2, Definición 3.1 (marco de precipitación); §3.6, Definición 3.9 y Ec. (10); §6.1, Lema 6.1.
+**Clase:** EXTENSIÓN — candidata a **modificación de la Definición 3.1 y del
+Teorema 6.1** en la v3.
+**Ubicación:** §3.2, Definición 3.1 (marco de precipitación); §3.6, Definición 3.9 y Ec. (10); §6.1, Lema 6.1; §6.3, Teorema 6.1.
 
 ### Texto actual
 
@@ -338,26 +339,106 @@ destacado unas líneas más arriba, a propósito del umbral 1e-10 de la Ec. (10)
 
 ### Corrección propuesta
 
-Para el paper (§3.2 y §3.6): exigir que el marco usado para propagar sea
-**acotado**, sustituyendo la cola [60, ∞) por [60, P_máx] con P_máx un máximo
-físico justificado (p. ej. el récord de intensidad horaria registrado en la
-región, con margen), y declarar que la exhaustividad de la Definición 3.1 se
-mantiene *dentro del dominio de validez del modelo*. Alternativamente,
-formalizar en la Definición 3.9 un bound de truncamiento explícito y añadir a
-las hipótesis del Teorema 6.1 una H0: "el valor real está dentro del rango
-físico declarado del marco".
+Son **dos** cambios, y ninguno de los dos es opcional: el primero sin el
+segundo deja la garantía en el mismo sitio, solo que con un número más bonito.
 
-Para el código: el bound superior debe ser un **parámetro declarado del marco**
-(`FrameOfDiscernment.maxValue`), no una heurística derivada de los datos, y su
-uso debe quedar registrado en el certificado igual que las hipótesis H1-H3.
+**(1) Definición 3.1 — marcos de soporte acotado con bound declarado.**
+Sustituir la cola abierta por una cerrada y exigir la declaración del bound:
+
+> **Definición 3.1′ (Marco de discernimiento de soporte acotado).** Un marco de
+> discernimiento sobre una variable continua X es un par (Θ, P_máx) donde
+> P_máx ∈ ℝ es el **límite superior declarado del dominio** de X y
+> Θ = { [a₀, a₁), [a₁, a₂), …, [a_{k−1}, **P_máx**] } es una partición finita
+> de [a₀, P_máx]. P_máx debe ser finito y P_máx > a_{k−1}.
+>
+> La exhaustividad de Θ es entonces exhaustividad **dentro del dominio
+> declarado**, no sobre ℝ. El marco de precipitación de la Definición 3.1
+> queda Θ = { [0,5), [5,15), [15,30), [30,60), [60, P_máx] } mm/h.
+
+P_máx es un **bound de plausibilidad física**, no una estimación estadística:
+se elige holgadamente por encima de cualquier evento registrado en el dominio
+de despliegue. Un bound ceñido es frágil (cada evento extremo lo pone en
+cuestión) y uno holgado solo cuesta anchura de intervalo, que es exactamente el
+precio que un sistema de garantías debe estar dispuesto a pagar.
+
+Con la Definición 3.1′ la Ecuación (10) es finita por construcción y la
+Definición 3.9 no necesita cambio alguno: b_j ≤ P_máx para toda hipótesis.
+
+**(2) Teorema 6.1 — H0 como hipótesis explícita.** El Teorema 6.1 enuncia
+H1 (cobertura sensorial), H2 (fidelidad del modelo) y H3 (regularidad
+dinámica). Falta la que las precede:
+
+> **H0 (Soporte acotado).** El valor real de cada variable de entrada no excede
+> el P_máx declarado de su marco: x*_v ∈ [a₀^v, P_máx^v] para toda variable de
+> entrada v.
+
+**H0 es lógicamente previa a H1**, y conviene que el enunciado lo diga. H1
+afirma que x* pertenece al conjunto credal de la Capa 1; pero ese conjunto
+credal es una unión de hipótesis del marco (Ec. 10), luego está contenido en
+[a₀, P_máx] por construcción. Si H0 falla, **ninguna** evidencia puede
+rescatar H1: no hay fusión, por concordante que sea, que produzca un conjunto
+credal que contenga un valor fuera del dominio del marco. H0 falsa ⟹ H1 falsa,
+y no por fallo sensorial sino por construcción del marco. Sin H0 explícita, el
+Teorema 6.1 tiene una hipótesis tácita: que el marco elegido cubre la realidad.
+
+La demostración del Lema 6.1 no cambia — sigue siendo el argumento del
+contrapositivo sobre Pl(θ_j) = 0 ⟹ P*(θ_j) = 0—, pero su conclusión pasa a
+leerse "x* ∈ [x̲, x̄] **bajo H0**".
+
+Nótese la simetría con H2 y H3: las tres son hipótesis que el sistema
+**declara y arrastra**, pero no puede verificar. Verificar H0 exigiría conocer
+x*, que es precisamente lo que no se tiene. Lo que sí puede hacer el sistema —y
+ahora hace— es hacerla explícita y auditable.
 
 ### Estado en el código
 
-**Registrado, no corregido.** Corregirlo cambia el intervalo credal de todos
-los escenarios con cola plausible y afecta al pipeline completo, por lo que se
-deja fuera de esta iteración. Se ha añadido la advertencia de soundness en
-`buildCredalSet` y la entrada correspondiente en los "Límites conocidos" del
-`README.md`.
+**Corregido en código.** El soporte acotado es ahora una hipótesis declarada
+del sistema, no un artefacto del cálculo:
+
+- `FrameOfDiscernment.domainBound` (`src/core/dempster-shafer/types.ts`) es el
+  P_máx de la Definición 3.1′: campo **obligatorio y sin valor por defecto**.
+- `createFrame` / `validateFrame` (`src/core/dempster-shafer/frame.ts`) validan
+  en construcción —bound finito, estrictamente mayor que a_{k−1}, hipótesis
+  contiguas, coherencia con un `upper` finito ya declarado— y cierran la cola.
+  `hypothesisUpper` da el b_j efectivo de la Ec. (10), de modo que un marco
+  escrito como literal con cola [a, ∞) tampoco reintroduce `+∞`.
+- `buildCredalSet` (`src/core/dempster-shafer/credal-set.ts`) **elimina** el
+  truncamiento `a_j·2` y el filtro `Pl > 0,01`. El único umbral que queda es la
+  tolerancia de coma flotante 1e-10 de la Definición 3.9. Si aun así el lifting
+  sale no acotado (marco que no pasó por `createFrame`), **lanza** en vez de
+  truncar: un intervalo no acotado es inutilizable, pero uno truncado en
+  silencio es peor.
+- `HYPOTHESIS_H0_BOUNDED_SUPPORT` y `CERTIFICATE_ASSUMPTIONS` (= H0 + H1-H3) en
+  `src/core/decision/types.ts`; `SafetyCertificate.domainBounds` registra el
+  bound concreto de cada variable de entrada, y `certifySafety` /
+  `synthesizeDecision` lo exigen como parámetro. `THEOREM_6_1_HYPOTHESES` se
+  conserva intacta y aparte: es la transcripción literal del paper, y H0 es una
+  extensión de la implementación. Con la lista de bounds vacía, la
+  justificación del certificado declara explícitamente que **H0 no es
+  auditable**, en lugar de callar.
+- Marcos de la demo (`src/lib/constants.ts`): precipitación P_máx = 500 mm/h y
+  viento V_máx = 500 km/h, ambos documentados como bounds conservadores de
+  plausibilidad física —muy por encima de los récords registrados— y
+  explícitamente **no** calibraciones.
+
+**Verificación.** `__tests__/core/dempster-shafer/frame.test.ts` reproduce el
+algoritmo antiguo y comprueba el contraste: con dos sensores concordando en un
+evento de 200 mm/h, el truncamiento devolvía 120 mm/h y dejaba el valor real
+fuera; ahora el intervalo llega a 500 mm/h y lo contiene.
+`__tests__/properties/credal-lifting.property.test.ts` verifica el Lema 6.1
+condicionado a H0 sobre marcos y BPAs generados, y su **caso negativo**: todo
+x* > domainBound queda fuera del intervalo credal, que es H0 falsa y no un
+fallo del motor (simétrico del caso negativo de H2 en
+`dag-propagation.property.test.ts`).
+
+**Coste medido.** La corrección solo puede ensanchar el intervalo credal, y lo
+ensancha mucho en cuanto la hipótesis de cola es plausible: el upper pasa de
+120 a 500 mm/h en el marco de la demo. Eso hará que la mayoría de escenarios
+con cola plausible certifiquen `unsafe-possible`. **No es un defecto del
+bound**: es la señal correcta de que la evidencia disponible no descarta un
+evento extremo, señal que el truncamiento suprimía. Estrechar el intervalo es
+tarea de la evidencia —fuentes que quiten plausibilidad a la cola—, no del
+bound.
 
 ---
 
@@ -439,6 +520,6 @@ propiedad de cobertura verificada en
 | 2 | Def. 3.6, conflicto global n-ario | EXTENSIÓN | pendiente | implementado |
 | 3 | Prop. 4.1, redondeo IEEE-754 | SALVEDAD | pendiente | documentado |
 | 4 | Def. 4.1 vs Ec. (24), error aditivo | ERRATA | pendiente | explícito |
-| 5 | Def. 3.9 / Ec. (10), cola infinita del marco | EXTENSIÓN | pendiente | **registrado, NO corregido** |
+| 5 | Def. 3.9 / Ec. (10), cola infinita del marco | EXTENSIÓN *(→ Def. 3.1 y Teo. 6.1 en v3)* | pendiente | **corregido** |
 | 6 | Teo. 5.1, jacobiana numérica | SALVEDAD | pendiente | corregido |
 | 7 | Def. 5.2 / Ec. (27), lifting en coma flotante | SALVEDAD | pendiente | corregido |

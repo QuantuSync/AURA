@@ -61,7 +61,8 @@ con su sección real:
 
 | Módulo | Referencias normativas | Sección |
 |--------|------------------------|---------|
-| `dempster-shafer/types.ts` | Def. 3.1, 3.2, 3.3, 3.7, 3.8 | §3.2–3.5 |
+| `dempster-shafer/types.ts` | Def. 3.1, 3.2, 3.3, 3.7, 3.8 *(+ `domainBound`, extensión)* | §3.2–3.5 |
+| `dempster-shafer/frame.ts` | Def. 3.1 *(marco de soporte acotado, extensión)* | §3.2 |
 | `dempster-shafer/bpa.ts` | Def. 3.3 y Ec. (1)-(2); Def. 3.4 y Ec. (3)-(4) | §3.2–3.3 |
 | `dempster-shafer/conflict.ts` | Def. 3.5 y Ec. (6); Def. 3.6 *(+ K_global, extensión)* | §3.4 |
 | `dempster-shafer/combination.ts` | Ec. (5)-(6) Dempster; Ec. (7) cautelosa; Def. 3.7 y Ec. (8)-(9) | §3.4 |
@@ -74,7 +75,7 @@ con su sección real:
 | `zonotope/propagation.ts` | Teo. 5.1 y Ec. (28)-(29) | §5.4 |
 | `zonotope/linearization.ts` | Teo. 5.1 (cota de Lagrange automática) | §5.4 |
 | `zonotope/reachability.ts` | Def. 5.3 | §5.5 |
-| `decision/synthesis.ts` | Def. 5.5 y Ec. (31); Teo. 5.2; Teo. 6.1 (H1–H3) | §5.5, §6.3 |
+| `decision/synthesis.ts` | Def. 5.5 y Ec. (31); Teo. 5.2; Teo. 6.1 (H1–H3) *(+ H0, extensión)* | §5.5, §6.3 |
 
 > **Correcciones de numeración.** Iteraciones anteriores del código se
 > escribieron sin acceso al paper y citaban referencias desalineadas: el
@@ -101,11 +102,13 @@ mano. Semilla fija → CI reproducible; `FC_NUM_RUNS` escala la campaña.
 | Certificado existencial de decisión | Def. 5.5 y Ec. (31), §5.5 | `properties/certificate-soundness.property.test.ts` | 12 |
 | Propagación por el DAG: `v*_i ∈ [V_i]` con `\|u_i\| ≤ ε_i` | Def. 4.3 y Ec. (24); Teo. 4.1, §4.4.2 | `properties/dag-propagation.property.test.ts` | 5 (+1 contraejemplo) |
 | Conflicto global n-ario e invariancia al orden de las fuentes | Def. 3.5-3.6 *(extensión)*, §3.4.2 | `properties/global-conflict.property.test.ts` | 11 |
+| Lifting credal bajo soporte acotado: `x* ∈ I(X)` dado H0 | Def. 3.9 y Ec. (10); Lema 6.1 *(+ H0, extensión)*, §3.6/§6.1 | `properties/credal-lifting.property.test.ts` | 7 (2 del caso negativo de H0) |
 
 Cada propiedad ejecuta `FC_NUM_RUNS` casos generados: **1.000** en `test:run`
-(CI) y **20.000** en `test:properties`. Campaña de referencia: 74 propiedades ×
+(CI) y **20.000** en `test:properties`. Campaña de referencia: 81 propiedades ×
 20.000 casos (más 7 contraejemplos deterministas de regresión), semilla 20260804
-— todas pasan.
+— todas pasan, en 69 s de reloj. La suite completa (`npm run test:run`) son 253
+tests en 22 ficheros.
 
 ### Ratio de conservatismo medido (Definición 5.6)
 
@@ -154,15 +157,17 @@ provocaron, todos corregidos o documentados en el código:
    paso de la reducción degenera, en ningún orden (extensión del paper, ver
    [`docs/ERRATA.md`](docs/ERRATA.md) §2). La estrategia cambia en el 16,1 % de
    20.000 casos generados, siempre hacia una rama más conservadora.
-4. **El intervalo credal se trunca sin respaldo formal cuando la cola del marco
-   es plausible.** La Ec. (10) devuelve `+∞` para el marco de la Def. 3.1
+4. **El intervalo credal se truncaba sin respaldo formal cuando la cola del
+   marco es plausible.** La Ec. (10) devuelve `+∞` para el marco de la Def. 3.1
    (última hipótesis `[60, ∞)`), y `buildCredalSet` lo sustituía en silencio
-   por `a_j · 2` filtrando además por `Pl > 0,01`. Si el valor real supera ese
-   corte, queda fuera del conjunto credal y **H1 del Teo. 6.1 deja de
-   cumplirse**, invalidando cualquier certificado aguas abajo. *Registrado, no
-   corregido*: la corrección exige que el bound superior sea un parámetro
-   declarado del marco y viaje en el certificado. Ver
-   [`docs/ERRATA.md`](docs/ERRATA.md) §5.
+   por `a_j · 2` filtrando además por `Pl > 0,01` — el mismo "filtro semántico"
+   que el módulo prohíbe explícitamente para el umbral 1e-10. Si el valor real
+   superaba ese corte, quedaba fuera del conjunto credal y **H1 del Teo. 6.1
+   dejaba de cumplirse**, invalidando cualquier certificado aguas abajo sin
+   emitir señal alguna. *Corregido*: el soporte acotado es ahora una
+   **hipótesis declarada** (`FrameOfDiscernment.domainBound`, validado en
+   construcción) que viaja en el certificado como **H0**, y el truncamiento y
+   el filtro han desaparecido. Ver [`docs/ERRATA.md`](docs/ERRATA.md) §5.
 
 ### Límites conocidos de la garantía formal
 
@@ -181,11 +186,28 @@ provocaron, todos corregidos o documentados en el código:
   está declarada nodo a nodo y es auditable. El ε del DAG de la demo
   (`DEMO_H_MODEL_ERROR_BOUND` = 2,0 mm) está **declarado, no calibrado**: no
   hay aún serie histórica contra la que evaluar residuos.
-- El intervalo credal continuo (Def. 3.9, Ec. 10) se **trunca** cuando la
-  hipótesis de cola abierta del marco es plausible, porque el paper produce
-  ahí un bound `+∞` inutilizable aguas abajo. El truncamiento no es sound:
-  rompe el Lema 6.1 si el valor real lo supera. Ver
-  [`docs/ERRATA.md`](docs/ERRATA.md) §5 y la advertencia en `buildCredalSet`.
+- **H0 (soporte acotado) se asume, no se verifica.** El marco de discernimiento
+  declara su dominio con `domainBound` (500 mm/h para precipitación, 500 km/h
+  para viento: bounds conservadores de plausibilidad física, **no**
+  calibraciones), y el intervalo credal de la Def. 3.9 nunca lo excede. Si el
+  valor real lo supera, el conjunto credal no puede contenerlo *por
+  construcción del marco*, y el motor no tiene forma de detectarlo —haría falta
+  conocer el valor real—. Por eso H0 viaja en cada certificado junto a H1–H3, y
+  `SafetyCertificate.domainBounds` registra qué bound se asumió para cada
+  variable. H0 es lógicamente **previa** a H1: si H0 falla, H1 falla sin que
+  ninguna evidencia pueda rescatarla. Ver
+  [`docs/ERRATA.md`](docs/ERRATA.md) §5.
+- Consecuencia operativa del punto anterior: con la hipótesis de cola plausible
+  el intervalo credal llega hasta el `domainBound` y el certificado será casi
+  siempre `unsafe-possible`. Es la señal correcta —la evidencia no descarta un
+  evento extremo—, no un defecto del bound; estrecharlo es tarea de la
+  evidencia, no del marco.
+- El DAG implementa la subclase de SCM con **ruido aditivo acotado**
+  (`V_i = f_i(pa(V_i)) + U_i`, `|U_i| ≤ ε_i`), que es lo que la Ec. (24) y la
+  demostración del Teo. 4.1 usan aunque la Def. 4.1 escriba `U_i` como
+  argumento de `f_i`. Para errores no aditivos, `ε_i` debe acotar la
+  discrepancia uniformemente sobre `[pa(V_i)]`. Declarado en el JSDoc de
+  `causal-dag/types.ts`; ver [`docs/ERRATA.md`](docs/ERRATA.md) §4.
 - `severityScore` (`decision/synthesis.ts`) es una heurística de priorización,
   **no** una probabilidad de violación. El veredicto formal lo da
   `certifySafety`.
