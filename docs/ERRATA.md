@@ -537,6 +537,186 @@ propiedad de cobertura verificada en
 
 ---
 
+## 8 · Definición 3.9 / Ecuación (10) — "el bound externo es suficiente" es falso en la práctica
+
+**Clase:** EXTENSIÓN — candidata a **sustituir la Definición 3.9 y extender la
+Definición 5.5** en la v3.
+**Ubicación:** §3.6, Definición 3.9 y Ec. (10); §3.3, Definición 3.4 y Ec. (4); §5.5, Definición 5.5 y Ec. (31).
+
+> Esta entrada es la consecuencia directa de haber corregido la §5. Mientras el
+> truncamiento ocultaba la cola, el problema no se veía.
+
+### Texto actual
+
+> **Definición 3.9.** […] el intervalo credal continuo es
+> I(X) = ⋃_{j : P̄(I_j) > 0} I_j.
+> […] **Para la propagación zonotópica, el bound externo es suficiente:**
+> X ∈ [ mín_{j: P̄(I_j)>0} a_j , máx_{j: P̄(I_j)>0} b_j ]                    (10)
+>
+> **Definición 3.4.** m_i({θ_j}) = (1 − δ_i) ∫_{θ_j} p_i(x) dx  (3)
+> **m_i(Θ) = δ_i**  (4)  — "válvula de seguridad" de la fuente.
+
+### Problema
+
+La frase resaltada es **falsa en la práctica** una vez la §5 está corregida. El
+argumento es de tres pasos y no depende de la evidencia:
+
+1. La Ec. (4) reserva masa δ_i sobre **Θ** en cada fuente.
+2. **Θ interseca todas las hipótesis**, incluida la de cola [a_{k−1}, P_máx].
+   Tras la fusión por la regla de Dempster, la masa sobre Θ sobrevive: el único
+   término del producto conjunto cuya intersección es Θ es (Θ, …, Θ), de masa
+   Π_i δ_i, y la normalización por 1/(1−K) solo puede aumentarla. Por tanto
+
+   ```
+   Pl(cola) ≥ m_fusionada(Θ) ≥ Π_i δ_i
+   ```
+
+3. El umbral de la Ec. (10) es la tolerancia de coma flotante 1e-10. Con tres
+   fuentes de δ ≈ 0,05 se tiene Π δ_i ≈ 1e-4: **seis órdenes de magnitud por
+   encima**. La cola nunca se descarta y la Ec. (10) devuelve **[a₀, P_máx]
+   entero, independientemente de la evidencia.**
+
+Medido sobre el escenario de la demo (tres fuentes concordando en ~8 mm/h, con
+δ = 0,05 / 0,03 / 0,08, K_decision = 0,1844):
+
+| Magnitud | Valor |
+|---|---|
+| Π δ_i | 1,200e-4 |
+| m_fusionada(Θ) | 1,4713e-4 = Π δ_i / (1 − K) |
+| Pl(*torrencial*) | 1,4713e-4 |
+| Intervalo credal, Ec. (10) | **[0, 500] mm/h** — el marco completo |
+| Reachable set h(2 h) | **[−12, 992] mm** |
+| Veredicto Def. 5.5 | `unsafe-possible` |
+
+Y con lluvia **intensa** concordante (~45 mm/h), el intervalo credal, el
+reachable set y el veredicto son **exactamente los mismos**. También lo es la
+severidad heurística, porque se deriva del mismo reachable set. El sistema es
+sound y **vacuo**: no distingue una llovizna de un diluvio.
+
+La causa raíz no es el δ_i ni el umbral 1e-10 —ambos son correctos y necesarios:
+δ_i es la válvula de seguridad de la Def. 3.4 y 1e-10 es tolerancia numérica, no
+un filtro semántico (§5)—. La causa raíz es que **la Ec. (10) descarta la
+estructura credal y conserva solo el soporte.** La información de que el 99,9 %
+de la masa está sobre *ligera* existe en la BPA fusionada y se destruye en el
+puente 1→2.
+
+### Corrección propuesta
+
+Son **dos** cambios, y el segundo es el que devuelve la informatividad.
+
+**(1) Definición 3.9′ — propagar el conjunto credal, no su soporte.** Sustituir
+el lifting a un único intervalo por el lifting a una **distribución de masa
+sobre intervalos**:
+
+> **Definición 3.9′ (Conjunto credal intervalar).** Sea m la BPA fusionada sobre
+> el marco (Θ, P_máx). Su lifting continuo es el conjunto de pares
+>
+> ```
+> C(m) = { (m(A), I_A) : A ⊆ Θ, m(A) > 0 },    I_A = [ mín_{θ_j∈A} a_j , máx_{θ_j∈A} b_j ]   (10′)
+> ```
+>
+> El intervalo de la Ec. (10) se recupera como el hull de C(m), de modo que la
+> Def. 3.9 es el caso degenerado de la Def. 3.9′ en que se olvidan las masas.
+
+La propagación por el DAG (Def. 4.3 / Ec. 24) se aplica **a cada I_A por
+separado**, con la masa intacta: el SCM es determinista módulo U_i y U_i ya está
+acotado por ε_i dentro de J_A, luego la regla de extensión de Dempster-Shafer
+para una imagen manda la masa de A íntegra a la imagen de A. El coste es
+**lineal** en el número de elementos focales, no exponencial.
+
+**(2) Definición 5.5′ — certificado de dos niveles.** El veredicto existencial
+de la Def. 5.5 **no cambia**. Se le añade un segundo nivel:
+
+> **Definición 5.5′ (Certificado probabilístico).** Sea E el evento inseguro y
+> {(m(A), J_A)} el conjunto credal propagado sobre la variable de interés. Se
+> definen
+>
+> ```
+> Bel(E) = Σ_{A : J_A ⊆ E}     m(A)          Pl(E) = Σ_{A : J_A ∩ E ≠ ∅} m(A)     (31′)
+> ```
+>
+> **Proposición 5.3 (soundness del certificado probabilístico).** Bajo H0–H3,
+> Bel(E) ≤ P(v* ∈ E) ≤ Pl(E).
+>
+> *Demostración.* Por la Def. 3.2 la masa m(A) es la parte de la evidencia que
+> sostiene "el valor real está en A" y nada más fino, luego la distribución real
+> admite la descomposición P* = Σ_A m(A)·P_A con P_A soportada en A; equivale a
+> una variable de rama Λ con P(Λ = A) = m(A). Condicionado a Λ = A el valor de
+> entrada está en A ⊆ I_A y, por el Teorema 4.1 (usando H2), el de la variable
+> objetivo está en J_A. Por tanto P(v* ∈ E | Λ = A) vale 0 si J_A ∩ E = ∅ y 1 si
+> J_A ⊆ E. Aplicando la ley de la probabilidad total y acotando los términos
+> indeterminados por 0 y por 1 se obtienen las dos desigualdades. ∎
+
+**Dirección de la sobre-aproximación.** Los J_A sobre-aproximan (wrapping
+effect, hull de un A no contiguo, ε holgado). Sustituir J_A por J'_A ⊇ J_A hace
+la contención **más difícil** —solo puede quitar términos a Bel(E)— y la
+intersección **más fácil** —solo puede añadirlos a Pl(E)—. Luego
+[Bel, Pl] ⊇ [P̲(E), P̄(E)] reales: la imprecisión de la Capa 2 **ensancha** el
+intervalo de probabilidad, nunca lo desplaza fuera. Es la dirección conservadora
+en ambos extremos.
+
+Corolario operativo: **Pl(E) pequeño es una afirmación fuerte** (ni la
+sobre-aproximación deja sitio para que el evento sea probable), mientras que
+**Bel(E) pequeño es débil** (puede serlo solo por imprecisión). Por eso el
+escalado operativo debe mirar Pl(E), no Bel(E).
+
+**Efecto sobre la demo.** Mismo escenario, mismo veredicto existencial:
+
+| Escenario | Ec. (10) | Reachable | Def. 5.5 | severidad | **Bel(E)** | **Pl(E)** |
+|---|---|---|---|---|---|---|
+| Lluvia ligera (~8 mm/h) | [0, 500] | [−12, 992] | `unsafe-possible` | 0,9631 | **0** | **1,559e-4** |
+| Lluvia intensa (~45 mm/h) | [0, 500] | [−12, 992] | `unsafe-possible` | 0,9631 | **0,99988** | **≈ 1** |
+
+Las cuatro primeras columnas son idénticas; las dos últimas separan los
+escenarios por **más de tres órdenes de magnitud**. Esa diferencia es
+exactamente la informatividad que la Ec. (10) destruía.
+
+### Estado en el código
+
+**Implementado.** Módulo nuevo `src/core/credal-propagation/`:
+
+- `types.ts` — `FocalInterval`, `CredalIntervalSet` (invariante Σ m = 1 ± 1e-9),
+  `ProbabilityBounds`, `CredalPropagationConfig`.
+- `credal-interval-set.ts` — `toCredalIntervalSet` (Def. 3.9′ / Ec. 10′), con el
+  b_j efectivo de `hypothesisUpper` (H0). `hullOf` recupera la Ec. (10) exacta,
+  y hay un test que lo comprueba: la extensión **refina** la Def. 3.9, no la
+  contradice. La ruta de alto conflicto usa la BPA sintética de
+  `envelopeCombine`, cuya masa sobrante va a Θ y por tanto cuenta siempre para
+  Pl y nunca para Bel — conservadora en ambos extremos.
+- `propagation.ts` — `propagateCredalThroughDAG`, coste |F| × propagación
+  intervalar, con límite configurable `maxFocalElements` (64 por defecto) que
+  **lanza** al superarse.
+- `probability-bounds.ts` — `probabilityBounds` (evento intervalar) y
+  `unsafeProbabilityBounds` (el complemento de la región segura, que es el
+  evento de la Def. 5.5). La demostración completa está en el JSDoc del módulo.
+
+Certificado de dos niveles: `SafetyCertificate.probabilityBounds`
+(`src/core/decision/types.ts`), obligatorio y explícitamente nullable —con
+`null` la justificación declara que el nivel probabilístico no está disponible,
+en lugar de callar—. `certifySafety` **lanza** si los bounds contradicen su
+propio veredicto (`proven-safe` con Pl(E) > 0). `SafetySpec.unsafeProbabilityThreshold`
+y `CertifiedDecision.escalationBasis` separan la escalada por bound demostrado
+de la escalada por heurística; `severityScore` sigue existiendo aparte y sin
+estatus formal.
+
+Pipeline extremo a extremo: `src/core/pipeline/demo-pipeline.ts`.
+
+**Verificación.** `__tests__/properties/credal-propagation.property.test.ts` (10
+propiedades): la cobertura credal end-to-end sobre BPAs, DAGs y regiones
+inseguras generados —muestreando el mundo real y comprobando que la frecuencia
+del evento cae en [Bel, Pl]—, los invariantes de los bounds, la conservación de
+la masa y la consistencia con el nivel existencial en ambas direcciones.
+`__tests__/core/pipeline/demo-pipeline.test.ts` fija los números de la tabla de
+arriba **incluyendo la vacuidad del nivel existencial**: si alguien intentara
+"arreglar" el problema estrechando el intervalo credal, esos tests fallarían.
+
+**Lo que NO cambia.** El nivel existencial conserva su semántica exacta:
+`proven-safe` sigue significando reachable ⊆ safeRegion y `unsafe-possible`
+sigue siendo existencial. El nivel probabilístico **cualifica**, no decide, y
+depende de las mismas H0–H3 y de ninguna hipótesis más.
+
+---
+
 ## Resumen de estados
 
 | # | Entrada | Clase | Paper | Código |
@@ -545,6 +725,7 @@ propiedad de cobertura verificada en
 | 2 | Def. 3.6, conflicto global n-ario | EXTENSIÓN | pendiente | implementado |
 | 3 | Prop. 4.1, redondeo IEEE-754 | SALVEDAD | pendiente | documentado |
 | 4 | Def. 4.1 vs Ec. (24), error aditivo | ERRATA | pendiente | explícito |
-| 5 | Def. 3.9 / Ec. (10), cola infinita del marco | EXTENSIÓN *(→ Def. 3.1 y Teo. 6.1 en v3)* | pendiente | **corregido** |
+| 5 | Def. 3.9 / Ec. (10), cola infinita del marco | EXTENSIÓN *(→ Def. 3.1 y Teo. 6.1 en v3)* | pendiente | corregido |
 | 6 | Teo. 5.1, jacobiana numérica | SALVEDAD | pendiente | corregido |
 | 7 | Def. 5.2 / Ec. (27), lifting en coma flotante | SALVEDAD | pendiente | corregido |
+| 8 | Def. 3.9 / Ec. (10), "el bound externo es suficiente" | EXTENSIÓN *(→ Def. 3.9′ y Def. 5.5′ en v3)* | pendiente | **implementado** |

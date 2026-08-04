@@ -11,8 +11,12 @@ AURA integra tres capas matemáticas en un pipeline operativo:
 | Capa | Función | Framework | Módulo |
 |------|---------|-----------|--------|
 | 1 | Fusión de datos | Dempster-Shafer + Conjuntos credales | `src/core/dempster-shafer/` |
+| 1→2 | Puente credal | Propagación por elementos focales | `src/core/credal-propagation/` |
 | 2 | Modelado causal | SCM + Aritmética de intervalos | `src/core/causal-dag/` |
 | 3 | Verificación | Zonotopes + Reachability | `src/core/zonotope/` |
+| 3 | Decisión | Certificado de dos niveles | `src/core/decision/` |
+
+El pipeline completo del caso de uso de §7 está en `src/core/pipeline/`.
 
 Referencia teórica normativa: **`papers/AURA_v2.pdf`**. Toda cita a
 definiciones, teoremas y ecuaciones en el código y en este README se refiere a
@@ -67,15 +71,19 @@ con su sección real:
 | `dempster-shafer/conflict.ts` | Def. 3.5 y Ec. (6); Def. 3.6 *(+ K_global, extensión)* | §3.4 |
 | `dempster-shafer/combination.ts` | Ec. (5)-(6) Dempster; Ec. (7) cautelosa; Def. 3.7 y Ec. (8)-(9) | §3.4 |
 | `dempster-shafer/credal-set.ts` | Def. 3.8; Prop. 3.1, 3.2; Def. 3.9 y Ec. (10) | §3.4–3.6 |
+| `credal-propagation/credal-interval-set.ts` | Def. 3.9 y Ec. (10) *(→ Def. 3.9′ y Ec. (10′), extensión)* | §3.6 |
+| `credal-propagation/propagation.ts` | Def. 4.3 y Ec. (24); Teo. 4.1 *(por elemento focal, extensión)* | §4.4.2 |
+| `credal-propagation/probability-bounds.ts` | Def. 3.3 y Ec. (1)-(2) *(→ Def. 5.5′ y Ec. (31′), extensión)* | §3.2, §5.5 |
 | `intervals/` | Def. 4.2 y Ec. (20)-(23); Prop. 4.1 | §4.4.1 |
 | `causal-dag/` | Def. 4.1; Def. 4.3 y Ec. (24); Def. 4.4 y Ec. (25); Teo. 4.1 | §4.2, §4.4.2, §4.5 |
 | `causal-dag/demo-dag.ts` | Ec. (34) *(modelo de acumulación de la demo)* | §7.3 |
+| `pipeline/demo-pipeline.ts` | §7 completo: Def. 3.4 → Ec. (34) → Def. 5.5 + 5.5′ | §7 |
 | `zonotope/types.ts` | Def. 5.1 y Ec. (26) | §5.2 |
 | `zonotope/zonotope.ts` | Obs. 5.1; Def. 5.2 y Ec. (27) *(Puente 2→3)*; Obs. 5.2 (Girard) | §5.2–5.4 |
 | `zonotope/propagation.ts` | Teo. 5.1 y Ec. (28)-(29) | §5.4 |
 | `zonotope/linearization.ts` | Teo. 5.1 (cota de Lagrange automática) | §5.4 |
 | `zonotope/reachability.ts` | Def. 5.3 | §5.5 |
-| `decision/synthesis.ts` | Def. 5.5 y Ec. (31); Teo. 5.2; Teo. 6.1 (H1–H3) *(+ H0, extensión)* | §5.5, §6.3 |
+| `decision/synthesis.ts` | Def. 5.5 y Ec. (31); Teo. 5.2; Teo. 6.1 (H1–H3) *(+ H0 y nivel probabilístico, extensiones)* | §5.5, §6.3 |
 
 > **Correcciones de numeración.** Iteraciones anteriores del código se
 > escribieron sin acceso al paper y citaban referencias desalineadas: el
@@ -84,6 +92,48 @@ con su sección real:
 > cobertura como Prop. 3.5 (es 3.1), un inexistente "Teo. 5.4 end-to-end" (es
 > el Teo. 6.1) y las ecuaciones de la envolvente como (6)-(7) (son (8)-(9)).
 > Todas corregidas.
+
+## Certificado de dos niveles
+
+Todo certificado de AURA lleva **dos afirmaciones demostradas**, no una. Ambas
+dependen exactamente de las mismas hipótesis (H0 + H1–H3) y de ninguna más.
+
+| Nivel | Qué afirma | Referencia |
+|---|---|---|
+| **Existencial** — `certificate.status` | `proven-safe` ⟺ *reachable* ⊆ región segura. `unsafe-possible` ⟺ existe un estado alcanzable inseguro. Binario. | Def. 5.5 y Ec. (31), §5.5 |
+| **Probabilístico** — `certificate.probabilityBounds` | `Bel(E) ≤ P(evento inseguro) ≤ Pl(E)`, por propagación credal elemento focal a elemento focal. Continuo. | *Extensión*, → Def. 5.5′ y Ec. (31′) |
+
+Y una tercera magnitud que **no** es formal y nunca lo ha sido:
+`decision.severity`, la fracción geométrica del reachable set fuera de la región
+segura. `decision.escalationBasis` dice cuál de las dos señales sostuvo el
+`warning`/`critical` que se ve en pantalla.
+
+**Por qué hacía falta el segundo nivel.** Con H0 honesta (ver más abajo), la
+válvula de seguridad `δ_i` de la Def. 3.4 deja masa sobre Θ, Θ interseca la
+hipótesis de cola, y el lifting de la Ec. (10) devuelve el rango completo del
+marco **casi siempre**: `Pl(cola) ≥ Π δ_i ≈ 1e-4`, seis órdenes por encima del
+umbral 1e-10 de la Def. 3.9. El nivel existencial resulta entonces sound y
+**vacuo**. Sobre el escenario de la demo:
+
+| Escenario | Ec. (10) | Reachable `h(2 h)` | Def. 5.5 | `severity` | **Bel(E)** | **Pl(E)** |
+|---|---|---|---|---|---|---|
+| Lluvia ligera (~8 mm/h) | [0, 500] | [−12, 992] | `unsafe-possible` | 0,9631 | **0** | **1,559e-4** |
+| Lluvia intensa (~45 mm/h) | [0, 500] | [−12, 992] | `unsafe-possible` | 0,9631 | **0,99988** | **≈ 1** |
+
+Las cuatro primeras columnas son **idénticas**: ni el veredicto formal ni la
+heurística geométrica distinguen una llovizna de un diluvio. Las dos últimas los
+separan por más de tres órdenes de magnitud.
+
+**La dirección de la garantía.** Los intervalos propagados sobre-aproximan, y
+sobre-aproximar solo puede *quitar* términos a `Bel(E)` (la contención se vuelve
+más difícil) y *añadirlos* a `Pl(E)` (la intersección, más fácil). Luego
+`[Bel, Pl] ⊇ [P̲(E), P̄(E)]` reales: la imprecisión **ensancha** el intervalo de
+probabilidad, nunca lo desplaza fuera. Corolario práctico: `Pl(E)` pequeño es
+una afirmación fuerte, `Bel(E)` pequeño es débil — y por eso el escalado
+operativo mira `Pl(E)`.
+
+Detalle completo, demostración y estado en
+[`docs/ERRATA.md`](docs/ERRATA.md) §8.
 
 ## Soundness verification
 
@@ -103,12 +153,13 @@ mano. Semilla fija → CI reproducible; `FC_NUM_RUNS` escala la campaña.
 | Propagación por el DAG: `v*_i ∈ [V_i]` con `\|u_i\| ≤ ε_i` | Def. 4.3 y Ec. (24); Teo. 4.1, §4.4.2 | `properties/dag-propagation.property.test.ts` | 5 (+1 contraejemplo) |
 | Conflicto global n-ario e invariancia al orden de las fuentes | Def. 3.5-3.6 *(extensión)*, §3.4.2 | `properties/global-conflict.property.test.ts` | 11 |
 | Lifting credal bajo soporte acotado: `x* ∈ I(X)` dado H0 | Def. 3.9 y Ec. (10); Lema 6.1 *(+ H0, extensión)*, §3.6/§6.1 | `properties/credal-lifting.property.test.ts` | 7 (2 del caso negativo de H0) |
+| Cobertura credal end-to-end: `Bel(E) ≤ P(E) ≤ Pl(E)` | Def. 3.9′ y Ec. (10′); Def. 5.5′ y Ec. (31′) *(extensión)*, §3.6/§5.5 | `properties/credal-propagation.property.test.ts` | 10 (≥ 500 mundos muestreados/caso) |
 
 Cada propiedad ejecuta `FC_NUM_RUNS` casos generados: **1.000** en `test:run`
-(CI) y **20.000** en `test:properties`. Campaña de referencia: 81 propiedades ×
+(CI) y **20.000** en `test:properties`. Campaña de referencia: 91 propiedades ×
 20.000 casos (más 7 contraejemplos deterministas de regresión), semilla 20260804
-— todas pasan, en 69 s de reloj. La suite completa (`npm run test:run`) son 253
-tests en 22 ficheros.
+— todas pasan, en 97 s de reloj. La suite completa (`npm run test:run`) son 341
+tests en 27 ficheros.
 
 ### Ratio de conservatismo medido (Definición 5.6)
 
@@ -133,7 +184,7 @@ término lineal son el peor caso, coherente con la Prop. 5.2 (ρ crece con L).
 
 ### Hallazgos del property-based testing
 
-Cuatro defectos reales encontrados por las properties y la revisión que
+Cinco defectos reales encontrados por las properties y la revisión que
 provocaron, todos corregidos o documentados en el código:
 
 1. **`fromIntervals` violaba la Prop. 5.1** cuando el ancho del intervalo era
@@ -168,6 +219,19 @@ provocaron, todos corregidos o documentados en el código:
    **hipótesis declarada** (`FrameOfDiscernment.domainBound`, validado en
    construcción) que viaja en el certificado como **H0**, y el truncamiento y
    el filtro han desaparecido. Ver [`docs/ERRATA.md`](docs/ERRATA.md) §5.
+5. **Corregido el (4), el certificado se volvió vacuo.** La afirmación del paper
+   "para la propagación zonotópica, el bound externo es suficiente" (Def. 3.9)
+   es falsa en la práctica con H0 honesta: la válvula `δ_i` de la Def. 3.4 deja
+   masa sobre Θ, Θ interseca la cola, y entonces `Pl(cola) ≥ Π δ_i ≈ 1e-4` —seis
+   órdenes por encima del umbral 1e-10—, de modo que la Ec. (10) devuelve el
+   rango completo del marco **independientemente de la evidencia**. Lluvia
+   ligera y lluvia intensa producían el mismo intervalo credal, el mismo
+   reachable set, el mismo veredicto y la misma severidad heurística. *Resuelto
+   con una capa nueva*: `src/core/credal-propagation/` propaga **cada elemento
+   focal con su masa** en lugar del soporte externo, y el certificado gana un
+   segundo nivel demostrado `[Bel(E), Pl(E)]` que separa esos escenarios por más
+   de tres órdenes de magnitud. El nivel existencial conserva su semántica
+   intacta. Ver [`docs/ERRATA.md`](docs/ERRATA.md) §8.
 
 ### Límites conocidos de la garantía formal
 
@@ -198,10 +262,22 @@ provocaron, todos corregidos o documentados en el código:
   ninguna evidencia pueda rescatarla. Ver
   [`docs/ERRATA.md`](docs/ERRATA.md) §5.
 - Consecuencia operativa del punto anterior: con la hipótesis de cola plausible
-  el intervalo credal llega hasta el `domainBound` y el certificado será casi
-  siempre `unsafe-possible`. Es la señal correcta —la evidencia no descarta un
-  evento extremo—, no un defecto del bound; estrecharlo es tarea de la
-  evidencia, no del marco.
+  el intervalo credal llega hasta el `domainBound` y el veredicto **existencial**
+  será casi siempre `unsafe-possible`. Es la señal correcta —la evidencia no
+  descarta un evento extremo—, no un defecto del bound; estrecharlo es tarea de
+  la evidencia, no del marco. Lo que **sí** distingue esos escenarios entre sí es
+  el nivel probabilístico del certificado (ver arriba), que no estrecha el
+  reachable set: conserva la masa que la Ec. (10) descartaba.
+- El nivel probabilístico hereda las hipótesis del existencial y **ninguna
+  más**, pero también sus límites: `Bel(E)` y `Pl(E)` son bounds sobre la
+  probabilidad del evento **bajo H0–H3**. Si H2 falla (un ε_i mal calibrado) o
+  H0 falla (un valor real por encima del `domainBound`), los bounds dejan de
+  acotar nada, igual que el veredicto existencial deja de demostrar nada.
+- El hull de un elemento focal **no contiguo** (p. ej. `{θ₀, θ₂}`) contiene
+  puntos que no pertenecen a ninguna de sus hipótesis. Es sobre-aproximación
+  deliberada y conservadora en ambos extremos; un tratamiento exacto exigiría
+  propagar uniones de intervalos por el DAG, multiplicando el coste sin cambiar
+  la dirección de la garantía.
 - El DAG implementa la subclase de SCM con **ruido aditivo acotado**
   (`V_i = f_i(pa(V_i)) + U_i`, `|U_i| ≤ ε_i`), que es lo que la Ec. (24) y la
   demostración del Teo. 4.1 usan aunque la Def. 4.1 escriba `U_i` como
@@ -210,7 +286,12 @@ provocaron, todos corregidos o documentados en el código:
   `causal-dag/types.ts`; ver [`docs/ERRATA.md`](docs/ERRATA.md) §4.
 - `severityScore` (`decision/synthesis.ts`) es una heurística de priorización,
   **no** una probabilidad de violación. El veredicto formal lo da
-  `certifySafety`.
+  `certifySafety`, y la magnitud probabilística con respaldo formal es
+  `certificate.probabilityBounds`. Sobre el escenario de la demo la heurística es
+  literalmente idéntica (0,9631) para lluvia ligera y para lluvia intensa: no
+  distingue lo que el nivel probabilístico separa en tres órdenes de magnitud.
+  Se conserva solo para ordenar alarmas ya declaradas inseguras cuando no hay
+  ruta credal.
 
 ## Licencia
 
