@@ -79,7 +79,7 @@ describe('B7 · Definición 5.5 — soundness del certificado existencial', () =
   it('(a) proven-safe ⇒ ningún punto muestreado del reachable viola la spec', () => {
     fc.assert(
       fc.property(reachableArb(), specArb(), tsArb(), (reachable, spec, ts) => {
-        const cert = certifySafety(reachable, spec, []);
+        const cert = certifySafety(reachable, spec, [], null);
         if (cert.status !== 'proven-safe') return true;
 
         for (const x of samplePointsOf(reachable, ts)) {
@@ -95,7 +95,7 @@ describe('B7 · Definición 5.5 — soundness del certificado existencial', () =
   it('(a) proven-safe también en los casos frontera dirigidos', () => {
     fc.assert(
       fc.property(boundaryCase(), tsArb(), ({ reachable, spec }, ts) => {
-        const cert = certifySafety(reachable, spec, []);
+        const cert = certifySafety(reachable, spec, [], null);
         if (cert.status !== 'proven-safe') return true;
         for (const x of samplePointsOf(reachable, ts)) {
           expect(violates(x, spec)).toBe(false);
@@ -112,7 +112,7 @@ describe('B7 · Definición 5.5 — soundness del certificado existencial', () =
         const anyViolation = samplePointsOf(reachable, ts).some((x) => violates(x, spec));
         if (!anyViolation) return true;
 
-        const cert = certifySafety(reachable, spec, []);
+        const cert = certifySafety(reachable, spec, [], null);
         expect(cert.status).toBe('unsafe-possible');
         expect(cert.witness.length).toBeGreaterThan(0);
         return true;
@@ -126,7 +126,7 @@ describe('B7 · Definición 5.5 — soundness del certificado existencial', () =
       fc.property(boundaryCase(), tsArb(), ({ reachable, spec }, ts) => {
         const anyViolation = samplePointsOf(reachable, ts).some((x) => violates(x, spec));
         if (!anyViolation) return true;
-        expect(certifySafety(reachable, spec, []).status).toBe('unsafe-possible');
+        expect(certifySafety(reachable, spec, [], null).status).toBe('unsafe-possible');
         return true;
       }),
       fcParams
@@ -147,7 +147,7 @@ describe('B7 · Definición 5.5 — soundness del certificado existencial', () =
     // las dos ramas de certifySafety.
     fc.assert(
       fc.property(reachableArb(), specArb(), (reachable, spec) => {
-        const cert = certifySafety(reachable, spec, []);
+        const cert = certifySafety(reachable, spec, [], null);
         for (const w of cert.witness) {
           expect(w.lower).toBeLessThanOrEqual(w.upper);
 
@@ -166,7 +166,7 @@ describe('B7 · Definición 5.5 — soundness del certificado existencial', () =
   it('(c) el certificado es función pura: dos llamadas dan resultado idéntico', () => {
     fc.assert(
       fc.property(reachableArb(), specArb(), (reachable, spec) => {
-        expect(certifySafety(reachable, spec, [])).toEqual(certifySafety(reachable, spec, []));
+        expect(certifySafety(reachable, spec, [], null)).toEqual(certifySafety(reachable, spec, [], null));
       }),
       fcParams
     );
@@ -175,7 +175,7 @@ describe('B7 · Definición 5.5 — soundness del certificado existencial', () =
   it('(c) la pureza se mantiene en los casos frontera', () => {
     fc.assert(
       fc.property(boundaryCase(), ({ reachable, spec }) => {
-        expect(certifySafety(reachable, spec, [])).toEqual(certifySafety(reachable, spec, []));
+        expect(certifySafety(reachable, spec, [], null)).toEqual(certifySafety(reachable, spec, [], null));
       }),
       fcParams
     );
@@ -184,7 +184,7 @@ describe('B7 · Definición 5.5 — soundness del certificado existencial', () =
   it('el veredicto es total y binario: nunca hay un tercer estado', () => {
     fc.assert(
       fc.property(reachableArb(), specArb(), (reachable, spec) => {
-        const status = certifySafety(reachable, spec, []).status;
+        const status = certifySafety(reachable, spec, [], null).status;
         expect(status === 'proven-safe' || status === 'unsafe-possible').toBe(true);
       }),
       fcParams
@@ -194,7 +194,7 @@ describe('B7 · Definición 5.5 — soundness del certificado existencial', () =
   it('todo certificado arrastra sus hipótesis H0 y H1–H3 y su base formal', () => {
     fc.assert(
       fc.property(reachableArb(), specArb(), (reachable, spec) => {
-        const cert = certifySafety(reachable, spec, []);
+        const cert = certifySafety(reachable, spec, [], null);
         expect(cert.assumptions).toBe(CERTIFICATE_ASSUMPTIONS);
         expect(cert.assumptions[0]).toContain('H0');
         expect(cert.domainBounds).toEqual([]);
@@ -216,7 +216,7 @@ describe('B7 · Definición 5.5 — soundness del certificado existencial', () =
     // el riskThreshold.
     fc.assert(
       fc.property(reachableArb(), specArb(), (reachable, spec) => {
-        const d = synthesizeDecision(reachable, spec, []);
+        const d = synthesizeDecision(reachable, spec, [], null);
         if (d.certificate.status === 'unsafe-possible') {
           expect(d.status).not.toBe('safe');
         } else {
@@ -236,7 +236,7 @@ describe('B7 · Definición 5.5 — soundness del certificado existencial', () =
         expect(s).toBeLessThanOrEqual(1);
         expect(Number.isNaN(s)).toBe(false);
 
-        if (certifySafety(reachable, spec, []).status === 'proven-safe') {
+        if (certifySafety(reachable, spec, [], null).status === 'proven-safe') {
           expect(s).toBeCloseTo(0, 12);
         }
       }),
@@ -247,7 +247,7 @@ describe('B7 · Definición 5.5 — soundness del certificado existencial', () =
   it('violationFraction sigue siendo alias exacto de severity', () => {
     fc.assert(
       fc.property(reachableArb(), specArb(), (reachable, spec) => {
-        const d = synthesizeDecision(reachable, spec, []);
+        const d = synthesizeDecision(reachable, spec, [], null);
         expect(d.violationFraction).toBe(d.severity);
       }),
       fcParams

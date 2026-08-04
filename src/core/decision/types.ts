@@ -3,15 +3,28 @@
  *
  * Tipos para la síntesis de decisiones verificables desde el reachable set.
  *
- * Se distinguen DOS capas que antes estaban mezcladas en un único campo:
+ * Se distinguen TRES capas, y el orden importa:
  *
- *   1. Capa formal ({@link SafetyCertificate}): veredicto binario existencial
- *      según la Definición 5.5. Es lo único que tiene respaldo demostrativo.
- *   2. Capa heurística ({@link CertifiedDecision.severity}): métrica continua
- *      para priorizar en UI. NO es una probabilidad ni tiene estatus formal.
+ *   1. Capa formal existencial ({@link SafetyCertificate.status}): veredicto
+ *      binario según la Definición 5.5. Es el veredicto que manda.
+ *   2. Capa formal probabilística ({@link SafetyCertificate.probabilityBounds}):
+ *      bounds [Bel(E), Pl(E)] del evento inseguro, DEMOSTRADOS bajo H0-H3 por
+ *      propagación credal. EXTENSIÓN al paper (docs/ERRATA.md §8). No decide
+ *      seguridad: cualifica un veredicto ya emitido.
+ *   3. Capa heurística ({@link CertifiedDecision.severity}): métrica geométrica
+ *      continua para priorizar en UI. NO es una probabilidad ni tiene estatus
+ *      formal.
+ *
+ * La (2) es nueva y es la razón de ser de esta iteración. Con la válvula de
+ * seguridad δ_i de la Def. 3.4 y H0 honesta, el nivel (1) es casi siempre
+ * 'unsafe-possible' sobre el rango completo del marco —sound pero vacuo, ver
+ * docs/ERRATA.md §8—. El nivel (2) distingue un 'unsafe-possible' con
+ * Pl(E) = 1,6e-4 de otro con Bel(E) = 0,99: el mismo veredicto formal, mundos
+ * operativamente incomparables.
  */
 
 import { Interval } from '../intervals/types';
+import { ProbabilityBounds } from '../credal-propagation/types';
 
 export interface SafetySpec {
   /** Variable a verificar */
@@ -25,8 +38,33 @@ export interface SafetySpec {
    * OJO: no es un umbral de probabilidad. Solo modula la PRIORIZACIÓN de un
    * caso ya declarado inseguro por {@link SafetyCertificate}; nunca convierte
    * un caso inseguro en seguro.
+   *
+   * Se usa solo cuando NO hay bounds de probabilidad disponibles, o cuando la
+   * spec no declara {@link SafetySpec.unsafeProbabilityThreshold}. Ver
+   * `synthesizeDecision`.
    */
   riskThreshold: number;
+  /**
+   * p_crít ∈ [0, 1] — umbral de PROBABILIDAD del evento inseguro por encima del
+   * cual un 'unsafe-possible' se escala a 'critical'. EXTENSIÓN, ver
+   * docs/ERRATA.md §8.
+   *
+   * A diferencia de {@link SafetySpec.riskThreshold}, este SÍ es un umbral de
+   * probabilidad, y se compara contra `plUpper`, que es un bound demostrado. La
+   * regla resultante es conservadora en la dirección correcta:
+   *
+   *   · plUpper ≥ p_crít → 'critical'. Puede sobre-escalar (plUpper
+   *     sobre-estima), que es el error tolerable.
+   *   · plUpper < p_crít → 'warning'. Está DEMOSTRADO que P(E) < p_crít, porque
+   *     P(E) ≤ plUpper. Es una des-escalada con respaldo formal, no una
+   *     suposición — y es exactamente la informatividad que esta iteración
+   *     recupera.
+   *
+   * Opcional: sin él (o sin bounds), la escalada cae en la heurística de
+   * severidad de siempre, y el certificado registra cuál se usó
+   * ({@link CertifiedDecision.escalationBasis}).
+   */
+  unsafeProbabilityThreshold?: number;
 }
 
 /**
@@ -158,6 +196,33 @@ export interface SafetyCertificate {
    * de cada variable de entrada.
    */
   domainBounds: readonly DeclaredDomainBound[];
+  /**
+   * Segundo nivel del certificado: bounds [Bel(E), Pl(E)] del evento inseguro
+   * E = ℝ \ safeRegion, obtenidos por propagación credal por elementos focales.
+   *
+   * EXTENSIÓN a la Definición 5.5 (docs/ERRATA.md §8), candidata a Def. 5.5′ en
+   * la v3. **Son bounds demostrados**, no una heurística: la demostración está
+   * en el JSDoc de `probabilityBounds`
+   * (src/core/credal-propagation/probability-bounds.ts) y depende de las mismas
+   * hipótesis H0-H3 que el nivel existencial, de ninguna más.
+   *
+   * NO cambia la semántica de {@link SafetyCertificate.status}: 'proven-safe'
+   * sigue siendo reachable ⊆ safeRegion y 'unsafe-possible' sigue siendo
+   * existencial. Lo que aporta es la magnitud que el veredicto existencial no
+   * puede expresar.
+   *
+   * `null` = el certificado se emitió sin ruta credal (p. ej. sobre un reachable
+   * set dado directamente, sin Capa 1 aguas arriba). Es un valor EXPLÍCITO y
+   * obligatorio, no un campo opcional que se pueda olvidar: la justificación
+   * dice entonces con esas palabras que el nivel probabilístico no está
+   * disponible, en lugar de callar. Mismo criterio que
+   * {@link SafetyCertificate.domainBounds} con la lista vacía.
+   *
+   * CONSISTENCIA GARANTIZADA con el nivel existencial: `certifySafety` LANZA si
+   * recibe unos bounds incoherentes con su propio veredicto (un 'proven-safe'
+   * con plUpper > 0 sería un certificado que se contradice a sí mismo).
+   */
+  probabilityBounds: ProbabilityBounds | null;
   /** Justificación textual, con las citas formales explícitas */
   justification: string;
 }
@@ -170,12 +235,29 @@ export interface SafetyCertificate {
  * {@link CertifiedDecision.certificate}, nunca este campo.
  *
  * - 'safe'     ⟺ certificado 'proven-safe'
- * - 'critical' ⟸ 'unsafe-possible' con severidad ≥ riskThreshold
- * - 'warning'  ⟸ 'unsafe-possible' con severidad < riskThreshold
+ * - 'critical' ⟸ 'unsafe-possible' por encima del umbral de escalado
+ * - 'warning'  ⟸ 'unsafe-possible' por debajo del umbral de escalado
  * - 'unknown'  → inalcanzable; se conserva en la unión por compatibilidad de
  *                tipos con consumidores previos.
+ *
+ * Qué umbral se usa lo dice {@link CertifiedDecision.escalationBasis}.
  */
 export type DecisionStatus = 'safe' | 'warning' | 'critical' | 'unknown';
+
+/**
+ * Señal con la que se decidió escalar de 'warning' a 'critical'.
+ *
+ * - 'probability-bound':  se comparó `plUpper` (bound DEMOSTRADO) contra
+ *                         `spec.unsafeProbabilityThreshold`.
+ * - 'severity-heuristic': se comparó `severity` (métrica geométrica, SIN
+ *                         estatus formal) contra `spec.riskThreshold`.
+ * - 'not-applicable':     el certificado es 'proven-safe'; no hay nada que
+ *                         escalar.
+ *
+ * Se registra porque las dos señales tienen estatus epistémico distinto y un
+ * auditor debe poder saber cuál sostiene la prioridad que ve en pantalla.
+ */
+export type EscalationBasis = 'probability-bound' | 'severity-heuristic' | 'not-applicable';
 
 export interface CertifiedDecision {
   /** Veredicto formal (Def. 5.5). La única parte con respaldo demostrativo. */
@@ -198,6 +280,13 @@ export interface CertifiedDecision {
    * Se mantiene como alias para no romper consumidores existentes.
    */
   violationFraction: number;
+  /**
+   * Bounds [Bel(E), Pl(E)] del evento inseguro — copia de
+   * `certificate.probabilityBounds`. `null` si no hay ruta credal.
+   */
+  probabilityBounds: ProbabilityBounds | null;
+  /** Con qué señal se decidió 'warning' vs 'critical'. */
+  escalationBasis: EscalationBasis;
   /** Justificación formal (copia de `certificate.justification`) */
   justification: string;
   timestamp: number;
