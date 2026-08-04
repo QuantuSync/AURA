@@ -12,7 +12,9 @@
  *  · SALIDA ESTÁNDAR en `out/experiments/<nombre>/`, siempre los mismos tres
  *    ficheros: `config.json` (qué se ejecutó), `results.json` (qué salió) y
  *    `results.csv` (lo mismo, tabulado). Quien audite un experimento sabe dónde
- *    mirar sin leer su código.
+ *    mirar sin leer su código. Un experimento puede añadir artefactos propios
+ *    —figuras, tablas secundarias— por {@link ExperimentOutput.artifacts}, pero
+ *    NUNCA escribiendo por su cuenta: el runner es el único que toca el disco.
  *  · SERIALIZACIÓN CANÓNICA, la misma de `npm run repro`: claves ordenadas,
  *    12 cifras significativas, sin reloj. Los resultados entran así en
  *    `snapshots/` y cualquier deriva se ve en el diff.
@@ -140,6 +142,20 @@ export interface ExperimentOutput {
    * `config.json`. La semilla se añade sola.
    */
   config?: Record<string, unknown>;
+  /**
+   * Artefactos adicionales: ruta RELATIVA al directorio del experimento →
+   * contenido ya serializado. Se escriben en orden alfabético de clave.
+   *
+   * Existe para que las figuras de un experimento salgan por el mismo camino
+   * que sus números —mismo directorio, misma ejecución, mismo snapshot— en vez
+   * de que cada script abra su propio `writeFile` y la convención de salida
+   * deje de significar nada. El contenido debe ser DETERMINISTA (las figuras
+   * SVG del repositorio lo son: ver scripts/lib/svg.ts).
+   *
+   * Las rutas se validan: relativas, sin `..` y sin raíz absoluta. Un
+   * experimento no puede escribir fuera de su propio directorio.
+   */
+  artifacts?: Readonly<Record<string, string>>;
 }
 
 export interface ExperimentDefinition {
@@ -182,6 +198,21 @@ export async function runExperiment(
   );
   await writeFile(path.join(dir, 'results.json'), canonicalJson(output.results), 'utf8');
   await writeFile(path.join(dir, 'results.csv'), toCsv(output.csvHeader, output.csvRows), 'utf8');
+
+  // Orden alfabético: el conjunto de ficheros no depende del orden en que el
+  // experimento los fue construyendo.
+  for (const rel of Object.keys(output.artifacts ?? {}).sort()) {
+    const normalized = path.normalize(rel);
+    if (path.isAbsolute(normalized) || normalized.split(path.sep).includes('..')) {
+      throw new Error(
+        `${definition.name}: el artefacto '${rel}' apunta fuera del directorio del ` +
+          `experimento. Las rutas deben ser relativas y no contener '..'.`
+      );
+    }
+    const dest = path.join(dir, normalized);
+    await mkdir(path.dirname(dest), { recursive: true });
+    await writeFile(dest, output.artifacts![rel], 'utf8');
+  }
 
   log(`escrito en ${dir}`);
 }
