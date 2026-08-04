@@ -1,0 +1,11 @@
+# Determinismo byte a byte de los artefactos reproducibles.
+#
+# `npm run repro` y el runner de experimentos escriben SIEMPRE con `\n`
+# (ver scripts/lib/canonical.ts). Sin esta declaración, `core.autocrlf=true`
+# —el valor por defecto de Git para Windows— checkoutearía `snapshots/` con
+# CRLF mientras `out/` se genera con LF, y `npm run snapshots:check` fallaría
+# en un clon recién hecho sin que nada haya cambiado de verdad.
+#
+# Se fija para TODO el repositorio, no solo para snapshots/: los fixtures son
+# entrada del mismo pipeline y el código se compara en los mismos diffs.
+* text=auto eol=lf

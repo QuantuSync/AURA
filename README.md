@@ -1,5 +1,7 @@
 # AURA v2
 
+[![verify](https://github.com/QuantuSync/AURA/actions/workflows/verify.yml/badge.svg)](https://github.com/QuantuSync/AURA/actions/workflows/verify.yml)
+
 **Autonomous Uncertainty-Aware Resilience Architecture**
 
 Plataforma de fusión de datos con cuantificación formal de incertidumbre para decisiones en infraestructura crítica.
@@ -10,13 +12,16 @@ AURA integra tres capas matemáticas en un pipeline operativo:
 
 | Capa | Función | Framework | Módulo |
 |------|---------|-----------|--------|
+| 0 | Ingesta | Clientes de API + modo offline por fixtures | `src/data/` |
 | 1 | Fusión de datos | Dempster-Shafer + Conjuntos credales | `src/core/dempster-shafer/` |
 | 1→2 | Puente credal | Propagación por elementos focales | `src/core/credal-propagation/` |
 | 2 | Modelado causal | SCM + Aritmética de intervalos | `src/core/causal-dag/` |
 | 3 | Verificación | Zonotopes + Reachability | `src/core/zonotope/` |
 | 3 | Decisión | Certificado de dos niveles | `src/core/decision/` |
 
-El pipeline completo del caso de uso de §7 está en `src/core/pipeline/`.
+El pipeline completo del caso de uso de §7 está en `src/core/pipeline/`, y su
+ejecución reproducible sobre los cuatro escenarios versionados en
+`scripts/reproduce.ts` (ver [Reproducibilidad](#reproducibilidad)).
 
 Referencia teórica normativa: **`papers/AURA_v2.pdf`**. Toda cita a
 definiciones, teoremas y ecuaciones en el código y en este README se refiere a
@@ -33,15 +38,18 @@ con su estado en el código y la corrección propuesta para la v3.
 ## Stack
 
 - **Motor matemático**: TypeScript puro (sin dependencias, ejecutable en cliente y serverless)
-- **Frontend**: Next.js 14 + React + Tailwind CSS
-- **Visualización**: Recharts / D3.js
-- **Tests**: Vitest
+- **Frontend**: Next.js 16.2 + React 19 + Tailwind CSS 4
+- **Visualización**: Recharts / D3.js en la UI; SVG generado por código en las figuras reproducibles
+- **Tests**: Vitest + fast-check
+- **Scripts**: `tsx` (los scripts de `scripts/` son TypeScript ejecutable)
 - **Despliegue**: Vercel
+
+Requiere **Node ≥ 20.11** (declarado en `package.json`). CI usa Node 22.
 
 ## Desarrollo
 
 ```bash
-npm install
+npm ci                   # Instalación reproducible desde package-lock.json
 npm run dev              # Servidor de desarrollo (localhost:3000)
 npm run test             # Tests con Vitest (watch mode)
 npm run test:run         # Suite completa, incluidas las properties (1.000 casos c/u)
@@ -51,11 +59,112 @@ npm run build            # Build de producción
 
 Las properties se parametrizan por entorno: `FC_NUM_RUNS` (casos por
 propiedad), `FC_SEED` (semilla; fija por defecto para que CI sea
-reproducible) y `FC_VERBOSE=1`. Para reproducir un fallo concreto, pasar la
-semilla que fast-check reporta:
+reproducible) y `FC_VERBOSE=1`. `FC_NUM_RUNS` es un **valor por defecto**, no
+una imposición: el entorno manda, que es lo que permite a CI usar el ciclo
+rápido sin duplicar el script.
 
 ```bash
-FC_SEED=20260804 FC_NUM_RUNS=50000 npx vitest run __tests__/properties
+FC_NUM_RUNS=1000 npm run test:properties            # ciclo rápido (el de CI)
+FC_SEED=20260804 FC_NUM_RUNS=50000 npm run test:properties
+```
+
+## Reproducibilidad
+
+Todo resultado que pueda aparecer en el paper es regenerable con un comando, sin
+red y sin reloj.
+
+```bash
+npm ci           # instalación exacta desde package-lock.json
+npm run verify   # puerta completa: tipos → tests → properties → repro → snapshots
+npm run repro    # solo la regeneración de resultados y figuras
+```
+
+`npm run verify` encadena seis pasos y para en el primer fallo:
+
+| # | Paso | Qué comprueba |
+|---|------|---------------|
+| 1 | `npx tsc --noEmit` | Tipos |
+| 2 | `npm run test:run` | Suite completa |
+| 3 | `npm run test:properties` | Campaña de property-based testing |
+| 4 | `npm run repro` | Regeneración de los cuatro escenarios |
+| 5 | `npm run exp:smoke` | El contrato del runner de experimentos |
+| 6 | `npm run snapshots:check` | `out/` **byte a byte** contra `snapshots/` |
+
+### Escenarios
+
+La ingesta lee de `fixtures/<escenario>/` en lugar de la red cuando se activa el
+modo offline (`AURA_OFFLINE=1`, o `{ offline: true }` en la llamada). El modo por
+defecto **no cambia**: sin esa señal, los clientes hacen `fetch`. Procedencia y
+formato de cada fixture, en [`fixtures/README.md`](fixtures/README.md).
+
+| Escenario | Precipitación (mm/h) | `K_global` | Método | Bel(E) | Pl(E) | Decisión |
+|---|---|---|---|---|---|---|
+| `s1-normal` | 0 / 0 / 0 | 0,0272 | dempster | 0 | 1,234e-4 | `warning` |
+| `s2-light-rain` | 8 / 9 / 7,5 | 0,1844 | dempster | 0 | **1,559e-4** | `warning` |
+| `s3-virga-conflict` | 3 / 18 / 25 | 0,9512 | envelope | 0 | 0,99997 | `critical` |
+| `s4-extreme` | 45 / 46 / 44,5 | 3,32e-9 | dempster | 0,99988 | ≈ 1 | `critical` |
+
+En los cuatro, el veredicto **existencial** es el mismo (`unsafe-possible`) sobre
+el mismo reachable set (`[−12, 992]` mm) y con la misma severidad heurística: es
+la tesis de [`docs/ERRATA.md`](docs/ERRATA.md) §8 medida sobre cuatro regímenes
+de evidencia distintos.
+
+### Salidas
+
+`npm run repro` escribe en `out/` (ignorado por git; la expectativa versionada
+está en `snapshots/`):
+
+```
+out/
+├── summary.csv                    una fila por escenario, tabla agregada
+└── <escenario>/
+    ├── result.json                resultado íntegro: mediciones, BPAs, conflictos,
+    │                              método de fusión, bounds por hipótesis, conjunto
+    │                              credal de entrada y propagado, y el certificado
+    │                              completo con H0–H3 y domainBounds
+    ├── summary.csv                la fila de este escenario, aislada
+    └── figures/
+        ├── h-evolution.svg        h(t) con los bounds del hull y la banda que
+        │                          concentra ≥ 99 % de la masa credal
+        └── credal-mass.svg        masa por hipótesis, antes y después de la fusión
+```
+
+Columnas de `summary.csv`: `scenario`, `K_max`, `K_global`, `method`,
+`credal_lower`, `credal_upper`, `reachable_lower`, `reachable_upper`, `status`,
+`belLower`, `plUpper`, `decision`.
+
+### Determinismo
+
+Dos ejecuciones consecutivas producen **bytes idénticos**. Las tres fuentes de
+variación están cerradas en `scripts/lib/canonical.ts`: claves ordenadas,
+números a 12 cifras significativas (el ruido de coma flotante vive a partir de la
+15.ª) y no finitos como cadena, porque `safeRegion.lower = -Infinity` es un valor
+con significado que `JSON.stringify` convertiría en `null`. Los timestamps salen
+del fixture, no del reloj, y el único campo que lleva `Date.now()`
+(`CertifiedDecision.timestamp`) se excluye explícitamente de la serialización.
+
+```bash
+npm run repro && cp -r out /tmp/a && npm run repro && diff -r /tmp/a out
+```
+
+### Snapshots
+
+`snapshots/` versiona la salida esperada, con el mismo árbol que `out/`.
+`npm run snapshots:check` compara y falla con el diff línea a línea;
+`npm run snapshots:update` los regenera **deliberadamente**. La actualización
+nunca es automática: un snapshot que se regenera solo al fallar convierte
+cualquier cambio de resultado en un cambio de expectativa, y entonces el commit
+que altera un número publicado pasa inadvertido.
+
+### Experimentos
+
+`scripts/experiments/` define el contrato de todo experimento futuro —semilla
+obligatoria por CLI, PRNG compartido con las properties (`src/lib/prng.ts`),
+salida estándar en `out/experiments/<nombre>/`—. El detalle está en
+[`scripts/experiments/README.md`](scripts/experiments/README.md).
+
+```bash
+npx tsx scripts/experiments/smoke.ts --seed 20260804 --samples 200
 ```
 
 ## Trazabilidad matemática
@@ -84,6 +193,7 @@ con su sección real:
 | `zonotope/linearization.ts` | Teo. 5.1 (cota de Lagrange automática) | §5.4 |
 | `zonotope/reachability.ts` | Def. 5.3 | §5.5 |
 | `decision/synthesis.ts` | Def. 5.5 y Ec. (31); Teo. 5.2; Teo. 6.1 (H1–H3) *(+ H0 y nivel probabilístico, extensiones)* | §5.5, §6.3 |
+| `data/sources/characterization.ts` | Def. 3.4 y Ec. (3)-(4) — σ y δ de cada fuente *(declarados, no calibrados)* | §3.3 |
 
 > **Correcciones de numeración.** Iteraciones anteriores del código se
 > escribieron sin acceso al paper y citaban referencias desalineadas: el
@@ -158,8 +268,8 @@ mano. Semilla fija → CI reproducible; `FC_NUM_RUNS` escala la campaña.
 Cada propiedad ejecuta `FC_NUM_RUNS` casos generados: **1.000** en `test:run`
 (CI) y **20.000** en `test:properties`. Campaña de referencia: 91 propiedades ×
 20.000 casos (más 7 contraejemplos deterministas de regresión), semilla 20260804
-— todas pasan, en 97 s de reloj. La suite completa (`npm run test:run`) son 341
-tests en 27 ficheros.
+— todas pasan, en 99 s de reloj. La suite completa (`npm run test:run`) son 372
+tests en 29 ficheros, y `npm run verify` entero, 109 s.
 
 ### Ratio de conservatismo medido (Definición 5.6)
 
@@ -181,6 +291,33 @@ diferencia la más ajustada, lo que respalda cuantitativamente la "Implicación
 práctica" de §5.6: con dinámica suave e incertidumbre acotada el conservatismo
 acumulado es tolerable. Los polinomios cúbicos con curvatura alta frente a su
 término lineal son el peor caso, coherente con la Prop. 5.2 (ρ crece con L).
+
+### Hallazgos de la infraestructura de reproducibilidad
+
+Dos defectos que ninguna property podía encontrar, porque no estaban en el motor
+sino en la **capa de datos** —y que solo salieron a la luz al hacer que el
+pipeline reproducible se alimente de la ingesta real en lugar de constantes
+escritas a mano:
+
+- **`PRECTOTCORR` de NASA POWER se leía en mm/h siendo mm/day**: un factor 24 en
+  una de las tres entradas de la fusión. La función convertía `WS10M` de m/s a
+  km/h tres líneas más abajo, de modo que la ausencia de conversión era un
+  descuido, no una decisión. Verificado contra la propia API
+  (Madrid-Chamartín, 2026-03-10): las 24 horas suman 85,22 y su **media**,
+  3,551, es exactamente el valor diario 3,55. *Corregido*, junto con el paso al
+  endpoint **horario** —un acumulado diario no puede representar 45 mm/h en un
+  marco de intensidad con horizonte de 2 h— y el tratamiento del `fill_value`
+  (−999) con que POWER marca las horas que el reanálisis aún no cubre.
+- **σ y δ de las fuentes estaban declarados dos veces y en desacuerdo.** Cada
+  cliente de `src/data/sources/` los fijaba en línea, y
+  `DEMO_SOURCES_LIGHT_RAIN` declaraba otros distintos para las mismas tres
+  fuentes: σ_prec (0,5 / 1,5 / 2,0) frente a (1,5 / 2,0 / 2,5), y las δ de AEMET
+  y Open-Meteo intercambiadas. Mientras ingesta y demo fueron caminos separados
+  el desacuerdo fue invisible; en cuanto `npm run repro` alimenta la demo desde
+  la ingesta, el `plUpper` publicado deja de reproducirse. *Corregido*:
+  `src/data/sources/characterization.ts` es la declaración única, sobre los
+  valores que respaldan todos los números publicados, y
+  `__tests__/data/characterization.test.ts` bloquea el acuerdo entre ambas.
 
 ### Hallazgos del property-based testing
 
@@ -293,6 +430,10 @@ provocaron, todos corregidos o documentados en el código:
   Se conserva solo para ordenar alarmas ya declaradas inseguras cuando no hay
   ruta credal.
 
+## Cómo citar
+
+Metadatos en [`CITATION.cff`](CITATION.cff) (versión 2.0.0).
+
 ## Licencia
 
-Uso interno. © Dr. Lucas Alaniz Pintos.
+[MIT](LICENSE). © 2026 INECO.

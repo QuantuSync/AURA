@@ -15,6 +15,16 @@
  */
 
 import fc from 'fast-check';
+import { DEFAULT_SEED, makeRng } from '@/lib/prng';
+
+/**
+ * PRNG determinista para muestreos internos de un caso generado.
+ *
+ * Reexportado, no reimplementado: es literalmente el mismo generador que usan
+ * los experimentos de `scripts/experiments/`, de modo que «semilla 20260804»
+ * significa lo mismo en una campaña de properties y en un experimento.
+ */
+export { makeRng };
 
 const parsePositiveInt = (raw: string | undefined, fallback: number): number => {
   if (!raw) return fallback;
@@ -32,7 +42,7 @@ export const NUM_RUNS = parsePositiveInt(process.env.FC_NUM_RUNS, MIN_RUNS);
  * exactamente el mismo espacio de entradas. Sin esto, un fallo intermitente
  * sería imposible de atribuir a un cambio de código.
  */
-export const SEED = parsePositiveInt(process.env.FC_SEED, 20260804);
+export const SEED = parsePositiveInt(process.env.FC_SEED, DEFAULT_SEED);
 
 export const VERBOSE = process.env.FC_VERBOSE === '1';
 
@@ -82,13 +92,4 @@ export function containedWithin(
     value >= lower - withinTolerance(value, lower, relEps) &&
     value <= upper + withinTolerance(value, upper, relEps)
   );
-}
-
-/** PRNG determinista para muestreos internos de un caso generado. */
-export function makeRng(seed: number): () => number {
-  let state = (seed >>> 0) || 1;
-  return () => {
-    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
-    return state / 0x100000000;
-  };
 }
