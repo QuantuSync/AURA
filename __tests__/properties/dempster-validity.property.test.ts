@@ -25,6 +25,7 @@ import {
   assessConflict,
 } from '@/core/dempster-shafer/conflict';
 import { BPA, FrameOfDiscernment } from '@/core/dempster-shafer/types';
+import { createFrame } from '@/core/dempster-shafer/frame';
 import { fcParams } from './_config';
 import { multiSourceArb } from './_generators';
 
@@ -237,7 +238,7 @@ describe('B3 · HALLAZGO — el conflicto secuencial NO está acotado por el con
    * Se fija como test de regresión: si alguien "arregla" la reducción o cambia
    * la estrategia, este caso debe seguir describiendo la realidad.
    */
-  const frame: FrameOfDiscernment = {
+  const frame: FrameOfDiscernment = createFrame({
     variable: 'X',
     unit: 'u',
     hypotheses: [
@@ -245,7 +246,8 @@ describe('B3 · HALLAZGO — el conflicto secuencial NO está acotado por el con
       { label: 'h1', lower: 10, upper: 20 },
       { label: 'h2', lower: 20, upper: 30 },
     ],
-  };
+    domainBound: 30,
+  });
   const mk = (fe: { indices: number[]; mass: number }[], id: string): BPA => ({
     frame,
     focalElements: fe,

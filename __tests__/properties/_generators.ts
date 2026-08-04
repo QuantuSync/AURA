@@ -9,6 +9,7 @@
 
 import fc from 'fast-check';
 import { BPA, FrameOfDiscernment } from '@/core/dempster-shafer/types';
+import { createFrame } from '@/core/dempster-shafer/frame';
 import { Zonotope } from '@/core/zonotope/types';
 import { Interval } from '@/core/intervals/types';
 import { realArb, makeRng } from './_config';
@@ -19,18 +20,50 @@ import { realArb, makeRng } from './_config';
 
 /**
  * Marco de discernimiento Θ con k hipótesis contiguas — Definición 3.1.
- * Los intervalos son contiguos y finitos, como el marco de precipitación
- * del paper salvo por la cola infinita (que se prueba aparte).
+ *
+ * El `domainBound` (H0, soporte acotado declarado — ver docs/ERRATA.md §5) se
+ * genera EXPLÍCITAMENTE por encima del final de la penúltima hipótesis, de modo
+ * que la anchura de la hipótesis de cola varía entre casos: es exactamente la
+ * dimensión que el truncamiento `a_j·2` fijaba a ojo y que ahora es un
+ * parámetro declarado. El marco se construye con `createFrame`, luego cada
+ * caso generado pasa por la misma validación que un marco de producción.
  */
 export const frameArb = (minK = 2, maxK = 5): fc.Arbitrary<FrameOfDiscernment> =>
-  fc.integer({ min: minK, max: maxK }).map((k) => ({
-    variable: 'X',
-    unit: 'u',
-    hypotheses: Array.from({ length: k }, (_, j) => ({
-      label: `h${j}`,
-      lower: j * 10,
-      upper: (j + 1) * 10,
-    })),
+  fc
+    .tuple(
+      fc.integer({ min: minK, max: maxK }),
+      // Multiplicador del ancho de la hipótesis de cola respecto a las demás.
+      fc.double({ min: 0.5, max: 40, noNaN: true, noDefaultInfinity: true })
+    )
+    .map(([k, tailWidth]) => {
+      const domainBound = (k - 1) * 10 + 10 * tailWidth;
+      return createFrame({
+        variable: 'X',
+        unit: 'u',
+        hypotheses: Array.from({ length: k }, (_, j) => ({
+          label: `h${j}`,
+          lower: j * 10,
+          upper: j === k - 1 ? domainBound : (j + 1) * 10,
+        })),
+        domainBound,
+      });
+    });
+
+/**
+ * Variante con la cola ABIERTA tal como la escribe la Definición 3.1
+ * ([a_{k−1}, ∞)) pero con `domainBound` declarado.
+ *
+ * Es el marco que el paper define literalmente: un literal que satisface el
+ * tipo sin pasar por `createFrame`. Sirve para verificar que el lifting de la
+ * Ec. (10) sigue siendo finito por la vía de `hypothesisUpper`, sin que el
+ * `Infinity` declarado se cuele en el intervalo credal.
+ */
+export const openTailFrameArb = (minK = 2, maxK = 5): fc.Arbitrary<FrameOfDiscernment> =>
+  frameArb(minK, maxK).map((frame) => ({
+    ...frame,
+    hypotheses: frame.hypotheses.map((h, j) =>
+      j === frame.hypotheses.length - 1 ? { ...h, upper: Infinity } : h
+    ),
   }));
 
 /**

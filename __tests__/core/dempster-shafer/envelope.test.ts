@@ -3,8 +3,16 @@ import { computeEnvelope, envelopeCombine, fuse } from '@/core/dempster-shafer/c
 import { allBeliefPlausibility, createBPAFromGaussian } from '@/core/dempster-shafer/bpa';
 import { buildCredalSet, verifyCoverage } from '@/core/dempster-shafer/credal-set';
 import { BPA, FrameOfDiscernment } from '@/core/dempster-shafer/types';
+import { createFrame } from '@/core/dempster-shafer/frame';
 
-const precipFrame: FrameOfDiscernment = {
+/**
+ * P_máx del marco de precipitación de los tests — 500 mm/h, el mismo bound
+ * físico declarado que PRECIPITATION_FRAME (src/lib/constants.ts). Cierra la
+ * cola [60, ∞) de la Def. 3.1 y materializa H0. Ver docs/ERRATA.md §5.
+ */
+const TEST_DOMAIN_BOUND = 500;
+
+const precipFrame: FrameOfDiscernment = createFrame({
   variable: 'precipitation',
   unit: 'mm/h',
   hypotheses: [
@@ -12,9 +20,10 @@ const precipFrame: FrameOfDiscernment = {
     { label: 'light', lower: 5, upper: 15 },
     { label: 'moderate', lower: 15, upper: 30 },
     { label: 'heavy', lower: 30, upper: 60 },
-    { label: 'torrential', lower: 60, upper: Infinity },
+    { label: 'torrential', lower: 60, upper: TEST_DOMAIN_BOUND },
   ],
-};
+  domainBound: TEST_DOMAIN_BOUND,
+});
 
 /** Pl de la BPA sintética que devuelve `envelopeCombine`, por hipótesis. */
 function syntheticPlausibilities(bpas: BPA[]): number[] {

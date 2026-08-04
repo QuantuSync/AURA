@@ -64,6 +64,65 @@ export const THEOREM_6_1_HYPOTHESES = [
 ] as const;
 
 /**
+ * H0 (Soporte acotado) — EXTENSIÓN al Teorema 6.1, ver docs/ERRATA.md §5.
+ *
+ * NO está en el paper: el Teorema 6.1 enuncia H1-H3 y nada más. Se añade aquí
+ * porque el paper la usa de forma tácita y el código no puede.
+ *
+ * PORQUÉ ES NECESARIA. El marco de la Definición 3.1 cierra su exhaustividad
+ * con una cola abierta ([60, ∞) mm/h). El lifting de la Definición 3.9 /
+ * Ecuación (10) devuelve entonces un bound superior `+∞`, inutilizable aguas
+ * abajo, y cualquier forma de acotarlo es una afirmación adicional sobre el
+ * mundo. AURA la hace explícita: cada marco declara su
+ * `domainBound` y el certificado registra cuál se usó.
+ *
+ * POR QUÉ ES PREVIA A H1. H1 dice que el valor real está en el conjunto credal
+ * de la Capa 1. Pero el conjunto credal es una unión de hipótesis del marco, y
+ * el marco solo cubre [a₀, domainBound]: si el valor real excede el
+ * `domainBound` declarado, NINGUNA fusión, por buena que sea la evidencia,
+ * puede producir un conjunto credal que lo contenga. H0 falsa ⟹ H1 falsa por
+ * construcción del marco, no por fallo sensorial. De ahí el orden: H0 acota el
+ * dominio dentro del cual H1 tiene siquiera sentido.
+ *
+ * Es la hipótesis simétrica de H2 en su naturaleza: el código la declara y la
+ * arrastra, pero no puede verificarla — verificarla exigiría conocer el valor
+ * real, que es precisamente lo que no se tiene.
+ */
+export const HYPOTHESIS_H0_BOUNDED_SUPPORT =
+  'H0 (Soporte acotado): El valor real de cada variable de entrada no excede el domainBound declarado de su marco de discernimiento. H0 es lógicamente previa a H1: si falla, el conjunto credal no puede contener la realidad por construcción del marco (Def. 3.1 con cola cerrada; ver docs/ERRATA.md §5).';
+
+/**
+ * Hipótesis completas de las que depende un certificado de esta capa:
+ * H0 (extensión, soporte acotado) seguida de H1-H3 del Teorema 6.1.
+ *
+ * Se mantiene {@link THEOREM_6_1_HYPOTHESES} aparte y sin tocar porque es la
+ * transcripción LITERAL del paper; mezclar ahí H0 haría pasar por normativo lo
+ * que es una extensión de la implementación.
+ */
+export const CERTIFICATE_ASSUMPTIONS = [
+  HYPOTHESIS_H0_BOUNDED_SUPPORT,
+  ...THEOREM_6_1_HYPOTHESES,
+] as const;
+
+/**
+ * Bound de dominio declarado de una variable de entrada — el testigo material
+ * de H0 dentro del certificado.
+ *
+ * Un auditor debe poder leer del certificado, sin abrir el código, exactamente
+ * qué se asumió sobre cada variable: "se dio por cierto que la precipitación no
+ * excede 500 mm/h". Sin este registro, H0 sería una frase sin contenido
+ * verificable.
+ */
+export interface DeclaredDomainBound {
+  /** Nombre de la variable, tal como lo declara su marco. */
+  variable: string;
+  /** Unidad del marco, e.g. 'mm/h'. */
+  unit: string;
+  /** P_máx declarado — `FrameOfDiscernment.domainBound`. */
+  domainBound: number;
+}
+
+/**
  * Certificado formal de seguridad — Definición 5.5.
  *
  * Es función pura de (reachableInterval, spec): sin timestamps ni estado, para
@@ -86,8 +145,19 @@ export interface SafetyCertificate {
   witness: Interval[];
   /** Definiciones y teoremas que respaldan el veredicto */
   basis: string[];
-  /** Hipótesis de las que depende — {@link THEOREM_6_1_HYPOTHESES} */
+  /** Hipótesis de las que depende — {@link CERTIFICATE_ASSUMPTIONS} (H0 + H1-H3) */
   assumptions: readonly string[];
+  /**
+   * Bounds de dominio declarados de las variables de entrada que alimentaron el
+   * reachable set — el contenido concreto de H0 para ESTE certificado.
+   *
+   * Lista vacía = no se declaró ningún marco aguas arriba. No significa "H0 se
+   * cumple trivialmente": significa que el certificado no es auditable respecto
+   * a H0, y la justificación lo dice con esas palabras. Un certificado emitido
+   * sobre un reachable set que sí viene de la Capa 1 debe traer aquí el bound
+   * de cada variable de entrada.
+   */
+  domainBounds: readonly DeclaredDomainBound[];
   /** Justificación textual, con las citas formales explícitas */
   justification: string;
 }

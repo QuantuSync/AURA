@@ -15,6 +15,7 @@
 
 import { BPA, CredalSet, FusionResult } from './types';
 import { allBeliefPlausibility } from './bpa';
+import { frameRange, hypothesisUpper } from './frame';
 
 /**
  * Construye un CredalSet a partir del resultado de fusión.
@@ -36,6 +37,16 @@ import { allBeliefPlausibility } from './bpa';
  * fuente considera plausibles quedan fuera y el intervalo es más estrecho —
  * sin perder soundness, porque sigue cubriendo el [Bel_i, Pl_i] de cada
  * fuente individual.
+ *
+ * SOPORTE ACOTADO (H0): el intervalo devuelto nunca excede
+ * `frame.domainBound`, el límite físico declarado del marco. El Lema 6.1
+ * (x* ∈ [x̲, x̄]) se cumple **condicionado a H0**: para un valor real por encima
+ * del `domainBound` declarado, el conjunto credal no puede contenerlo por
+ * construcción del marco. Esa condición viaja hasta el certificado; ver
+ * `HYPOTHESIS_H0_BOUNDED_SUPPORT` en src/core/decision/types.ts.
+ *
+ * @throws si el marco no declara un `domainBound` utilizable y el lifting sale
+ *         no acotado. Se prefiere fallar a truncar en silencio.
  */
 export function buildCredalSet(fusionResult: FusionResult): CredalSet {
   const { fused, method, maxConflict, envelope } = fusionResult;
@@ -51,6 +62,10 @@ export function buildCredalSet(fusionResult: FusionResult): CredalSet {
   // Intervalo credal continuo — Definición 3.9, Ecuación (10):
   //   I(X) = ⋃ { I_j : Pl(I_j) > 0 }
   // Unión de todos los intervalos con plausibilidad ESTRICTAMENTE positiva.
+  //
+  // El b_j de la Ecuación (10) es el bound superior EFECTIVO de la hipótesis:
+  // para la hipótesis de cola, `frame.domainBound` (H0, soporte acotado
+  // declarado). Ver `hypothesisUpper` y docs/ERRATA.md §5.
   //
   // ┌──────────────────────────────────────────────────────────────────────┐
   // │ NO SUBIR EL UMBRAL 1e-10. Es tolerancia de coma flotante, NO un      │
@@ -77,7 +92,7 @@ export function buildCredalSet(fusionResult: FusionResult): CredalSet {
   for (let j = 0; j < frame.hypotheses.length; j++) {
     if (bounds[j].plausibility > 1e-10) {
       lower = Math.min(lower, frame.hypotheses[j].lower);
-      upper = Math.max(upper, frame.hypotheses[j].upper);
+      upper = Math.max(upper, hypothesisUpper(frame, j));
     }
   }
 
@@ -85,46 +100,42 @@ export function buildCredalSet(fusionResult: FusionResult): CredalSet {
   // numéricamente nulas). Lo conservativo es devolver el marco completo, no
   // un intervalo [Infinity, -Infinity] que se propagaría como NaN.
   if (lower > upper) {
-    lower = frame.hypotheses[0].lower;
-    upper = frame.hypotheses[frame.hypotheses.length - 1].upper;
+    const range = frameRange(frame);
+    lower = range.lower;
+    upper = range.upper;
   }
 
   // ┌──────────────────────────────────────────────────────────────────────┐
-  // │ ⚠ TRUNCAMIENTO NO SOUND — ver docs/ERRATA.md, entrada 5.             │
+  // │ SIN TRUNCAMIENTO. El bound superior sale ÍNTEGRAMENTE del marco.     │
   // │                                                                      │
-  // │ El marco de la Definición 3.1 es exhaustivo gracias a su cola        │
-  // │ abierta ([60, ∞) mm/h para precipitación). En cuanto esa hipótesis   │
-  // │ tiene Pl > 0 —lo que ocurre siempre que alguna fuente tenga masa     │
-  // │ sobre Θ, que interseca a todas— la Ecuación (10) devuelve +∞.        │
-  // │ Un intervalo no acotado es correcto pero inutilizable aguas abajo:   │
-  // │ la Capa 2 propaga +∞ y produce NaN en cuanto hay una resta o un      │
-  // │ producto por 0 (Ec. 21-22).                                          │
+  // │ Hasta la iteración anterior este punto contenía un truncamiento no   │
+  // │ sound (docs/ERRATA.md §5): con la cola abierta de la Def. 3.1 la     │
+  // │ Ec. (10) devuelve +∞, y el código lo sustituía por `a_j·2` tras      │
+  // │ filtrar las hipótesis con Pl > 0,01. Ambas cosas están eliminadas:   │
   // │                                                                      │
-  // │ Lo que sigue TRUNCA el bound superior a un valor finito derivado de  │
-  // │ los datos. Eso ROMPE el Lema 6.1 y con él H1 del Teorema 6.1: si el  │
-  // │ valor real supera el truncamiento, queda fuera del intervalo credal  │
-  // │ y todo certificado emitido aguas abajo es inválido sin que nada lo   │
-  // │ señale. Nótese además que el umbral 0.01 de abajo es exactamente el  │
-  // │ "filtro semántico" que el bloque anterior prohíbe para el 1e-10.     │
+  // │  · el `a_j·2` era un bound inventado a partir de los datos (120 mm/h │
+  // │    para *torrencial*), que dejaba fuera del conjunto credal cualquier│
+  // │    valor real por encima — rompiendo el Lema 6.1 y con él H1 del     │
+  // │    Teorema 6.1 sin emitir señal alguna;                              │
+  // │  · el filtro 0,01 era justamente el "filtro semántico" que el bloque │
+  // │    de arriba prohíbe para el umbral 1e-10, aplicado dos pantallas    │
+  // │    más abajo.                                                        │
   // │                                                                      │
-  // │ Se conserva porque sin él el pipeline no arranca con el marco del    │
-  // │ paper, y porque corregirlo bien exige un cambio de tipos: el bound   │
-  // │ superior debe ser un PARÁMETRO DECLARADO del marco (un máximo físico │
-  // │ justificado), no una heurística derivada de la evidencia, y debe     │
-  // │ viajar en el certificado junto a H1-H3. Está registrado como entrada │
-  // │ 5 de docs/ERRATA.md y como límite conocido en el README.             │
+  // │ Ahora la cota es `frame.domainBound`: una hipótesis DECLARADA sobre  │
+  // │ el mundo (H0), no una heurística derivada de la evidencia, y viaja   │
+  // │ hasta el certificado (`SafetyCertificate.domainBounds`).             │
+  // │                                                                      │
+  // │ Si aun así el bound sale no finito, el marco no pasó por             │
+  // │ `createFrame`. Se LANZA en lugar de truncar: un conjunto credal no   │
+  // │ acotado no es utilizable, pero uno truncado en silencio es peor.     │
   // └──────────────────────────────────────────────────────────────────────┘
-  if (!isFinite(upper)) {
-    // Buscar el último intervalo con Pl > umbral
-    const significantHypotheses = bounds.filter((b) => b.plausibility > 0.01);
-    if (significantHypotheses.length > 0) {
-      const lastSignificant = significantHypotheses[significantHypotheses.length - 1];
-      const h = frame.hypotheses[lastSignificant.hypothesis];
-      // Si el intervalo es abierto, usar el lower * 2 como upper práctico
-      upper = isFinite(h.upper) ? h.upper : h.lower * 2;
-    } else {
-      upper = frame.hypotheses[frame.hypotheses.length - 1].lower * 2;
-    }
+  if (!Number.isFinite(lower) || !Number.isFinite(upper)) {
+    throw new Error(
+      `buildCredalSet: el lifting de la Ec. (10) para '${frame.variable}' dio ` +
+        `[${lower}, ${upper}], que no es finito. El marco declara ` +
+        `domainBound = ${frame.domainBound}: constrúyelo con \`createFrame\` para que ` +
+        `su última hipótesis quede cerrada. Ver docs/ERRATA.md §5.`
+    );
   }
 
   return {

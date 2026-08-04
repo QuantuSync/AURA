@@ -28,12 +28,51 @@ import {
   SafetyCertificate,
   CertifiedDecision,
   DecisionStatus,
-  THEOREM_6_1_HYPOTHESES,
+  DeclaredDomainBound,
+  CERTIFICATE_ASSUMPTIONS,
 } from './types';
 import { Interval } from '../intervals/types';
+import { FrameOfDiscernment } from '../dempster-shafer/types';
 
 const fmt = (x: number): string => (Number.isFinite(x) ? x.toFixed(2) : String(x));
 const fmtInterval = (iv: Interval): string => `[${fmt(iv.lower)}, ${fmt(iv.upper)}]`;
+
+/**
+ * Extrae los bounds de dominio declarados de los marcos de entrada, para
+ * adjuntarlos al certificado como testigo material de H0.
+ *
+ * @see DeclaredDomainBound
+ */
+export function domainBoundsOf(
+  frames: readonly FrameOfDiscernment[]
+): DeclaredDomainBound[] {
+  return frames.map((f) => ({
+    variable: f.variable,
+    unit: f.unit,
+    domainBound: f.domainBound,
+  }));
+}
+
+/**
+ * Frase de H0 para la justificación textual del certificado.
+ *
+ * Con la lista vacía NO se calla: dice explícitamente que no hay marcos
+ * declarados y que H0 queda sin auditar. El silencio es justamente el fallo que
+ * esta capa corrige (docs/ERRATA.md §5).
+ */
+function describeDomainBounds(bounds: readonly DeclaredDomainBound[]): string {
+  if (bounds.length === 0) {
+    return (
+      `H0 (soporte acotado) NO ES AUDITABLE en este certificado: no se declaró ` +
+      `ningún marco de entrada, luego no consta qué límite físico se asumió para ` +
+      `las variables que produjeron el reachable set.`
+    );
+  }
+  const list = bounds
+    .map((b) => `${b.variable} ≤ ${fmt(b.domainBound)} ${b.unit}`)
+    .join('; ');
+  return `Bajo H0 se asume soporte acotado de las entradas: ${list}.`;
+}
 
 /**
  * Certifica formalmente la seguridad del reachable set contra la spec.
@@ -53,12 +92,24 @@ const fmtInterval = (iv: Interval): string => `[${fmt(iv.lower)}, ${fmt(iv.upper
  * cerrada, luego tocar la frontera desde dentro es seguro y rebasarla en
  * cualquier cantidad positiva no lo es.
  *
+ * HIPÓTESIS H0. El certificado registra los `domainBounds` de las variables de
+ * entrada (docs/ERRATA.md §5). Son obligatorios y no tienen valor por defecto:
+ * el reachable set procede de un conjunto credal, y ese conjunto credal solo
+ * puede contener la realidad dentro del dominio que su marco declara. Emitir el
+ * certificado sin registrar esos bounds volvería a hacer implícita la hipótesis
+ * que esta capa existe para explicitar. Pasar `[]` es legítimo cuando no hay
+ * marcos aguas arriba (el reachable set se da directamente), y entonces la
+ * justificación declara que H0 no es auditable.
+ *
  * @param reachableInterval - Intervalo del reachable set para la variable
  * @param spec - Especificación de seguridad
+ * @param domainBounds - Bounds de dominio declarados de las variables de
+ *   entrada (H0). Usa {@link domainBoundsOf} para derivarlos de los marcos.
  */
 export function certifySafety(
   reachableInterval: Interval,
-  spec: SafetySpec
+  spec: SafetySpec,
+  domainBounds: readonly DeclaredDomainBound[]
 ): SafetyCertificate {
   const { safeRegion } = spec;
 
@@ -83,6 +134,8 @@ export function certifySafety(
 
   const reach = fmtInterval(reachableInterval);
   const safe = fmtInterval(safeRegion);
+  const h0 = describeDomainBounds(domainBounds);
+  const bounds = domainBounds.map((b) => ({ ...b }));
 
   if (contained) {
     return {
@@ -97,14 +150,15 @@ export function certifySafety(
         'Teorema 5.2 (corrección de la decisión), §5.5',
         'Teorema 6.1 (soundness composicional end-to-end), §6.3',
       ],
-      assumptions: THEOREM_6_1_HYPOTHESES,
+      assumptions: CERTIFICATE_ASSUMPTIONS,
+      domainBounds: bounds,
       justification:
         `Reachable set ${reach} ⊆ región segura ${safe} para '${spec.variable}'. ` +
         `Por la soundness end-to-end (Teorema 6.1), el reachable set de la Def. 5.3 ` +
         `sobre-aproxima el conjunto de estados realmente alcanzables; como ni siquiera ` +
         `esa sobre-aproximación toca la región insegura, NINGÚN estado real puede ser ` +
         `inseguro. Certificado positivo en el sentido de la Def. 5.5, válido bajo ` +
-        `H1–H3 del Teorema 6.1 (ver \`assumptions\`).`,
+        `H0 (soporte acotado) y H1–H3 del Teorema 6.1 (ver \`assumptions\`). ${h0}`,
     };
   }
 
@@ -119,7 +173,8 @@ export function certifySafety(
       'Teorema 5.2 (corrección de la decisión), §5.5',
       'Teorema 6.1 (soundness composicional end-to-end), §6.3',
     ],
-    assumptions: THEOREM_6_1_HYPOTHESES,
+    assumptions: CERTIFICATE_ASSUMPTIONS,
+    domainBounds: bounds,
     justification:
       `Reachable set ${reach} interseca la región insegura en ` +
       `${witness.map(fmtInterval).join(' ∪ ')} para '${spec.variable}' ` +
@@ -127,7 +182,8 @@ export function certifySafety(
       `especificación, luego la Def. 5.5 exige disparar la decisión protectora. ` +
       `IMPORTANTE: por ser el reachable set una sobre-aproximación, este veredicto ` +
       `NO demuestra que exista un estado real inseguro — demuestra que no puede ` +
-      `descartarse. Válido bajo H1–H3 del Teorema 6.1 (ver \`assumptions\`).`,
+      `descartarse. Válido bajo H0 (soporte acotado) y H1–H3 del Teorema 6.1 ` +
+      `(ver \`assumptions\`). ${h0}`,
   };
 }
 
@@ -182,12 +238,15 @@ export function severityScore(reachableInterval: Interval, spec: SafetySpec): nu
  *
  * @param reachableInterval - Intervalo del reachable set para la variable
  * @param spec - Especificación de seguridad
+ * @param domainBounds - Bounds de dominio declarados de las variables de
+ *   entrada (H0); se propagan tal cual al certificado. Ver {@link certifySafety}.
  */
 export function synthesizeDecision(
   reachableInterval: Interval,
-  spec: SafetySpec
+  spec: SafetySpec,
+  domainBounds: readonly DeclaredDomainBound[]
 ): CertifiedDecision {
-  const certificate = certifySafety(reachableInterval, spec);
+  const certificate = certifySafety(reachableInterval, spec, domainBounds);
   const severity = severityScore(reachableInterval, spec);
 
   const status: DecisionStatus =

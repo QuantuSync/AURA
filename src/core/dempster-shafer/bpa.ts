@@ -57,11 +57,18 @@ export function createBPAFromGaussian(
   for (let j = 0; j < n; j++) {
     const h = frame.hypotheses[j];
     const lower = h.lower;
-    const upper = h.upper;
 
-    // Probabilidad de que X caiga en [lower, upper) bajo N(value, stddev²)
-    const pLower = normalCDF(lower, value, stddev);
-    const pUpper = upper === Infinity ? 1 : normalCDF(upper, value, stddev);
+    // Probabilidad de que X caiga en [lower, upper) bajo N(value, stddev²).
+    //
+    // La primera y la última hipótesis absorben las colas de la gaussiana que
+    // caen fuera del dominio del marco [a₀, domainBound]. Es la lectura
+    // condicionada a H0 (soporte acotado, ver `FrameOfDiscernment.domainBound`):
+    // bajo H0 el valor real está dentro del dominio, luego toda la masa
+    // gaussiana por encima de `domainBound` es un artefacto del modelo de
+    // medición y pertenece a la hipótesis de cola. Asignarla ahí es lo
+    // conservador: mantiene Σ m = 1 y no rebaja la plausibilidad del extremo.
+    const pLower = j === 0 ? 0 : normalCDF(lower, value, stddev);
+    const pUpper = j === n - 1 ? 1 : normalCDF(h.upper, value, stddev);
     const mass = (1 - failureRate) * (pUpper - pLower);
 
     if (mass > 1e-10) {

@@ -14,12 +14,57 @@ export interface Hypothesis {
   upper: number;        // Límite superior (exclusivo, excepto el último)
 }
 
-/** Marco de discernimiento Θ: conjunto finito, exhaustivo y mutuamente
- *  excluyente de hipótesis — Definición 3.1, §3.2 */
+/**
+ * Marco de discernimiento Θ: conjunto finito, exhaustivo y mutuamente
+ * excluyente de hipótesis — Definición 3.1, §3.2.
+ *
+ * SOPORTE ACOTADO DECLARADO (H0) — EXTENSIÓN al paper, ver docs/ERRATA.md §5.
+ *
+ * El marco de la Definición 3.1 cierra su exhaustividad con una cola ABIERTA
+ * ([60, ∞) mm/h para precipitación). Esa cola hace que el lifting continuo de
+ * la Definición 3.9 / Ecuación (10) devuelva `+∞` en cuanto la hipótesis de
+ * cola tiene plausibilidad no nula — lo que ocurre casi siempre, porque basta
+ * con que una fuente tenga masa sobre Θ, que interseca a todas.
+ *
+ * Un bound `+∞` es formalmente correcto pero inutilizable aguas abajo (la
+ * Capa 2 propaga `+∞` y produce `NaN` en cuanto hay una resta o un producto
+ * por 0, Ec. 21-22). La iteración anterior lo resolvía TRUNCANDO dentro de
+ * `buildCredalSet` a `a_j·2` tras filtrar hipótesis con Pl > 0,01: un
+ * truncamiento arbitrario, derivado de los datos y silencioso, que rompía el
+ * Lema 6.1 y con él H1 del Teorema 6.1.
+ *
+ * La corrección invierte la responsabilidad: el soporte acotado deja de ser un
+ * artefacto implícito del cálculo y pasa a ser una **hipótesis declarada del
+ * sistema** ({@link FrameOfDiscernment.domainBound}) que viaja en el
+ * certificado como H0. El código ya no adivina dónde termina la cola: exige
+ * que quien define el marco lo declare, y arrastra esa declaración hasta el
+ * auditor.
+ */
 export interface FrameOfDiscernment {
   variable: string;     // e.g., "precipitation", "wind_speed"
   unit: string;         // e.g., "mm/h", "km/h"
   hypotheses: Hypothesis[];
+  /**
+   * P_máx — límite superior FÍSICO declarado de la variable, en las unidades
+   * del marco. Cierra la última hipótesis: [60, ∞) pasa a [60, domainBound].
+   *
+   * OBLIGATORIO y sin valor por defecto: es una afirmación sobre el mundo, no
+   * un parámetro de cómputo, y nadie salvo quien define el marco puede
+   * emitirla. Debe ser finito y estrictamente mayor que el inicio de la última
+   * hipótesis; {@link createFrame} lo valida en construcción.
+   *
+   * SIGNIFICADO FORMAL (H0, hipótesis de soporte acotado): se afirma que el
+   * valor real de la variable NUNCA excede `domainBound`. Si esa afirmación
+   * falla, el conjunto credal no puede contener la realidad **por construcción
+   * del marco** — no es un fallo del motor, es H0 violándose. H0 es por tanto
+   * lógicamente PREVIA a H1 del Teorema 6.1: H1 (cobertura sensorial) solo
+   * puede cumplirse dentro del dominio que H0 declara.
+   *
+   * @see docs/ERRATA.md §5
+   * @see THEOREM_6_1_HYPOTHESES y HYPOTHESIS_H0_BOUNDED_SUPPORT en
+   *      src/core/decision/types.ts
+   */
+  domainBound: number;
 }
 
 /**
