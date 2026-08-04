@@ -93,15 +93,41 @@ describe('assessConflict', () => {
     expect(result.level).toBe('high');
   });
 
-  it('expone K_máx por pares y K_global por separado, y decide con el máximo', () => {
+  it('expone K_máx por pares y K_global por separado, y la traza de la regla', () => {
     const bpa1 = createBPAFromGaussian(frame, 20, 5, 0, 's1');
     const bpa2 = createBPAFromGaussian(frame, 22, 5, 0, 's2');
     const bpa3 = createBPAFromGaussian(frame, 24, 5, 0, 's3');
     const result = assessConflict([bpa1, bpa2, bpa3]);
 
+    // (P1) es una propiedad de K_global y vale bajo cualquier regla.
     expect(result.globalConflict).toBeGreaterThanOrEqual(result.maxConflict - 1e-12);
-    expect(result.decisionConflict).toBeCloseTo(
-      Math.max(result.maxConflict, result.globalConflict),
+    // La regla vigente (C1) decide con el K_máx por pares del paper y expone
+    // K_global aparte, que es lo que hace auditable la decisión.
+    expect(result.decision.rule).toBe(DEFAULT_FUSION_CONFIG.rule);
+    expect(result.decisionConflict).toBeCloseTo(result.maxConflict, 12);
+    expect(result.decision.degeneracyGuard).toBe(false);
+  });
+
+  it('cada regla decide con su propia magnitud, sobre las mismas fuentes', () => {
+    const bpas = [
+      createBPAFromGaussian(frame, 20, 5, 0, 's1'),
+      createBPAFromGaussian(frame, 22, 5, 0, 's2'),
+      createBPAFromGaussian(frame, 24, 5, 0, 's3'),
+    ];
+    const kMax = assessConflict(bpas).maxConflict;
+    const kGlobal = assessConflict(bpas).globalConflict;
+
+    const c0 = assessConflict(bpas, { ...DEFAULT_FUSION_CONFIG, rule: 'C0' });
+    expect(c0.decisionConflict).toBeCloseTo(Math.max(kMax, kGlobal), 12);
+
+    const c1 = assessConflict(bpas, { ...DEFAULT_FUSION_CONFIG, rule: 'C1' });
+    expect(c1.decisionConflict).toBeCloseTo(kMax, 12);
+    expect(c1.decision.normalizedConflict).toBeNull();
+
+    const c2 = assessConflict(bpas, { ...DEFAULT_FUSION_CONFIG, rule: 'C2' });
+    expect(c2.decision.normalizedConflict).toBeCloseTo(1 - Math.sqrt(1 - kGlobal), 12);
+    expect(c2.decisionConflict).toBeCloseTo(
+      Math.max(kMax, c2.decision.normalizedConflict!),
       12
     );
   });

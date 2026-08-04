@@ -24,7 +24,8 @@ import {
   globalConflict,
   assessConflict,
 } from '@/core/dempster-shafer/conflict';
-import { BPA, FrameOfDiscernment } from '@/core/dempster-shafer/types';
+import { CONFLICT_RULE_IDS } from '@/core/dempster-shafer/conflict-rules';
+import { BPA, DEFAULT_FUSION_CONFIG, FrameOfDiscernment } from '@/core/dempster-shafer/types';
 import { createFrame } from '@/core/dempster-shafer/frame';
 import { fcParams } from './_config';
 import { multiSourceArb } from './_generators';
@@ -304,27 +305,50 @@ describe('B3 · HALLAZGO — el conflicto secuencial NO está acotado por el con
   it('CIERRE — K_global = 1 detecta el ciclo directamente, sin depender del pairwise', () => {
     // Ninguna combinación (A₁,A₂,A₃) del producto conjunto tiene intersección
     // no vacía: las tres fuentes no comparten ninguna hipótesis. El conflicto
-    // global es exactamente 1, muy por encima de κ₂ = 0,7, y la decisión ya no
-    // se apoya en que K_máx por pares (0,75) quedara por encima del umbral.
+    // global es exactamente 1.
     expect(globalConflict([m1, m2, m3])).toBeCloseTo(1, 12);
 
-    const assessment = assessConflict([m1, m2, m3]);
-    expect(assessment.globalConflict).toBeCloseTo(1, 12);
-    expect(assessment.decisionConflict).toBeCloseTo(1, 12);
-    expect(assessment.method).toBe('envelope');
+    // Bajo LAS CUATRO reglas de decisión el caso acaba en envolvente, cada una
+    // por su vía: C0 y C2/C3 porque su K_decision supera κ₂; C1 porque, aun
+    // decidiendo con K_máx = 0,75 (que ya supera κ₂), la guardia de
+    // degeneración se dispara con K_global = 1 ≥ κ_deg.
+    for (const rule of CONFLICT_RULE_IDS) {
+      const config = { ...DEFAULT_FUSION_CONFIG, rule };
+      const assessment = assessConflict([m1, m2, m3], config);
+      expect(assessment.globalConflict).toBeCloseTo(1, 12);
+      expect(assessment.method).toBe('envelope');
 
-    const result = fuse([m1, m2, m3], [0, 0, 0]);
-    expect(result.method).toBe('envelope');
-    // Se resuelve por envolvente y NUNCA se toca la normalización 1/(1−K):
-    // la rama Dempster no se ejecuta, luego no hay conflictos secuenciales.
-    expect(result.sequentialConflicts).toBeUndefined();
-    expect(result.envelope).toBeDefined();
+      const result = fuse([m1, m2, m3], [0, 0, 0], config);
+      expect(result.method).toBe('envelope');
+      // Se resuelve por envolvente y NUNCA se toca la normalización 1/(1−K):
+      // la rama Dempster no se ejecuta, luego no hay conflictos secuenciales.
+      expect(result.sequentialConflicts).toBeUndefined();
+      expect(result.envelope).toBeDefined();
+      expect(result.degeneracyGuard).toBe(rule === 'C1' || rule === 'C3');
+    }
   });
 
-  it('CIERRE — el ciclo sigue detectándose aunque el conflicto por pares baje de κ₂', () => {
-    // Mismo ciclo, atenuado con masa sobre Θ para que TODOS los pares queden
-    // por debajo de κ₂ = 0,7. Con la Def. 3.6 literal esto entraría en la rama
-    // cautelosa o incluso en Dempster mirando solo pares; K_global lo ve.
+  /**
+   * CIERRE — el ciclo atenuado, y qué cambió al corregir `docs/ERRATA.md` §9.
+   *
+   * Mismo ciclo con masa sobre Θ, calibrado para que TODOS los pares queden
+   * por debajo de κ₂. Este caso es el que separa a las reglas, y su enunciado
+   * CAMBIÓ con la regla seleccionada. Lo que se afirmaba antes:
+   *
+   *   «K_global lo ve y manda a envolvente» — cierto SOLO bajo C0.
+   *
+   * Lo que sigue siendo cierto bajo las cuatro reglas, y es lo que el requisito
+   * innegociable exige: la rama Dempster no se alcanza, luego la normalización
+   * 1/(1−K) no llega a aplicarse y no hay degeneración posible.
+   *
+   * Que C1/C2/C3 lo clasifiquen como Nivel 2 (media cautelosa) en vez de Nivel
+   * 3 es el PRECIO declarado de la corrección, y conviene verlo escrito: un
+   * conflicto n-ario real —aquí hay desacuerdo, no dispersión de
+   * discretización— se resuelve promediando en vez de envolviendo. La media
+   * cautelosa es una combinación convexa (Prop. 3.2), sigue siendo sound y no
+   * normaliza; lo que se pierde es conservadurismo, no corrección.
+   */
+  it('CIERRE — el ciclo atenuado no llega nunca a Dempster, y C0 lo envuelve donde C1/C2/C3 promedian', () => {
     const theta = [0, 1, 2];
     const blend = (a: number, b: number): BPA['focalElements'] => [
       { indices: [a], mass: 0.4 },
@@ -344,14 +368,27 @@ describe('B3 · HALLAZGO — el conflicto secuencial NO está acotado por el con
       expect(matrix[i][j]).toBeLessThan(0.7); // por pares: conflicto "moderado"
     }
 
-    // Pero el conflicto global del ciclo sigue siendo alto y manda a envolvente.
     const kGlobal = globalConflict([n1, n2, n3]);
     expect(kGlobal).toBeGreaterThan(0.7);
-    expect(fuse([n1, n2, n3], [0, 0, 0]).method).toBe('envelope');
-
-    // Y la razón por la que importa: con la decisión por pares (media
-    // cautelosa) el caso habría pasado por una rama que no es la que el paper
-    // reserva para conflicto alto. Con K_global se clasifica como lo que es.
     expect(Math.max(matrix[0][1], matrix[0][2], matrix[1][2])).toBeLessThan(kGlobal);
+
+    // Lo innegociable, bajo las cuatro reglas: nunca Dempster.
+    for (const rule of CONFLICT_RULE_IDS) {
+      const config = { ...DEFAULT_FUSION_CONFIG, rule };
+      const result = fuse([n1, n2, n3], [0, 0, 0], config);
+      expect(result.method).not.toBe('dempster');
+      expect(result.sequentialConflicts).toBeUndefined();
+    }
+
+    // Y la diferencia entre reglas, fijada explícitamente para que un cambio
+    // futuro de la regla por defecto no la deslice sin que nadie lo note.
+    expect(fuse([n1, n2, n3], [0, 0, 0], { ...DEFAULT_FUSION_CONFIG, rule: 'C0' }).method).toBe(
+      'envelope'
+    );
+    for (const rule of ['C1', 'C2', 'C3'] as const) {
+      expect(fuse([n1, n2, n3], [0, 0, 0], { ...DEFAULT_FUSION_CONFIG, rule }).method).toBe(
+        'cautious'
+      );
+    }
   });
 });

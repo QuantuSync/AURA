@@ -20,6 +20,8 @@ import { describe, expect, it } from 'vitest';
 
 import { makeRng } from '@/lib/prng';
 import { PRECIPITATION_FRAME } from '@/lib/constants';
+import { CONFLICT_RULE_IDS } from '@/core/dempster-shafer/conflict-rules';
+import { DEFAULT_FUSION_CONFIG } from '@/core/dempster-shafer/types';
 
 import {
   contains,
@@ -96,26 +98,66 @@ describe('mundo sintético', () => {
   });
 });
 
+/**
+ * REQUISITO INNEGOCIABLE (c) del experimento pre-registrado de `docs/ERRATA.md`
+ * §9: la campaña de soundness se corre con LAS CUATRO reglas de conflicto, no
+ * solo con la seleccionada. Una regla que pierda la cobertura existencial queda
+ * descalificada por informativa que sea, y como las cuatro siguen disponibles
+ * por configuración, la que no se seleccione tampoco puede quedar rota.
+ *
+ * 3 configuraciones de mundo × 4 reglas × 2.000 mundos = 24.000 pipelines
+ * credales completos. Es el test más caro de la suite y lo vale: es el único
+ * sitio donde la soundness se comprueba sobre el motor entero y no sobre una
+ * pieza.
+ */
 describe('soundness del nivel existencial (Lema 6.1)', () => {
-  for (const [label, config] of Object.entries(CONFIGS)) {
-    it(`contiene P* en todos los mundos — ${label}`, () => {
-      const rng = makeRng(SEED);
-      const misses: { truth: number; interval: unknown; values: number[] }[] = [];
+  for (const rule of CONFLICT_RULE_IDS) {
+    const fusionConfig = { ...DEFAULT_FUSION_CONFIG, rule };
 
-      for (let i = 0; i < N; i++) {
-        const w = sampleWorld(rng, config);
-        const iv = evaluate(w).intervals['aura-existencial'];
-        if (!contains(iv, w.truth)) {
-          misses.push({ truth: w.truth, interval: iv, values: w.values });
+    for (const [label, config] of Object.entries(CONFIGS)) {
+      it(`contiene P* en todos los mundos — regla ${rule}, ${label}`, () => {
+        const rng = makeRng(SEED);
+        const misses: { truth: number; interval: unknown; values: number[] }[] = [];
+
+        for (let i = 0; i < N; i++) {
+          const w = sampleWorld(rng, config);
+          const iv = evaluate(w, fusionConfig).intervals['aura-existencial'];
+          if (!contains(iv, w.truth)) {
+            misses.push({ truth: w.truth, interval: iv, values: w.values });
+          }
         }
-      }
 
-      // El mensaje lleva el testigo: un fallo aquí exige depurar el Puente 1→2,
-      // no reejecutar con otra semilla.
-      expect(misses, `testigos de violación de la Ec. (10): ${JSON.stringify(misses.slice(0, 3))}`)
-        .toHaveLength(0);
-    });
+        // El mensaje lleva el testigo: un fallo aquí exige depurar el Puente
+        // 1→2, no reejecutar con otra semilla.
+        expect(
+          misses,
+          `regla ${rule} · testigos de violación de la Ec. (10): ${JSON.stringify(misses.slice(0, 3))}`
+        ).toHaveLength(0);
+      });
+    }
   }
+
+  it('la banda de evidencia nunca excede al nivel existencial, bajo ninguna regla', () => {
+    // La banda es el nivel informativo y no lleva garantía, pero sí lleva esta
+    // relación estructural: es un subconjunto del hull credal. Si una regla la
+    // rompiera, los números de informatividad del experimento dejarían de ser
+    // comparables entre reglas.
+    for (const rule of CONFLICT_RULE_IDS) {
+      const fusionConfig = { ...DEFAULT_FUSION_CONFIG, rule };
+      const rng = makeRng(SEED);
+      for (let i = 0; i < 500; i++) {
+        const w = sampleWorld(rng, DEFAULT_WORLD_CONFIG);
+        const ev = evaluate(w, fusionConfig);
+        expect(ev.intervals['aura-banda-95'].lower).toBeGreaterThanOrEqual(
+          ev.intervals['aura-existencial'].lower
+        );
+        expect(ev.intervals['aura-banda-95'].upper).toBeLessThanOrEqual(
+          ev.intervals['aura-existencial'].upper
+        );
+        expect(ev.aura.rule).toBe(rule);
+      }
+    }
+  });
 });
 
 describe('estimadores comparados', () => {

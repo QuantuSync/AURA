@@ -84,7 +84,13 @@ describe('lluvia ligera concordante — números fijados', () => {
 
   it('la fusión es por Dempster con conflicto bajo', () => {
     expect(r.fusion.method).toBe('dempster');
-    expect(r.fusion.decisionConflict).toBeCloseTo(0.184412, 5);
+    // K_decision de la regla vigente (C1) es el K_máx por pares de la Def. 3.5;
+    // K_global se sigue reportando aparte y vale 0,184412. Ver ERRATA §9.
+    expect(r.fusion.rule).toBe('C1');
+    expect(r.fusion.decisionConflict).toBeCloseTo(0.157632, 5);
+    expect(r.fusion.maxConflict).toBeCloseTo(0.157632, 5);
+    expect(r.fusion.globalConflict).toBeCloseTo(0.184412, 5);
+    expect(r.fusion.degeneracyGuard).toBe(false);
   });
 
   it('la BPA fusionada tiene 4 elementos focales y ~99,9 % de masa sobre *ligera*', () => {
@@ -100,7 +106,16 @@ describe('lluvia ligera concordante — números fijados', () => {
       (e) => e.interval.lower === 0 && e.interval.upper === PRECIPITATION_DOMAIN_BOUND
     )!;
     const prodDeltas = DEMO_SOURCES_LIGHT_RAIN.reduce((p, s) => p * s.failureRate, 1);
-    expect(theta.mass).toBeCloseTo(prodDeltas / (1 - r.fusion.decisionConflict), 9);
+    // El denominador es 1 − K_GLOBAL, no 1 − K_decision. La reducción
+    // secuencial normaliza una vez por paso, y por la identidad (I2) de
+    // `conflict-rules.ts` el producto de esos (1 − K^(k)) es exactamente
+    // 1 − K_global. Hasta ERRATA §9 los dos números coincidían porque la regla
+    // C0 decidía con K_global; con C1 ya no, y la fórmula correcta se ve.
+    expect(theta.mass).toBeCloseTo(prodDeltas / (1 - r.fusion.globalConflict), 9);
+    expect(r.fusion.sequentialConflicts!.reduce((p, k) => p * (1 - k), 1)).toBeCloseTo(
+      1 - r.fusion.globalConflict,
+      9
+    );
     expect(theta.mass).toBeCloseTo(1.4713e-4, 8);
   });
 
