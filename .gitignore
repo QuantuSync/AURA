@@ -20,6 +20,9 @@
 # production
 /build
 
+# artefacto de verificacion (npm run package:zenodo)
+/dist
+
 # misc
 .DS_Store
 *.pem

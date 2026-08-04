@@ -1,6 +1,6 @@
 {
   "name": "aura-v2",
-  "version": "2.0.0-rc2",
+  "version": "2.0.0",
   "private": true,
   "license": "MIT",
   "engines": {
@@ -45,7 +45,8 @@
     "exp:verify": "npm run exp:coverage:verify && npm run exp:h1:verify && npm run exp:virga:verify",
     "snapshots:check": "tsx scripts/verify-snapshots.ts",
     "snapshots:update": "tsx scripts/verify-snapshots.ts --update",
-    "verify": "tsx scripts/verify.ts"
+    "verify": "tsx scripts/verify.ts",
+    "package:zenodo": "tsx scripts/package-zenodo.ts"
   },
   "dependencies": {
     "@types/d3": "^7.4.3",

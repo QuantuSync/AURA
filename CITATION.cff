@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "Si usas este software, cítalo mediante estos metadatos."
+message: "Si usas este software, cítalo mediante estos metadatos. Si citas los resultados, cita el paper (ver preferred-citation)."
 title: "AURA v2 — Autonomous Uncertainty-Aware Resilience Architecture"
 abstract: >-
   Motor de fusión de datos con cuantificación formal de incertidumbre para
@@ -10,7 +10,7 @@ abstract: >-
   demostrados bajo las hipótesis H0-H3, obtenidos por propagación credal
   elemento focal a elemento focal.
 type: software
-version: 2.0.0-rc2
+version: 2.0.0
 date-released: "2026-08-04"
 license: MIT
 repository-code: "https://github.com/QuantuSync/AURA"
@@ -28,3 +28,11 @@ keywords:
   - "uncertainty quantification"
   - "structural causal models"
   - "critical infrastructure"
+preferred-citation:
+  type: article
+  title: "AURA: An Uncertainty-Aware Architecture for Verifiable Decisions in Critical Infrastructure"
+  year: 2026
+  authors:
+    - family-names: "Alaniz Pintos"
+      given-names: "Lucas"
+      affiliation: "INECO"

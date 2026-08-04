@@ -23,17 +23,28 @@ El pipeline completo del caso de uso de §7 está en `src/core/pipeline/`, y su
 ejecución reproducible sobre los cuatro escenarios versionados en
 `scripts/reproduce.ts` (ver [Reproducibilidad](#reproducibilidad)).
 
-Referencia teórica normativa: **`papers/AURA_v2.pdf`**. Toda cita a
-definiciones, teoremas y ecuaciones en el código y en este README se refiere a
-ese documento.
+Referencia teórica normativa: **`papers/AURA_v2.pdf`**, el documento interno de
+fundamentos. Toda cita a definiciones, teoremas y ecuaciones en el código y en
+este README se refiere a ese documento.
 
-Las discrepancias detectadas entre el paper y la implementación —erratas,
-extensiones y salvedades— están registradas en **[`docs/ERRATA.md`](docs/ERRATA.md)**,
-con su estado en el código y la corrección propuesta para la v3.
+> ⚠ `papers/` es contenido **del repositorio**, no del artefacto de
+> verificación. El zip publicado en Zenodo
+> (`aura-verification-artifact-2.0.0.zip`) excluye `papers/` entero: verifica al
+> paper v3, que se publica como PDF independiente en el mismo registro. Ver
+> `VERIFYING.md` en la raíz del zip.
 
-> `papers/AURA_final.pdf` es la versión 1, anterior y superada. No es
-> especificación: contiene afirmaciones no implementadas. Consultar solo por
-> contexto histórico.
+Las discrepancias detectadas entre el documento de fundamentos y la
+implementación —erratas, extensiones y salvedades— están registradas en
+**[`docs/ERRATA.md`](docs/ERRATA.md)**, con su estado en el código y la
+corrección propuesta para la v3.
+
+## Project history
+
+La versión 1 de este trabajo describía resultados que no se habían realizado, y
+queda **sustituida** por el paper v3 publicado en el mismo registro de Zenodo
+que este artefacto de verificación. Ninguna afirmación de la v1 debe citarse:
+lo que este repositorio sostiene es exactamente lo que sus comandos regeneran, y
+el mapa de cada cifra a su comando está en `VERIFYING.md`.
 
 ## Stack
 
@@ -72,6 +83,17 @@ FC_SEED=20260804 FC_NUM_RUNS=50000 npm run test:properties
 
 Todo resultado que pueda aparecer en el paper es regenerable con un comando, sin
 red y sin reloj.
+
+> **Artefacto de verificación.** `npm run package:zenodo` construye
+> `dist/aura-verification-artifact-<version>.zip` desde `git archive HEAD` —nunca
+> desde el working tree—, le añade `VERIFYING.md` (el mapa cifra → comando →
+> fichero de salida) y `SHA256SUMS.txt`, y **valida el zip extrayéndolo fuera del
+> repositorio** para ejecutar allí `npm ci` y `npm run verify` completos. Si esa
+> validación falla, el zip no se deja en `dist/`. El artefacto excluye `papers/`
+> y `.github/`: son contenido **del repositorio**, no del artefacto, y ninguno
+> interviene en regenerar una cifra. La insignia de CI de arriba apunta a GitHub
+> Actions, que por el mismo motivo tampoco viaja en el zip — el equivalente local
+> es `npm run verify`.
 
 ```bash
 npm ci           # instalación exacta desde package-lock.json
