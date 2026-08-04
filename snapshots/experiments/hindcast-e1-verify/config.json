@@ -1,0 +1,77 @@
+{
+  "description": "Hindcast ILUSTRATIVO del pipeline completo, hora a hora, sobre E1 · DANA Valencia 2024. Tres reanálisis públicos sin API key, regla de conflicto del sistema, DAG de la demo y los dos baselines clásicos. NO es una validación operativa.",
+  "experiment": "hindcast-e1-verify",
+  "parameters": {
+    "characterization": [
+      {
+        "cellSizeKm": 25,
+        "failureRate": 0.02,
+        "precipitationStddev": 5,
+        "sourceId": "era5",
+        "temperatureStddev": 1.58113883008
+      },
+      {
+        "cellSizeKm": 9,
+        "failureRate": 0.02,
+        "precipitationStddev": 1.8,
+        "sourceId": "ecmwf-ifs",
+        "temperatureStddev": 0.948683298051
+      },
+      {
+        "cellSizeKm": 50,
+        "failureRate": 0.02,
+        "precipitationStddev": 10,
+        "sourceId": "nasa-power",
+        "temperatureStddev": 2.2360679775
+      }
+    ],
+    "conflictRule": "C1",
+    "dag": {
+      "drainageCapacity": {
+        "lower": 5,
+        "upper": 5
+      },
+      "horizon": {
+        "lower": 2,
+        "upper": 2
+      },
+      "initialLevel": {
+        "lower": 0,
+        "upper": 0
+      },
+      "modelErrorBound": 2,
+      "nodes": [
+        "P",
+        "h"
+      ]
+    },
+    "event": {
+      "endDate": "2024-10-31",
+      "id": "e1-dana-valencia-2024",
+      "label": "E1 · DANA Valencia 2024",
+      "latitude": 39.42,
+      "longitude": -0.72,
+      "startDate": "2024-10-28"
+    },
+    "evidenceBandMass": 0.95,
+    "frame": {
+      "domainBound": 500,
+      "unit": "mm/h",
+      "variable": "precipitation"
+    },
+    "hCrit": 25,
+    "kappa1": 0.3,
+    "kappa2": 0.7,
+    "kappaDegeneracy": 0.95,
+    "network": "NINGUNA. Los datos salen de fixtures/hindcast/, capturados una vez con `npm run hindcast:capture`.",
+    "pCritical": 0.05,
+    "peakHours": 24,
+    "profile": "verify",
+    "randomness": "NINGUNA. El hindcast no consume ctx.rng: la entrada son series fijas de fixtures y todo el pipeline es determinista. La semilla es obligatoria por el contrato del runner, y no influye en ningún número de esta salida.",
+    "safeRegion": {
+      "lower": "-Infinity",
+      "upper": 25
+    }
+  },
+  "seed": 20260804
+}

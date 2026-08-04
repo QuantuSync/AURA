@@ -1,0 +1,552 @@
+{
+  "analysis": {
+    "baselines": {
+      "auraBand95": {
+        "distinctWidths": 3,
+        "maxWidthMmH": 500,
+        "meanWidthMmH": 141.25,
+        "minWidthMmH": 15
+      },
+      "kalman": {
+        "distinctWidths": 1,
+        "hoursExcludingSomeSource": 15,
+        "widthMmH": 6.54569112387
+      },
+      "note": "`distinctWidths` = 1 significa que la anchura del intervalo es la MISMA en todas las horas del evento: depende solo de σ y δ, no de lo que las fuentes hayan medido. `hoursExcludingSomeSource` cuenta las horas en que el intervalo del baseline deja FUERA a alguna de las tres fuentes que dice resumir.",
+      "weightedMean": {
+        "distinctWidths": 1,
+        "hoursExcludingSomeSource": 1,
+        "widthMmH": 14.7970985745
+      }
+    },
+    "conflictProfile": {
+      "decisionConflict": {
+        "max": 0.941292239021,
+        "median": 0.638320886238,
+        "min": 0.387637689561,
+        "p25": 0.452843012031,
+        "p75": 0.70533279333,
+        "p95": 0.714822785401
+      },
+      "degeneracyGuardHours": 1,
+      "floorAtZeroPrecipitation": 0.365074804778,
+      "floorExceedsKappa1": true,
+      "globalConflict": {
+        "max": 0.983007786961,
+        "median": 0.811012012592,
+        "min": 0.463190026273,
+        "p25": 0.557215642178,
+        "p75": 0.851543681163,
+        "p95": 0.897824370445
+      },
+      "hoursAllDry": 0,
+      "hoursWithAnyPrecipitation": 24,
+      "kappa1": 0.3,
+      "maxConflict": {
+        "max": 0.941292239021,
+        "median": 0.638320886238,
+        "min": 0.387637689561,
+        "p25": 0.452843012031,
+        "p75": 0.70533279333,
+        "p95": 0.714822785401
+      },
+      "minObservedMaxConflictAboveFloor": 0.0225628847832,
+      "note": "Las tres fuentes son productos de asimilación que comparten observaciones, luego este perfil mide diferencias de resolución y de física de convección, NO evidencia independiente en contradicción. Se esperaba conflicto bajo antes de ejecutar nada. Léase SIEMPRE contra `structuralFloor`.",
+      "structuralFloor": [
+        {
+          "globalConflict": 0.411381170017,
+          "maxConflict": 0.365074804778,
+          "method": "cautious",
+          "valueMmH": 0
+        },
+        {
+          "globalConflict": 0.444498351504,
+          "maxConflict": 0.388144413408,
+          "method": "cautious",
+          "valueMmH": 0.5
+        },
+        {
+          "globalConflict": 0.479860312199,
+          "maxConflict": 0.411064076571,
+          "method": "cautious",
+          "valueMmH": 1
+        },
+        {
+          "globalConflict": 0.558268202746,
+          "maxConflict": 0.455423682827,
+          "method": "cautious",
+          "valueMmH": 2
+        },
+        {
+          "globalConflict": 0.779040222704,
+          "maxConflict": 0.560513583776,
+          "method": "cautious",
+          "valueMmH": 5
+        },
+        {
+          "globalConflict": 0.726637969032,
+          "maxConflict": 0.618782571442,
+          "method": "cautious",
+          "valueMmH": 10
+        },
+        {
+          "globalConflict": 0.554250885,
+          "maxConflict": 0.501446463368,
+          "method": "cautious",
+          "valueMmH": 20
+        },
+        {
+          "globalConflict": 0.195987594328,
+          "maxConflict": 0.188800727736,
+          "method": "dempster",
+          "valueMmH": 40
+        }
+      ],
+      "structuralFloorNote": "K_máx y K_global con las TRES FUENTES MIDIENDO EXACTAMENTE LO MISMO. Es el conflicto que el sistema ve con acuerdo perfecto, y por tanto un SUELO que ningún dato puede bajar: procede de que las tres BPAs reparten la misma medición de forma distinta sobre las hipótesis del marco, porque sus σ declaradas son 1,8 / 5,0 / 10,0 mm/h. Compárese con `maxConflict.min` observado: si coinciden, el mínimo del evento no mide desacuerdo entre reanálisis, mide discretización. `floorExceedsKappa1` es la consecuencia dura: si el suelo ya supera κ₁, la regla de Dempster es INALCANZABLE en ese régimen por mucho que las fuentes concuerden."
+    },
+    "escalation": {
+      "criticalHours": 14,
+      "firstCriticalAtWindowStart": false,
+      "firstCriticalIso": "2024-10-29T07:00Z",
+      "firstCriticalPlUpper": 0.0776760913092,
+      "hoursFromFirstCriticalToSourcePeak": 10,
+      "lastCriticalIso": "2024-10-29T22:00Z",
+      "maxBelLower": 0.000765760628499,
+      "maxPlUpper": 0.963034272129,
+      "note": "hoursFromFirstCriticalToSourcePeak > 0 significa que plUpper cruzó p_crít ANTES del pico de precipitación de las fuentes, y cuántas horas antes. Es una observación sobre la SERIE, no una afirmación de anticipación operativa: el pipeline ve cada hora aislada y sin ninguna información del futuro.",
+      "pCritical": 0.05,
+      "plUpperAtSourcePeak": 0.963034272129,
+      "safeHours": 0,
+      "warningHours": 10
+    },
+    "fusionDuringPeak": {
+      "counts": {
+        "cautious": 8,
+        "dempster": 0,
+        "envelope": 5
+      },
+      "hours": 13,
+      "shares": {
+        "cautious": 0.615384615385,
+        "dempster": 0,
+        "envelope": 0.384615384615
+      },
+      "wholeEvent": {
+        "counts": {
+          "cautious": 18,
+          "dempster": 0,
+          "envelope": 6
+        },
+        "hours": 24,
+        "shares": {
+          "cautious": 0.75,
+          "dempster": 0,
+          "envelope": 0.25
+        }
+      },
+      "window": "±6 h alrededor de 2024-10-29T17:00Z"
+    },
+    "hours": 24,
+    "peak": {
+      "byFusedPignistic": {
+        "iso": "2024-10-29T17:00Z",
+        "pignisticMmH": 69.3316765494
+      },
+      "byMeanOfSources": {
+        "iso": "2024-10-29T17:00Z",
+        "meanMmH": 7.485
+      },
+      "bySource": [
+        {
+          "iso": "2024-10-29T19:00Z",
+          "sourceId": "era5",
+          "valueMmH": 10.4
+        },
+        {
+          "iso": "2024-10-29T17:00Z",
+          "sourceId": "ecmwf-ifs",
+          "valueMmH": 18.2
+        },
+        {
+          "iso": "2024-10-29T12:00Z",
+          "sourceId": "nasa-power",
+          "valueMmH": 1.72208333333
+        }
+      ],
+      "note": "El pico «de las fuentes» es el de la media de las tres, y es la referencia contra la que se mide el escalado. Los picos por fuente se dan aparte porque no coinciden entre sí: la resolución de cada producto decide cuándo y cuánto ve."
+    },
+    "temperature": {
+      "fractionAllSourcesBelowZero": 0,
+      "hoursAllSourcesBelowZero": 0,
+      "maxC": 18.9,
+      "meanC": 17.0522222222,
+      "minC": 14.4,
+      "note": "La temperatura se captura y se reporta, pero NO entra en el DAG de la demo: la Ec. (34) solo consume precipitación. Está aquí para poder afirmar en qué régimen físico ocurrió cada evento."
+    }
+  },
+  "caveat": null,
+  "data": {
+    "excludedHours": [],
+    "excludedHoursPolicy": "Una hora entra solo si las TRES fuentes tienen precipitación y temperatura válidas. No se imputa: imputar inventaría una tercera medición concordante, bajaría el conflicto y estrecharía el conjunto credal — error en la dirección NO conservadora y además invisible.",
+    "gridPoints": [
+      {
+        "elevationM": 352,
+        "latitude": 39.5,
+        "longitude": -0.75,
+        "sourceId": "era5"
+      },
+      {
+        "elevationM": 352,
+        "latitude": 39.40246,
+        "longitude": -0.7458496,
+        "sourceId": "ecmwf-ifs"
+      },
+      {
+        "elevationM": 388.86,
+        "latitude": 39.42,
+        "longitude": -0.72,
+        "sourceId": "nasa-power"
+      }
+    ],
+    "gridPointsNote": "Punto de malla que devolvió cada proveedor para las MISMAS coordenadas pedidas. Las diferencias entre ellos son un efecto directo de la resolución de cada producto, y parte de por qué las tres series no coinciden.",
+    "hoursAvailable": 96,
+    "hoursEvaluated": 24,
+    "perSourceHours": [
+      {
+        "hours": 96,
+        "sourceId": "era5",
+        "validHours": 96
+      },
+      {
+        "hours": 96,
+        "sourceId": "ecmwf-ifs",
+        "validHours": 96
+      },
+      {
+        "hours": 96,
+        "sourceId": "nasa-power",
+        "validHours": 96
+      }
+    ]
+  },
+  "event": {
+    "description": "DANA de Valencia, 28-31 de octubre de 2024. Punto en el interior de la provincia, en la zona de máximos del episodio.",
+    "endDate": "2024-10-31",
+    "id": "e1-dana-valencia-2024",
+    "label": "E1 · DANA Valencia 2024",
+    "point": {
+      "latitude": 39.42,
+      "longitude": -0.72,
+      "rationale": "Interior de la provincia de Valencia, en la franja donde se registraron los máximos del episodio. Las coordenadas son las EXACTAS que se enviaron a las tres APIs; cada proveedor las ajusta al centro de su propia celda, y el punto de malla resultante de cada uno queda registrado en `gridPoint` dentro de este manifest."
+    },
+    "startDate": "2024-10-28"
+  },
+  "keyHours": [
+    {
+      "K_decision": 0.941292239021,
+      "K_global": 0.983007786961,
+      "K_max": 0.941292239021,
+      "band95_lower": 0,
+      "band95_upper": 500,
+      "band95_width": 500,
+      "belLower": 0,
+      "certificate": "unsafe-possible",
+      "decision": "critical",
+      "fused_pignistic": 69.3316765494,
+      "guard": 1,
+      "h_reachable_lower": -12,
+      "h_reachable_upper": 992,
+      "iso": "2024-10-29T17:00Z",
+      "kalman_lower": 12.7510287926,
+      "kalman_upper": 19.2967199165,
+      "method": "envelope",
+      "p_hull_lower": 0,
+      "p_hull_upper": 500,
+      "plUpper": 0.963034272129,
+      "prec_ecmwf_ifs": 18.2,
+      "prec_era5": 2.9,
+      "prec_nasa_power": 1.355,
+      "temp_ecmwf_ifs": 15.7,
+      "temp_era5": 17.8,
+      "temp_nasa_power": 18.23,
+      "wmean_lower": 0.0864507127711,
+      "wmean_upper": 14.8835492872
+    },
+    {
+      "K_decision": 0.708436165214,
+      "K_global": 0.822496984447,
+      "K_max": 0.708436165214,
+      "band95_lower": 0,
+      "band95_upper": 500,
+      "band95_width": 500,
+      "belLower": 0,
+      "certificate": "unsafe-possible",
+      "decision": "critical",
+      "fused_pignistic": 55.7650857752,
+      "guard": 0,
+      "h_reachable_lower": -12,
+      "h_reachable_upper": 992,
+      "iso": "2024-10-29T09:00Z",
+      "kalman_lower": 5.92426201121,
+      "kalman_upper": 12.4699531351,
+      "method": "envelope",
+      "p_hull_lower": 0,
+      "p_hull_upper": 500,
+      "plUpper": 0.739947243911,
+      "prec_ecmwf_ifs": 9.7,
+      "prec_era5": 7.4,
+      "prec_nasa_power": 0.864166666667,
+      "temp_ecmwf_ifs": 14.7,
+      "temp_era5": 16.5,
+      "temp_nasa_power": 17.75,
+      "wmean_lower": -1.41049373167,
+      "wmean_upper": 13.3866048428
+    },
+    {
+      "K_decision": 0.706776636449,
+      "K_global": 0.862512161527,
+      "K_max": 0.706776636449,
+      "band95_lower": 0,
+      "band95_upper": 500,
+      "band95_width": 500,
+      "belLower": 0,
+      "certificate": "unsafe-possible",
+      "decision": "critical",
+      "fused_pignistic": 55.6697878833,
+      "guard": 0,
+      "h_reachable_lower": -12,
+      "h_reachable_upper": 992,
+      "iso": "2024-10-29T22:00Z",
+      "kalman_lower": 5.71183343978,
+      "kalman_upper": 12.2575245637,
+      "method": "envelope",
+      "p_hull_lower": 0,
+      "p_hull_upper": 500,
+      "plUpper": 0.738576063337,
+      "prec_ecmwf_ifs": 9.8,
+      "prec_era5": 4.7,
+      "prec_nasa_power": 0.959166666667,
+      "temp_ecmwf_ifs": 16.6,
+      "temp_era5": 18.8,
+      "temp_nasa_power": 18.2,
+      "wmean_lower": -2.24549373167,
+      "wmean_upper": 12.5516048428
+    },
+    {
+      "K_decision": 0.706635553646,
+      "K_global": 0.871329725415,
+      "K_max": 0.706635553646,
+      "band95_lower": 0,
+      "band95_upper": 500,
+      "band95_width": 500,
+      "belLower": 0,
+      "certificate": "unsafe-possible",
+      "decision": "critical",
+      "fused_pignistic": 55.6497114177,
+      "guard": 0,
+      "h_reachable_lower": -12,
+      "h_reachable_upper": 992,
+      "iso": "2024-10-29T21:00Z",
+      "kalman_lower": 5.56977664116,
+      "kalman_upper": 12.115467765,
+      "method": "envelope",
+      "p_hull_lower": 0,
+      "p_hull_upper": 500,
+      "plUpper": 0.738086367177,
+      "prec_ecmwf_ifs": 9.7,
+      "prec_era5": 4.2,
+      "prec_nasa_power": 0.950833333333,
+      "temp_ecmwf_ifs": 16.6,
+      "temp_era5": 18.6,
+      "temp_nasa_power": 18.2,
+      "wmean_lower": -2.44827150945,
+      "wmean_upper": 12.348827065
+    },
+    {
+      "K_decision": 0.70533279333,
+      "K_global": 0.811012012592,
+      "K_max": 0.70533279333,
+      "band95_lower": 0,
+      "band95_upper": 500,
+      "band95_width": 500,
+      "belLower": 0,
+      "certificate": "unsafe-possible",
+      "decision": "critical",
+      "fused_pignistic": 55.0905214851,
+      "guard": 0,
+      "h_reachable_lower": -12,
+      "h_reachable_upper": 992,
+      "iso": "2024-10-29T19:00Z",
+      "kalman_lower": 5.48146123669,
+      "kalman_upper": 12.0271523606,
+      "method": "envelope",
+      "p_hull_lower": 0,
+      "p_hull_upper": 500,
+      "plUpper": 0.729550904342,
+      "prec_ecmwf_ifs": 8.8,
+      "prec_era5": 10.4,
+      "prec_nasa_power": 0.76125,
+      "temp_ecmwf_ifs": 16.9,
+      "temp_era5": 18.6,
+      "temp_nasa_power": 18.26,
+      "wmean_lower": -0.744799287229,
+      "wmean_upper": 14.0522992872
+    }
+  ],
+  "keyHoursBySourceMean": [
+    {
+      "K_decision": 0.941292239021,
+      "K_global": 0.983007786961,
+      "K_max": 0.941292239021,
+      "band95_lower": 0,
+      "band95_upper": 500,
+      "band95_width": 500,
+      "belLower": 0,
+      "certificate": "unsafe-possible",
+      "decision": "critical",
+      "fused_pignistic": 69.3316765494,
+      "guard": 1,
+      "h_reachable_lower": -12,
+      "h_reachable_upper": 992,
+      "iso": "2024-10-29T17:00Z",
+      "kalman_lower": 12.7510287926,
+      "kalman_upper": 19.2967199165,
+      "method": "envelope",
+      "p_hull_lower": 0,
+      "p_hull_upper": 500,
+      "plUpper": 0.963034272129,
+      "prec_ecmwf_ifs": 18.2,
+      "prec_era5": 2.9,
+      "prec_nasa_power": 1.355,
+      "temp_ecmwf_ifs": 15.7,
+      "temp_era5": 17.8,
+      "temp_nasa_power": 18.23,
+      "wmean_lower": 0.0864507127711,
+      "wmean_upper": 14.8835492872
+    },
+    {
+      "K_decision": 0.70533279333,
+      "K_global": 0.811012012592,
+      "K_max": 0.70533279333,
+      "band95_lower": 0,
+      "band95_upper": 500,
+      "band95_width": 500,
+      "belLower": 0,
+      "certificate": "unsafe-possible",
+      "decision": "critical",
+      "fused_pignistic": 55.0905214851,
+      "guard": 0,
+      "h_reachable_lower": -12,
+      "h_reachable_upper": 992,
+      "iso": "2024-10-29T19:00Z",
+      "kalman_lower": 5.48146123669,
+      "kalman_upper": 12.0271523606,
+      "method": "envelope",
+      "p_hull_lower": 0,
+      "p_hull_upper": 500,
+      "plUpper": 0.729550904342,
+      "prec_ecmwf_ifs": 8.8,
+      "prec_era5": 10.4,
+      "prec_nasa_power": 0.76125,
+      "temp_ecmwf_ifs": 16.9,
+      "temp_era5": 18.6,
+      "temp_nasa_power": 18.26,
+      "wmean_lower": -0.744799287229,
+      "wmean_upper": 14.0522992872
+    },
+    {
+      "K_decision": 0.693829374013,
+      "K_global": 0.828492698611,
+      "K_max": 0.693829374013,
+      "band95_lower": 0,
+      "band95_upper": 30,
+      "band95_width": 30,
+      "belLower": 0.00074321371429,
+      "certificate": "unsafe-possible",
+      "decision": "critical",
+      "fused_pignistic": 9.27881653741,
+      "guard": 0,
+      "h_reachable_lower": -12,
+      "h_reachable_upper": 992,
+      "iso": "2024-10-29T11:00Z",
+      "kalman_lower": 6.16704858608,
+      "kalman_upper": 12.71273971,
+      "method": "cautious",
+      "p_hull_lower": 0,
+      "p_hull_upper": 500,
+      "plUpper": 0.064006946196,
+      "prec_ecmwf_ifs": 10.1,
+      "prec_era5": 6.3,
+      "prec_nasa_power": 1.62583333333,
+      "temp_ecmwf_ifs": 15.1,
+      "temp_era5": 17.4,
+      "temp_nasa_power": 18.43,
+      "wmean_lower": -1.38993817612,
+      "wmean_upper": 13.4071603983
+    },
+    {
+      "K_decision": 0.708436165214,
+      "K_global": 0.822496984447,
+      "K_max": 0.708436165214,
+      "band95_lower": 0,
+      "band95_upper": 500,
+      "band95_width": 500,
+      "belLower": 0,
+      "certificate": "unsafe-possible",
+      "decision": "critical",
+      "fused_pignistic": 55.7650857752,
+      "guard": 0,
+      "h_reachable_lower": -12,
+      "h_reachable_upper": 992,
+      "iso": "2024-10-29T09:00Z",
+      "kalman_lower": 5.92426201121,
+      "kalman_upper": 12.4699531351,
+      "method": "envelope",
+      "p_hull_lower": 0,
+      "p_hull_upper": 500,
+      "plUpper": 0.739947243911,
+      "prec_ecmwf_ifs": 9.7,
+      "prec_era5": 7.4,
+      "prec_nasa_power": 0.864166666667,
+      "temp_ecmwf_ifs": 14.7,
+      "temp_era5": 16.5,
+      "temp_nasa_power": 17.75,
+      "wmean_lower": -1.41049373167,
+      "wmean_upper": 13.3866048428
+    },
+    {
+      "K_decision": 0.706776636449,
+      "K_global": 0.862512161527,
+      "K_max": 0.706776636449,
+      "band95_lower": 0,
+      "band95_upper": 500,
+      "band95_width": 500,
+      "belLower": 0,
+      "certificate": "unsafe-possible",
+      "decision": "critical",
+      "fused_pignistic": 55.6697878833,
+      "guard": 0,
+      "h_reachable_lower": -12,
+      "h_reachable_upper": 992,
+      "iso": "2024-10-29T22:00Z",
+      "kalman_lower": 5.71183343978,
+      "kalman_upper": 12.2575245637,
+      "method": "envelope",
+      "p_hull_lower": 0,
+      "p_hull_upper": 500,
+      "plUpper": 0.738576063337,
+      "prec_ecmwf_ifs": 9.8,
+      "prec_era5": 4.7,
+      "prec_nasa_power": 0.959166666667,
+      "temp_ecmwf_ifs": 16.6,
+      "temp_era5": 18.8,
+      "temp_nasa_power": 18.2,
+      "wmean_lower": -2.24549373167,
+      "wmean_upper": 12.5516048428
+    }
+  ],
+  "keyHoursBySourceMeanNote": "Las mismas 5 filas, ordenadas por la MEDIA ARITMÉTICA de las tres fuentes — un criterio ciego al conflicto y a la estrategia de fusión. Es la tabla que hay que mirar para preguntar «cuándo llovió más según los productos»; `keyHours` es la que hay que mirar para preguntar «cuándo dijo más el sistema».",
+  "keyHoursCaveat": "OJO AL SESGO DE ESTE ORDEN, que es un hallazgo por sí mismo. Cuando la Def. 3.6 escala a ENVOLVENTE, la BPA fusionada deja de ser una estimación y pasa a ser una cobertura conservadora repartida sobre todo el marco, de modo que su esperanza pignística SUBE con el conflicto y no solo con la lluvia. «Mayor precipitación fusionada» ordena por tanto una mezcla de intensidad y desacuerdo, y en E1 las cinco horas seleccionadas son precisamente horas de envolvente. Se publica igual porque es la lectura literal de «precipitación fusionada», y junto a ella va `keyHoursBySourceMean`, que ordena por la media cruda de las tres fuentes y no tiene ese acoplamiento.",
+  "keyHoursNote": "Las 5 horas de mayor precipitación FUSIONADA, ordenadas de más a menos. El criterio de orden es la esperanza pignística de la BPA fusionada, un resumen puntual que se usa SOLO para ordenar y para ninguna decisión: una BPA no tiene un valor, tiene un conjunto credal.",
+  "nature": "EJERCICIO ILUSTRATIVO DEL COMPORTAMIENTO DEL PIPELINE SOBRE DATOS REALES. No es una validación operativa y ninguna cifra de aquí puede redactarse como «AURA habría evitado X» o «AURA habría predicho X»: no hay ground truth (los tres productos son mallas de reanálisis, no el valor en el punto), el DAG es el de juguete de la demo (Ec. 34) y las tres fuentes no son independientes (H3)."
+}

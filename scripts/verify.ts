@@ -10,7 +10,8 @@
  *   4. npm run repro          regeneración de todos los resultados
  *   5. npm run exp:smoke      experimento de ejemplo (contrato del runner)
  *   6. npm run exp:verify     los tres experimentos de cobertura, reducidos
- *   7. npm run snapshots:check comparación byte a byte contra snapshots/
+ *   7. npm run exp:hindcast:verify  el hindcast, reducido a 24 h del pico de E1
+ *   8. npm run snapshots:check comparación byte a byte contra snapshots/
  *
  * EL ORDEN NO ES ARBITRARIO: va de lo barato y general a lo caro y específico.
  * Un error de tipos invalida todo lo demás, así que se detecta en segundos en
@@ -24,6 +25,13 @@
  * en el pipeline credal, en el modelo de mundo o en los baselines aparece como
  * diff, aunque el número publicado venga de la campaña larga. Ver
  * `scripts/experiments/lib/profile.ts`.
+ *
+ * EL HINDCAST ENTRA POR LA MISMA PUERTA Y POR EL MISMO MOTIVO. La campaña
+ * completa son 96 + 168 horas sobre los fixtures de `fixtures/hindcast/`, que
+ * pesan; el paso 7 corre EL MISMO script sobre las 24 horas del pico de E1
+ * —seleccionadas solo con los datos de entrada, ver `peakWindow`— y su salida
+ * está en `snapshots/`. Basta para que cualquier deriva en la ingesta real, en
+ * la caracterización a priori o en la propagación aparezca como diff.
  *
  * FC_NUM_RUNS se propaga al paso 3: CI lo fija en 1.000 para el ciclo rápido y
  * el job manual en 20.000. Sin él, `test:properties` usa su valor por defecto
@@ -45,6 +53,7 @@ const STEPS: Step[] = [
   { name: 'repro', command: 'npm', args: ['run', 'repro'] },
   { name: 'experimento smoke', command: 'npm', args: ['run', 'exp:smoke'] },
   { name: 'experimentos (N=200)', command: 'npm', args: ['run', 'exp:verify'] },
+  { name: 'hindcast (24 h de E1)', command: 'npm', args: ['run', 'exp:hindcast:verify'] },
   { name: 'snapshots', command: 'npm', args: ['run', 'snapshots:check'] },
 ];
 

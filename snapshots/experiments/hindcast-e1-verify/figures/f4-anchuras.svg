@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" role="img" aria-labelledby="t d">
+  <title id="t">E1 · DANA Valencia 2024 — hindcast ILUSTRATIVO del pipeline AURA v2</title>
+  <desc id="d">2024-10-28 … 2024-10-31 · 39.42, -0.72 · 24 horas · regla C1 · NO es validación operativa: sin ground truth y con el DAG de juguete de la demo. Anchura del intervalo de cada método hora a hora, en escala logarítmica. Las de los dos baselines son CONSTANTES por construcción: dependen solo de σ y δ, no de la evidencia, de modo que no se enteran de nada de lo que pasa en el evento. Ejercicio ILUSTRATIVO del comportamiento del pipeline sobre datos reales, no una validación operativa: no hay ground truth y el DAG es el de juguete de la demo.</desc>
+  <rect width="1000" height="560" fill="#ffffff"/>
+  <line x1="78.000" y1="456.000" x2="974.000" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="69.000" y="460.000" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#71717a" font-weight="normal">1e0</text>
+  <line x1="78.000" y1="344.667" x2="974.000" y2="344.667" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="69.000" y="348.667" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#71717a" font-weight="normal">1e1</text>
+  <line x1="78.000" y1="233.333" x2="974.000" y2="233.333" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="69.000" y="237.333" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#71717a" font-weight="normal">1e2</text>
+  <line x1="78.000" y1="122.000" x2="974.000" y2="122.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="69.000" y="126.000" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#71717a" font-weight="normal">1e3</text>
+  <line x1="78.000" y1="122.000" x2="78.000" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="78.000" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 06h</text>
+  <line x1="155.913" y1="122.000" x2="155.913" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="155.913" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 08h</text>
+  <line x1="233.826" y1="122.000" x2="233.826" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="233.826" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 10h</text>
+  <line x1="311.739" y1="122.000" x2="311.739" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="311.739" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 12h</text>
+  <line x1="389.652" y1="122.000" x2="389.652" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="389.652" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 14h</text>
+  <line x1="467.565" y1="122.000" x2="467.565" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="467.565" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 16h</text>
+  <line x1="545.478" y1="122.000" x2="545.478" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="545.478" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 18h</text>
+  <line x1="623.391" y1="122.000" x2="623.391" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="623.391" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 20h</text>
+  <line x1="701.304" y1="122.000" x2="701.304" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="701.304" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 22h</text>
+  <line x1="779.217" y1="122.000" x2="779.217" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="779.217" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">30/10 00h</text>
+  <line x1="857.130" y1="122.000" x2="857.130" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="857.130" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">30/10 02h</text>
+  <line x1="935.043" y1="122.000" x2="935.043" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="935.043" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">30/10 04h</text>
+  <polyline points="78.000,325.062 116.957,291.547 155.913,291.547 194.870,155.515 233.826,291.547 272.783,291.547 311.739,291.547 350.696,291.547 389.652,291.547 428.609,325.062 467.565,155.515 506.522,155.515 545.478,325.062 584.435,155.515 623.391,291.547 662.348,155.515 701.304,155.515 740.261,325.062 779.217,325.062 818.174,325.062 857.130,325.062 896.087,325.062 935.043,325.062 974.000,325.062" fill="none" stroke="#1d4ed8" stroke-width="2"/>
+  <polyline points="78.000,325.720 116.957,325.720 155.913,325.720 194.870,325.720 233.826,325.720 272.783,325.720 311.739,325.720 350.696,325.720 389.652,325.720 428.609,325.720 467.565,325.720 506.522,325.720 545.478,325.720 584.435,325.720 623.391,325.720 662.348,325.720 701.304,325.720 740.261,325.720 779.217,325.720 818.174,325.720 857.130,325.720 896.087,325.720 935.043,325.720 974.000,325.720" fill="none" stroke="#f59e0b" stroke-width="1.7"/>
+  <polyline points="78.000,365.157 116.957,365.157 155.913,365.157 194.870,365.157 233.826,365.157 272.783,365.157 311.739,365.157 350.696,365.157 389.652,365.157 428.609,365.157 467.565,365.157 506.522,365.157 545.478,365.157 584.435,365.157 623.391,365.157 662.348,365.157 701.304,365.157 740.261,365.157 779.217,365.157 818.174,365.157 857.130,365.157 896.087,365.157 935.043,365.157 974.000,365.157" fill="none" stroke="#10b981" stroke-width="1.7"/>
+  <line x1="78.000" y1="122.000" x2="78.000" y2="456.000" stroke="#3f3f46" stroke-width="1.2"/>
+  <line x1="78.000" y1="456.000" x2="974.000" y2="456.000" stroke="#3f3f46" stroke-width="1.2"/>
+  <text x="78.000" y="28.000" font-family="Helvetica, Arial, sans-serif" font-size="15" text-anchor="start" fill="#18181b" font-weight="bold">E1 · DANA Valencia 2024 — hindcast ILUSTRATIVO del pipeline AURA v2</text>
+  <text x="78.000" y="46.000" font-family="Helvetica, Arial, sans-serif" font-size="11.5" text-anchor="start" fill="#71717a" font-weight="normal">2024-10-28 … 2024-10-31 · 39.42, -0.72 · 24 horas · regla C1 · NO es validación operativa: sin ground truth y con el DAG de juguete de la demo</text>
+  <text transform="translate(20 289.000) rotate(-90)" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#71717a">anchura del intervalo (mm/h, escala log)</text>
+  <rect x="78.000" y="535.000" width="13.000" height="13.000" fill="#1d4ed8"/>
+  <text x="97.000" y="545.500" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#71717a" font-weight="normal">AURA banda 95 %</text>
+  <rect x="219.000" y="535.000" width="13.000" height="13.000" fill="#f59e0b"/>
+  <text x="238.000" y="545.500" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#71717a" font-weight="normal">media ponderada</text>
+  <rect x="360.000" y="535.000" width="13.000" height="13.000" fill="#10b981"/>
+  <text x="379.000" y="545.500" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#71717a" font-weight="normal">Kalman estatico</text>
+</svg>

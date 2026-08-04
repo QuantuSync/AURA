@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="560" viewBox="0 0 1000 560" role="img" aria-labelledby="t d">
+  <title id="t">E1 · DANA Valencia 2024 — hindcast ILUSTRATIVO del pipeline AURA v2</title>
+  <desc id="d">2024-10-28 … 2024-10-31 · 39.42, -0.72 · 24 horas · regla C1 · NO es validación operativa: sin ground truth y con el DAG de juguete de la demo. Cota superior demostrada Pl(E) de la probabilidad de inundación, hora a hora, en escala logarítmica con suelo en 1e-8. La línea discontinua es el umbral p_crít = 0.05 que separa 'warning' de 'critical'. Los puntos grises son horas con plUpper exactamente 0. Ejercicio ILUSTRATIVO del comportamiento del pipeline sobre datos reales, no una validación operativa: no hay ground truth y el DAG es el de juguete de la demo.</desc>
+  <rect width="1000" height="560" fill="#ffffff"/>
+  <line x1="78.000" y1="456.000" x2="974.000" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="69.000" y="460.000" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#71717a" font-weight="normal">1e-8</text>
+  <line x1="78.000" y1="414.250" x2="974.000" y2="414.250" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="69.000" y="418.250" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#71717a" font-weight="normal">1e-7</text>
+  <line x1="78.000" y1="372.500" x2="974.000" y2="372.500" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="69.000" y="376.500" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#71717a" font-weight="normal">1e-6</text>
+  <line x1="78.000" y1="330.750" x2="974.000" y2="330.750" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="69.000" y="334.750" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#71717a" font-weight="normal">1e-5</text>
+  <line x1="78.000" y1="289.000" x2="974.000" y2="289.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="69.000" y="293.000" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#71717a" font-weight="normal">1e-4</text>
+  <line x1="78.000" y1="247.250" x2="974.000" y2="247.250" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="69.000" y="251.250" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#71717a" font-weight="normal">1e-3</text>
+  <line x1="78.000" y1="205.500" x2="974.000" y2="205.500" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="69.000" y="209.500" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#71717a" font-weight="normal">1e-2</text>
+  <line x1="78.000" y1="163.750" x2="974.000" y2="163.750" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="69.000" y="167.750" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#71717a" font-weight="normal">1e-1</text>
+  <line x1="78.000" y1="122.000" x2="974.000" y2="122.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="69.000" y="126.000" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#71717a" font-weight="normal">1e0</text>
+  <line x1="78.000" y1="122.000" x2="78.000" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="78.000" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 06h</text>
+  <line x1="155.913" y1="122.000" x2="155.913" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="155.913" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 08h</text>
+  <line x1="233.826" y1="122.000" x2="233.826" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="233.826" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 10h</text>
+  <line x1="311.739" y1="122.000" x2="311.739" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="311.739" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 12h</text>
+  <line x1="389.652" y1="122.000" x2="389.652" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="389.652" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 14h</text>
+  <line x1="467.565" y1="122.000" x2="467.565" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="467.565" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 16h</text>
+  <line x1="545.478" y1="122.000" x2="545.478" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="545.478" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 18h</text>
+  <line x1="623.391" y1="122.000" x2="623.391" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="623.391" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 20h</text>
+  <line x1="701.304" y1="122.000" x2="701.304" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="701.304" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">29/10 22h</text>
+  <line x1="779.217" y1="122.000" x2="779.217" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="779.217" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">30/10 00h</text>
+  <line x1="857.130" y1="122.000" x2="857.130" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="857.130" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">30/10 02h</text>
+  <line x1="935.043" y1="122.000" x2="935.043" y2="456.000" stroke="#e4e4e7" stroke-width="1"/>
+  <text x="935.043" y="475.000" font-family="Helvetica, Arial, sans-serif" font-size="9.5" text-anchor="middle" fill="#71717a" font-weight="normal">30/10 04h</text>
+  <line x1="78.000" y1="176.318" x2="974.000" y2="176.318" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="7 4"/>
+  <text x="970.000" y="170.318" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#dc2626" font-weight="bold">p_crit = 0.05 → 'critical'</text>
+  <text x="82.000" y="190.318" font-family="Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#71717a" font-weight="normal">por debajo: 'warning' (des-escalada DEMOSTRADA)</text>
+  <polyline points="78.000,178.129 116.957,168.331 155.913,170.736 194.870,127.461 233.826,174.558 272.783,171.840 311.739,172.902 350.696,170.605 389.652,172.550 428.609,176.333 467.565,127.820 506.522,122.683 545.478,177.621 584.435,127.717 623.391,175.065 662.348,127.507 701.304,127.494 740.261,177.270 779.217,178.228 818.174,178.532 857.130,178.073 896.087,178.068 935.043,177.850 974.000,178.010" fill="none" stroke="#1d4ed8" stroke-width="2"/>
+  <line x1="78.000" y1="122.000" x2="78.000" y2="456.000" stroke="#3f3f46" stroke-width="1.2"/>
+  <line x1="78.000" y1="456.000" x2="974.000" y2="456.000" stroke="#3f3f46" stroke-width="1.2"/>
+  <text x="78.000" y="28.000" font-family="Helvetica, Arial, sans-serif" font-size="15" text-anchor="start" fill="#18181b" font-weight="bold">E1 · DANA Valencia 2024 — hindcast ILUSTRATIVO del pipeline AURA v2</text>
+  <text x="78.000" y="46.000" font-family="Helvetica, Arial, sans-serif" font-size="11.5" text-anchor="start" fill="#71717a" font-weight="normal">2024-10-28 … 2024-10-31 · 39.42, -0.72 · 24 horas · regla C1 · NO es validación operativa: sin ground truth y con el DAG de juguete de la demo</text>
+  <text transform="translate(20 289.000) rotate(-90)" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#71717a">Pl(inundación) — suelo en 1e-8</text>
+  <rect x="78.000" y="535.000" width="13.000" height="13.000" fill="#1d4ed8"/>
+  <text x="97.000" y="545.500" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#71717a" font-weight="normal">plUpper (bound DEMOSTRADO)</text>
+  <rect x="289.400" y="535.000" width="13.000" height="13.000" fill="#71717a"/>
+  <text x="308.400" y="545.500" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#71717a" font-weight="normal">plUpper = 0 exacto</text>
+</svg>
