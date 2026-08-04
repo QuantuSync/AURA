@@ -1,7 +1,7 @@
 /**
  * AURA v2 — Zonotope Types
  *
- * Implements: Definición 5.1 del paper AURA interno.
+ * Implements: Definición 5.1, Ecuación (26), papers/AURA_v2.pdf §5.2.
  *
  * Un zonotopo Z = <c, G> donde:
  *   c ∈ ℝⁿ es el centro

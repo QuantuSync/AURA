@@ -1,7 +1,8 @@
 /**
  * AURA v2 — Construcción de BPAs
  *
- * Implementa: Definición 3.4 del paper AURA interno.
+ * Implementa: Definición 3.4 (construcción de BPA por distribución truncada),
+ * papers/AURA_v2.pdf §3.3.
  *
  * Convierte mediciones (valor ± incertidumbre) en Basic Probability Assignments
  * sobre un marco de discernimiento discreto.
@@ -27,7 +28,9 @@ function normalCDF(x: number, mean: number, stddev: number): number {
 /**
  * Construye una BPA a partir de una medición gaussiana.
  *
- * Paper ref: Definición 3.4, Ecuaciones (8) y (9).
+ * Paper ref: Definición 3.4, Ecuaciones (3) y (4), §3.3.
+ * Eq (3): m_i({θ_j}) = (1 - δ_i) ∫_{θ_j} p_i(x) dx
+ * Eq (4): m_i(Θ) = δ_i   ("válvula de seguridad" de la fuente)
  *
  * @param frame - Marco de discernimiento
  * @param value - Valor medido (media de la gaussiana)
@@ -50,7 +53,7 @@ export function createBPAFromGaussian(
   const n = frame.hypotheses.length;
   const focalElements: FocalElement[] = [];
 
-  // Asignar masa a cada singleton {θ_j} — Ecuación (8)
+  // Asignar masa a cada singleton {θ_j} — Ecuación (3)
   for (let j = 0; j < n; j++) {
     const h = frame.hypotheses[j];
     const lower = h.lower;
@@ -66,7 +69,7 @@ export function createBPAFromGaussian(
     }
   }
 
-  // Asignar masa residual a Θ (ignorancia) — Ecuación (9)
+  // Asignar masa residual a Θ (ignorancia) — Ecuación (4)
   if (failureRate > 1e-10) {
     const allIndices = Array.from({ length: n }, (_, i) => i);
     focalElements.push({ indices: allIndices, mass: failureRate });
@@ -104,7 +107,7 @@ export function createIgnorantBPA(
 /**
  * Calcula Bel(A) y Pl(A) para un singleton {θ_j}.
  *
- * Paper ref: Definición 3.3, Ecuaciones (1) y (2).
+ * Paper ref: Definición 3.3, Ecuaciones (1) y (2), §3.2.
  */
 export function beliefAndPlausibility(
   bpa: BPA,

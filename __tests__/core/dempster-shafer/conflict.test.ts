@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { pairwiseConflict, conflictMatrix, assessConflict } from '@/core/dempster-shafer/conflict';
+import {
+  pairwiseConflict,
+  conflictMatrix,
+  assessConflict,
+  globalConflict,
+} from '@/core/dempster-shafer/conflict';
 import { createBPAFromGaussian, createIgnorantBPA } from '@/core/dempster-shafer/bpa';
-import { FrameOfDiscernment } from '@/core/dempster-shafer/types';
+import { BPA, DEFAULT_FUSION_CONFIG, FrameOfDiscernment } from '@/core/dempster-shafer/types';
 
 const frame: FrameOfDiscernment = {
   variable: 'precipitation',
@@ -77,5 +82,75 @@ describe('assessConflict', () => {
     const result = assessConflict([bpa1, bpa2]);
     expect(result.method).toBe('envelope');
     expect(result.level).toBe('high');
+  });
+
+  it('expone K_máx por pares y K_global por separado, y decide con el máximo', () => {
+    const bpa1 = createBPAFromGaussian(frame, 20, 5, 0, 's1');
+    const bpa2 = createBPAFromGaussian(frame, 22, 5, 0, 's2');
+    const bpa3 = createBPAFromGaussian(frame, 24, 5, 0, 's3');
+    const result = assessConflict([bpa1, bpa2, bpa3]);
+
+    expect(result.globalConflict).toBeGreaterThanOrEqual(result.maxConflict - 1e-12);
+    expect(result.decisionConflict).toBeCloseTo(
+      Math.max(result.maxConflict, result.globalConflict),
+      12
+    );
+  });
+});
+
+describe('globalConflict — extensión n-aria de la Ecuación (6)', () => {
+  const mk = (focalElements: BPA['focalElements'], sourceId: string): BPA => ({
+    frame,
+    focalElements,
+    sourceId,
+    timestamp: 0,
+  });
+
+  it('con n = 2 coincide exactamente con el K por pares de la Ecuación (6)', () => {
+    const bpa1 = createBPAFromGaussian(frame, 8, 4, 0, 's1');
+    const bpa2 = createBPAFromGaussian(frame, 35, 6, 0, 's2');
+    expect(globalConflict([bpa1, bpa2])).toBeCloseTo(pairwiseConflict(bpa1, bpa2), 12);
+  });
+
+  it('es 0 si todas las fuentes comparten una hipótesis en todos sus elementos focales', () => {
+    const all = [0, 1, 2, 3, 4];
+    const a = mk([{ indices: [1], mass: 1 }], 'a');
+    const b = mk([{ indices: [0, 1], mass: 0.5 }, { indices: [1, 2], mass: 0.5 }], 'b');
+    const c = mk([{ indices: all, mass: 1 }], 'c');
+    expect(globalConflict([a, b, c])).toBeCloseTo(0, 12);
+  });
+
+  it('es 1 en el ciclo de solapamiento parcial, donde todos los pares dan 0,75', () => {
+    // Contraejemplo del hallazgo: cada fuente comparte una hipótesis con la
+    // siguiente, pero las tres juntas no comparten ninguna.
+    const m1 = mk([{ indices: [0], mass: 0.5 }, { indices: [1], mass: 0.5 }], 'm1');
+    const m2 = mk([{ indices: [1], mass: 0.5 }, { indices: [2], mass: 0.5 }], 'm2');
+    const m3 = mk([{ indices: [2], mass: 0.5 }, { indices: [0], mass: 0.5 }], 'm3');
+
+    expect(pairwiseConflict(m1, m2)).toBeCloseTo(0.75, 12);
+    expect(globalConflict([m1, m2, m3])).toBeCloseTo(1, 12);
+  });
+
+  it('el K global crece (débilmente) al añadir fuentes', () => {
+    // Añadir una fuente solo puede vaciar más intersecciones, nunca rellenarlas.
+    const m1 = mk([{ indices: [0], mass: 0.5 }, { indices: [1], mass: 0.5 }], 'm1');
+    const m2 = mk([{ indices: [1], mass: 0.5 }, { indices: [2], mass: 0.5 }], 'm2');
+    const m3 = mk([{ indices: [2], mass: 0.5 }, { indices: [0], mass: 0.5 }], 'm3');
+    expect(globalConflict([m1, m2, m3])).toBeGreaterThanOrEqual(globalConflict([m1, m2]));
+  });
+
+  it('una fuente sola no tiene conflicto consigo misma', () => {
+    expect(globalConflict([createBPAFromGaussian(frame, 20, 5, 0, 's1')])).toBe(0);
+  });
+
+  it('lanza sin fuentes y por encima del límite configurable', () => {
+    const bpa = createBPAFromGaussian(frame, 20, 5, 0, 's1');
+    expect(() => globalConflict([])).toThrow(/No BPAs/);
+    expect(() =>
+      globalConflict([bpa, bpa, bpa], { ...DEFAULT_FUSION_CONFIG, maxSourcesForGlobalConflict: 2 })
+    ).toThrow(/exponential in the number of sources/);
+    // Y por defecto admite hasta 6 fuentes, el régimen documentado.
+    expect(() => globalConflict(Array(6).fill(bpa))).not.toThrow();
+    expect(() => globalConflict(Array(7).fill(bpa))).toThrow(/limit is 6/);
   });
 });
