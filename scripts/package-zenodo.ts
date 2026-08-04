@@ -149,9 +149,11 @@ function extractZip(zipPath: string, destDir: string): void {
     execFileSync('unzip', ['-q', zipPath, '-d', destDir]);
     return;
   }
+  // `cwd` en el destino y ruta relativa al zip: ver la nota sobre GNU tar y los
+  // dos puntos de la letra de unidad en la extracción del `git archive`.
   const bsdtar = bsdtarPath();
   if (bsdtar) {
-    execFileSync(bsdtar, ['-x', '-f', zipPath, '-C', destDir]);
+    execFileSync(bsdtar, ['-x', '-f', path.relative(destDir, zipPath)], { cwd: destDir });
     return;
   }
   fail('no hay ninguna herramienta de extracción disponible (unzip o bsdtar).');
@@ -494,7 +496,11 @@ function main(): void {
       '.',
       ...EXCLUDED.map((p) => `:(exclude)${p}`)
     );
-    execFileSync('tar', ['-xf', tarPath, '-C', content]);
+    // RUTAS RELATIVAS, con `cwd` en el staging. GNU tar interpreta `C:\…` como
+    // una especificación de host remoto (`host:ruta`) y falla con «Cannot
+    // connect to C: resolve failed». Sin dos puntos en los argumentos, el mismo
+    // comando funciona con GNU tar y con bsdtar.
+    execFileSync('tar', ['-xf', 'head.tar', '-C', 'content'], { cwd: staging });
     log(`git archive extraído (${walk(content).length} ficheros tras excluir ${EXCLUDED.join(', ')})`);
 
     for (const excluded of EXCLUDED) {
