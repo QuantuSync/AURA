@@ -11,6 +11,68 @@ número de entrada.
 
 ---
 
+## [2.0.0-rc2] — 2026-08-04
+
+Candidata auditada. No hay cambios en el motor de decisión: ni una cifra
+publicada se mueve. Lo que cambia es un experimento que había quedado fechado,
+dos afirmaciones de la documentación que eran más amplias de lo que el código
+sostiene, y el test que fija el borde de una de ellas.
+
+**Corregido — `exp:conflict-rule` vuelve a ser reproducible desde la CLI.**
+Era la «Nota de reproducibilidad» que la rc1 dejó registrada y sin corregir
+(iteración 10). `scripts/experiments/conflict-rule.ts` construía la
+configuración de cada candidato como `{ ...DEFAULT_FUSION_CONFIG, rule }`, de
+modo que heredaba la medida por defecto del sistema, ignoraba `--measure` en
+silencio y no registraba la medida en `config.json`. Ahora pasa por
+`fusionConfigFor`, acepta `--measure` —con la medida del sistema por defecto— y
+`config.json` declara tanto la medida pedida como la configurada para cada
+candidato. Con `--measure D0` la ejecución escribe en
+`out/experiments/conflict-rule-d0/`, por la misma convención de `nameFor` que el
+resto de experimentos.
+
+**Verificado, no ajustado.** `--measure D0 --seed 20260311` reproduce
+EXACTAMENTE la tabla histórica de la Fase A publicada en ERRATA §9 —C1 con
+57,62 % de limpios → Dempster, anchura 280,67 y cobertura de banda 99,840 %, y
+C0 en 53,49 % / 296,99 / 99,910 %—, con selección de C1 en el paso 5. A los
+defaults de hoy (D2) la fila de C1 pasa a 64,95 % / 252,77 / 99,710 % y **C1
+sigue ganando, ahora decidido en el paso 3**, que es exactamente lo que la nota
+de la rc1 anticipaba. Cobertura existencial 100,00 % en los cuatro candidatos
+bajo las dos medidas.
+
+**Precisado — el alcance de «`hullOf` ≡ Ec. (10)».** La identidad se enunciaba
+sin condiciones. La auditoría la rompió: `buildCredalSet` aplica el umbral de
+tolerancia `Pl > 1e-10` de la Def. 3.9 y `credalIntervalSetFromBPA` no aplica
+ninguno, de modo que un elemento focal de masa ≤ 1e-10 separa los dos puentes.
+Es alcanzable solo con δ_i = 0 —renunciando a la válvula de seguridad de la
+Def. 3.4, que garantiza `Pl ≥ Π_i δ_i ≈ 1e-4`— y **ocurre en una sola
+dirección, `hull ⊇ Ec. (10)`**. Medido sobre 60.000 fusiones: identidad exacta
+en el 100 % de las 30.089 con δ > 0, y cero casos de `hull ⊉ Ec. (10)` en las
+60.000. No hay pérdida de soundness: el reachable set del certificado se
+construye sobre el HULL, luego el objeto que puede quedarse corto no es el que
+sostiene el veredicto. Fijado como test de regresión en
+`__tests__/core/credal-propagation/credal-interval-set.test.ts` (la suite pasa
+de 545 a 546 tests, en los mismos 37 ficheros).
+
+**Precisado — el umbral 1e-10 del lifting.** El bloque destacado de
+`buildCredalSet` afirmaba que 1e-10 es «tolerancia de coma flotante, NO un
+filtro semántico». Describe el uso previsto, no un teorema: `m({torrencial}) =
+1e-11` es una BPA legal de la Def. 3.2 y para ella el umbral SÍ filtra, dejando
+fuera del intervalo credal un valor con probabilidad admisible > 0. El hueco es
+exactamente la banda `Pl ∈ (0, 1e-10]` y es inalcanzable por el pipeline
+declarado. La constante **no se toca** —bajarla a `> 0` haría que el residuo de
+redondeo de una fusión ensanchara el intervalo al marco entero— y el borde queda
+declarado donde se implementa.
+
+**Auditado sin hallazgos.** Ninguna violación en: cobertura del lifting sobre
+30.000 fusiones con marcos legales aleatorios; `Bel(E) ≤ P(E) ≤ Pl(E)` sobre
+20.000 conjuntos credales con focales degenerados, fronteras exactas y `-0`;
+`certifySafety` sobre 200.000 combinaciones de fronteras con `NaN`, `±Infinity`,
+subnormales y `-0`; la guardia κ_deg sobre 20.504 casos con `K_global ≥ 0,95`
+(4 reglas × 3 medidas × permutaciones, cero llegadas a Dempster); y la
+propagación credal con `ε = 0` y `f` no monótona.
+
+---
+
 ## [2.0.0-rc1] — 2026-08-04
 
 Release candidate para la redacción del paper v3. El motor queda congelado: a

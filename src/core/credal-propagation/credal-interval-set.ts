@@ -195,6 +195,21 @@ export function toCredalIntervalSet(
  * De ahí que esta capa REFINE la Def. 3.9 sin contradecirla: el soporte es el
  * mismo, lo que se recupera es la distribución de masa dentro de él.
  *
+ * ⚠ ALCANCE DEL PASO (⊆), afinado por la auditoría de la rc1. Ese paso usa
+ * «Pl(θ_j) > 0 ⟹ I_j entra en la unión», pero `buildCredalSet` implementa la
+ * unión con el umbral de tolerancia **Pl > 1e-10** de la Def. 3.9, y aquí no hay
+ * umbral ninguno. La igualdad es por tanto EXACTA mientras ningún elemento focal
+ * tenga masa ≤ 1e-10 — garantizado en el régimen declarado del sistema, donde la
+ * válvula δ_i > 0 de la Def. 3.4 pone masa sobre Θ y con ella Pl(θ_j) ≥ Π_i δ_i
+ * ≈ 1e-4 en toda hipótesis. Con δ_i = 0 puede romperse.
+ *
+ * Cuando se rompe, se rompe **en una sola dirección: hull ⊇ Ec. (10)**, porque
+ * el umbral solo puede QUITAR hipótesis al lado de la Ec. (10). Es la dirección
+ * conservadora, y es la que importa: el reachable set del certificado se
+ * construye sobre el HULL, de modo que el objeto que puede quedarse corto no es
+ * el que sostiene el veredicto. Fijado en
+ * `__tests__/core/credal-propagation/credal-interval-set.test.ts`.
+ *
  * Tras propagar por el DAG el hull puede ser MÁS ESTRECHO que propagar
  * directamente el intervalo de la Ec. (10), por monotonía de la inclusión de
  * las extensiones intervalares: f(⋃ I_A) ⊇ ⋃ f(I_A). Sigue siendo un

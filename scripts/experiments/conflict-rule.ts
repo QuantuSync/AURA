@@ -51,6 +51,9 @@
 import { fuse } from '@/core/dempster-shafer/combination';
 import { globalConflict, pairwiseConflict } from '@/core/dempster-shafer/conflict';
 import {
+  ConflictMeasureId,
+} from '@/core/dempster-shafer/conflict-measures';
+import {
   CONFLICT_RULES,
   CONFLICT_RULE_IDS,
   ConflictRuleId,
@@ -60,6 +63,7 @@ import { BPA, DEFAULT_FUSION_CONFIG, FusionConfig } from '@/core/dempster-shafer
 import { PRECIPITATION_FRAME } from '@/lib/constants';
 
 import { contains, evaluate } from './lib/methods';
+import { fusionConfigFor, measureOverrideOf, nameFor } from './lib/profile';
 import {
   BAND_COVERAGE_FLOOR,
   CandidateScore,
@@ -201,8 +205,29 @@ class CandidateState {
   sequentialBoundViolations = 0;
   existentialMisses = 0;
 
-  constructor(readonly rule: ConflictRuleId) {
-    this.config = { ...DEFAULT_FUSION_CONFIG, rule };
+  /**
+   * La configuración sale de {@link fusionConfigFor}, NO de un
+   * `{ ...DEFAULT_FUSION_CONFIG, rule }` a mano.
+   *
+   * La diferencia importa y quedó registrada como defecto de reproducibilidad en
+   * el CHANGELOG (iteración 10, «Nota de reproducibilidad»): construida a mano,
+   * la configuración hereda la MEDIDA POR DEFECTO DEL SISTEMA, de modo que al
+   * cambiar ese defecto de D0 a D2 la fila de C1 —la única regla que consulta la
+   * medida— dejó de reproducir la tabla publicada, sin que ni el flag `--measure`
+   * ni el `config.json` dijeran nada. Pasando por `fusionConfigFor`:
+   *
+   *  · C0, C2 y C3 quedan sobre D0, que es la medida sobre la que están
+   *    congeladas (`conflict-rules.ts`), en vez de anunciar una medida que no
+   *    consultan;
+   *  · C1 usa la del sistema, o la que se pida con `--measure`;
+   *  · con `--measure D0` las cuatro corren sobre el K crudo y la tabla histórica
+   *    de `docs/ERRATA.md` §9 (Fase A) vuelve a ser reproducible desde la CLI.
+   */
+  constructor(
+    readonly rule: ConflictRuleId,
+    measure: ConflictMeasureId | undefined
+  ) {
+    this.config = fusionConfigFor(rule, measure);
   }
 
   /**
@@ -372,7 +397,7 @@ function run(ctx: ExperimentContext): ExperimentOutput {
   const bandWeights = parseBandWeights(ctx.flags.string('band-weights', ''));
 
   const states = new Map<ConflictRuleId, CandidateState>(
-    CONFLICT_RULE_IDS.map((id) => [id, new CandidateState(id)])
+    CONFLICT_RULE_IDS.map((id) => [id, new CandidateState(id, measureOverride)])
   );
 
   // ── 0. Requisito innegociable (a): el contraejemplo del ciclo ──────────────
@@ -487,6 +512,17 @@ function run(ctx: ExperimentContext): ExperimentOutput {
 
     byRule[id] = {
       label: CONFLICT_RULES[id].label,
+      /**
+       * Medida CONFIGURADA para este candidato. Va aquí y no solo en
+       * `config.json` porque sin `--measure` no es la misma para todos: C1 recibe
+       * la del sistema y C0/C2/C3 caen a D0 (`fusionConfigFor`).
+       *
+       * ⚠ Configurada, no consultada: C0, C2 y C3 están **congeladas sobre el K
+       * crudo** y no leen este campo (`conflict-rules.ts`), de modo que un
+       * `--measure` explícito aparece aquí para las cuatro pero solo cambia el
+       * comportamiento de C1. Es la única regla cuya fila se mueve con la medida.
+       */
+      measure: state.config.measure,
       gate,
       calibration: {
         existential,
@@ -553,7 +589,23 @@ function run(ctx: ExperimentContext): ExperimentOutput {
       biasScale,
       bandWeights,
       defaultBandWeights: DEFAULT_BAND_WEIGHTS,
-      candidates: CONFLICT_RULE_IDS.map((id) => ({ id, label: CONFLICT_RULES[id].label })),
+      /**
+       * Medida PEDIDA: la de `--measure`, o la del sistema si no se pasó. La
+       * CONFIGURADA para cada candidato está en `candidates[].measure` y sin
+       * `--measure` no coincide con ésta: C0, C2 y C3 caen a D0 (ver
+       * `fusionConfigFor`). Consultarla, solo la consulta C1.
+       *
+       * Sin este campo, un `results.json` recién generado no declaraba bajo qué
+       * medida se produjo su columna C1 — la traza incompleta que registra el
+       * CHANGELOG (iteración 10, «Nota de reproducibilidad»).
+       */
+      measure: measureOverride ?? DEFAULT_FUSION_CONFIG.measure,
+      measureOverride: measureOverride ?? null,
+      candidates: CONFLICT_RULE_IDS.map((id) => ({
+        id,
+        label: CONFLICT_RULES[id].label,
+        measure: states.get(id)!.config.measure,
+      })),
       kappa1: DEFAULT_FUSION_CONFIG.kappa1,
       kappa2: DEFAULT_FUSION_CONFIG.kappa2,
       kappaDegeneracy: DEFAULT_FUSION_CONFIG.kappaDegeneracy,
@@ -599,8 +651,16 @@ function run(ctx: ExperimentContext): ExperimentOutput {
   };
 }
 
+/**
+ * `--measure` se lee ANTES de `main()`, con la misma lógica pre-`parseFlags` que
+ * los demás experimentos y por el mismo motivo: entra en el nombre —y con él en
+ * el directorio de salida—, de modo que la regeneración de la tabla histórica
+ * bajo D0 no pisa el directorio de la ejecución a los defaults de hoy.
+ */
+const measureOverride = measureOverrideOf();
+
 main({
-  name: 'conflict-rule',
+  name: nameFor('conflict-rule', 'full', undefined, measureOverride),
   description:
     'Experimento pre-registrado (ERRATA §9): cuatro reglas de decisión de la Def. 3.6 sobre los ' +
     'mismos mundos, requisito innegociable y criterio de selección lexicográfico aplicado ' +

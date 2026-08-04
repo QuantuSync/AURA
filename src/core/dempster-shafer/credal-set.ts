@@ -85,6 +85,19 @@ export function buildCredalSet(fusionResult: FusionResult): CredalSet {
   // │ heurística, en silencio. Si en el futuro se quiere un intervalo más  │
   // │ estrecho, la vía correcta es un método aparte, explícitamente        │
   // │ documentado como NO sound, nunca tocar esta constante.               │
+  // │                                                                      │
+  // │ PRECISIÓN DE LA AUDITORÍA (rc1). "Tolerancia y no filtro" describe   │
+  // │ el USO previsto, no un teorema: una BPA legal puede llevar masa REAL │
+  // │ por debajo de 1e-10 —m({torrencial}) = 1e-11 es una BPA de la        │
+  // │ Def. 3.2 perfectamente válida— y entonces esta línea SÍ actúa como   │
+  // │ filtro y el intervalo excluye un valor con probabilidad admisible    │
+  // │ > 0 en el conjunto credal. El hueco es exactamente la banda          │
+  // │ Pl ∈ (0, 1e-10], y es INALCANZABLE por el pipeline declarado: con la │
+  // │ válvula δ_i > 0 de la Def. 3.4 se tiene Pl(θ_j) ≥ Π_i δ_i ≈ 1e-4 en  │
+  // │ toda hipótesis (el argumento de docs/ERRATA.md §8). Se deja como     │
+  // │ está —bajarlo a > 0 haría que el ruido de redondeo de una fusión     │
+  // │ ensanchara el intervalo al marco entero— y se declara aquí en vez de │
+  // │ afirmar una propiedad que no se cumple en el borde.                  │
   // └──────────────────────────────────────────────────────────────────────┘
   let lower = Infinity;
   let upper = -Infinity;

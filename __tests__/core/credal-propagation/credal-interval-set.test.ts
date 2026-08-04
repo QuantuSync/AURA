@@ -239,6 +239,61 @@ describe('hullOf — coincide con el lifting de la Ecuación (10)', () => {
     });
   });
 
+  /**
+   * ALCANCE de la identidad, fijado tras la auditoría de la rc1.
+   *
+   * La coincidencia no es incondicional. `buildCredalSet` descarta las hipótesis
+   * con Pl ≤ 1e-10 (la tolerancia de la Def. 3.9) y `credalIntervalSetFromBPA`
+   * eleva TODOS los elementos focales, sin umbral. Cuando algún focal cae por
+   * debajo de esa tolerancia —alcanzable solo con δ_i = 0, es decir renunciando a
+   * la válvula de seguridad de la Def. 3.4— los dos puentes se separan.
+   *
+   * Lo que sí se garantiza, y es lo que importa para la soundness, es la
+   * DIRECCIÓN: el hull nunca es más estrecho que la Ec. (10). El reachable set
+   * del certificado se construye sobre el hull, luego el objeto que puede quedar
+   * corto —el de la Ec. (10)— no es el que sostiene el veredicto.
+   *
+   * Medido en la auditoría sobre 60.000 fusiones (2-4 fuentes gaussianas):
+   * identidad exacta en el 100 % de las 30.089 con δ_i > 0, y ni un solo caso de
+   * hull ⊉ Ec. (10) en ninguna de las 60.000.
+   */
+  it('con δ = 0 la identidad puede romperse, y solo en la dirección hull ⊇ Ec. (10)', () => {
+    // Tres gaussianas estrechas, dos de acuerdo y una lejos, SIN válvula δ: la
+    // envolvente exacta deja Pl(cola) = 0 y la Ec. (10) corta en 30; la BPA
+    // sintética manda su sobrante a Θ, cuyo hull es el marco entero.
+    const sources = [
+      createBPAFromGaussian(frame, 1, 0.1, 0, 'a', 0),
+      createBPAFromGaussian(frame, 25, 0.1, 0, 'b', 0),
+      createBPAFromGaussian(frame, 1.2, 0.1, 0, 'c', 0),
+    ];
+    const fusion = fuse(sources, [0, 0, 0]);
+    expect(fusion.method).toBe('envelope');
+
+    const ec10 = buildCredalSet(fusion).continuousInterval;
+    const hull = hullOf(toCredalIntervalSet(fusion));
+
+    // Se separan…
+    expect(hull).not.toEqual(ec10);
+    // …y el hull CONTIENE a la Ec. (10), nunca al revés.
+    expect(hull.lower).toBeLessThanOrEqual(ec10.lower);
+    expect(hull.upper).toBeGreaterThanOrEqual(ec10.upper);
+    expect(hull.upper).toBe(frame.domainBound);
+
+    // Con la válvula δ de la Def. 3.4 —el régimen declarado del sistema— la
+    // masa sobre Θ mantiene Pl(cola) > 0 y la identidad vuelve a ser exacta.
+    const withDelta = fuse(
+      [
+        createBPAFromGaussian(frame, 1, 0.1, 0.05, 'a', 0),
+        createBPAFromGaussian(frame, 25, 0.1, 0.05, 'b', 0),
+        createBPAFromGaussian(frame, 1.2, 0.1, 0.05, 'c', 0),
+      ],
+      [0.05, 0.05, 0.05]
+    );
+    expect(hullOf(toCredalIntervalSet(withDelta))).toEqual(
+      buildCredalSet(withDelta).continuousInterval
+    );
+  });
+
   it('el límite por defecto de elementos focales es 64', () => {
     expect(DEFAULT_CREDAL_PROPAGATION_CONFIG.maxFocalElements).toBe(64);
   });

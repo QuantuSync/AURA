@@ -718,7 +718,15 @@ exactamente la informatividad que la Ec. (10) destruía.
 - `credal-interval-set.ts` — `toCredalIntervalSet` (Def. 3.9′ / Ec. 10′), con el
   b_j efectivo de `hypothesisUpper` (H0). `hullOf` recupera la Ec. (10) exacta,
   y hay un test que lo comprueba: la extensión **refina** la Def. 3.9, no la
-  contradice. La ruta de alto conflicto usa la BPA sintética de
+  contradice. *(Alcance precisado por la auditoría de la rc1: la igualdad es
+  exacta mientras ningún elemento focal tenga masa ≤ 1e-10, lo que la válvula
+  δ_i > 0 de la Def. 3.4 garantiza —Pl ≥ Π_i δ_i ≈ 1e-4—. Con δ_i = 0 puede
+  romperse, y solo en la dirección **hull ⊇ Ec. (10)**: el umbral de tolerancia
+  únicamente puede quitar hipótesis al lado de la Ec. (10). Medido: identidad
+  exacta en las 30.089 fusiones con δ > 0 de una campaña de 60.000, y cero casos
+  de hull ⊉ Ec. (10) en las 60.000. El reachable set se construye sobre el hull,
+  luego el objeto que puede quedarse corto no es el que sostiene el veredicto.
+  Fijado en `__tests__/core/credal-propagation/credal-interval-set.test.ts`.)* La ruta de alto conflicto usa la BPA sintética de
   `envelopeCombine`, cuya masa sobrante va a Θ y por tanto cuenta siempre para
   Pl y nunca para Bel — conservadora en ambos extremos.
 - `propagation.ts` — `propagateCredalThroughDAG`, coste |F| × propagación

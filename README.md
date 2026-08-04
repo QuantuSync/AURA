@@ -475,18 +475,20 @@ mano. Semilla fija → CI reproducible; `FC_NUM_RUNS` escala la campaña.
 | Validez y conmutatividad de la regla de Dempster | Ec. (5)-(6), §3.4.1 | `properties/dempster-validity.property.test.ts` | 9 (+6 regresión) |
 | Clausura zonotópica (Minkowski, transf. lineal, hull, Girard) | Def. 5.1 / Obs. 5.1-5.2, §5.2-5.4 | `properties/zonotope-operations.property.test.ts` | 9 |
 | Cobertura del lifting a zonotope (Puente 2→3) | Prop. 5.1 = Lema 6.2, §5.3/§6.2 | `properties/bridge-2-3.property.test.ts` | 6 |
-| Propagación no lineal: `f(Z) ⊆ Z'` + conservatismo ρ̂ | Teo. 5.1 y Ec. (28)-(29); Def. 5.6, §5.4/§5.6 | `properties/nonlinear-propagation.property.test.ts` | 5 (500 pts/caso) |
+| Propagación no lineal: `f(Z) ⊆ Z'` + conservatismo ρ̂ | Teo. 5.1 y Ec. (28)-(29); Def. 5.6, §5.4/§5.6 | `properties/nonlinear-propagation.property.test.ts` | 3 (500 pts/caso) + 2 agregados |
 | Certificado existencial de decisión | Def. 5.5 y Ec. (31), §5.5 | `properties/certificate-soundness.property.test.ts` | 12 |
 | Propagación por el DAG: `v*_i ∈ [V_i]` con `\|u_i\| ≤ ε_i` | Def. 4.3 y Ec. (24); Teo. 4.1, §4.4.2 | `properties/dag-propagation.property.test.ts` | 5 (+1 contraejemplo) |
-| Conflicto global n-ario e invariancia al orden de las fuentes | Def. 3.5-3.6 *(extensión)*, §3.4.2 | `properties/global-conflict.property.test.ts` | 11 |
+| Conflicto global n-ario e invariancia al orden de las fuentes | Def. 3.5-3.6 *(extensión)*, §3.4.2 | `properties/global-conflict.property.test.ts` | 13 |
+| Medidas por pares del conflicto: rango, simetría y separación de la guardia | Def. 3.5 y Ec. (6) *(extensión)*, §3.4.1 | `properties/conflict-measures.property.test.ts` | 11 |
 | Lifting credal bajo soporte acotado: `x* ∈ I(X)` dado H0 | Def. 3.9 y Ec. (10); Lema 6.1 *(+ H0, extensión)*, §3.6/§6.1 | `properties/credal-lifting.property.test.ts` | 7 (2 del caso negativo de H0) |
 | Cobertura credal end-to-end: `Bel(E) ≤ P(E) ≤ Pl(E)` | Def. 3.9′ y Ec. (10′); Def. 5.5′ y Ec. (31′) *(extensión)*, §3.6/§5.5 | `properties/credal-propagation.property.test.ts` | 10 (≥ 500 mundos muestreados/caso) |
 
 Cada propiedad ejecuta `FC_NUM_RUNS` casos generados: **1.000** en `test:run`
-(CI) y **20.000** en `test:properties`. Campaña de referencia: 91 propiedades ×
-20.000 casos (más 7 contraejemplos deterministas de regresión), semilla 20260804
-— todas pasan, en 107 s de reloj. La suite completa (`npm run test:run`) son 476
-tests en 34 ficheros, y `npm run verify` entero, 125 s.
+(CI) y **20.000** en `test:properties`. Campaña de referencia: **102 propiedades
+× 20.000 casos** (más los contraejemplos deterministas de regresión: **133
+tests** en total en `__tests__/properties`, 12 ficheros), semilla 20260804 —
+todas pasan, en 108 s de reloj. La suite completa (`npm run test:run`) son
+**546 tests en 37 ficheros**, y `npm run verify` entero, ≈ 120 s.
 
 ### Ratio de conservatismo medido (Definición 5.6)
 

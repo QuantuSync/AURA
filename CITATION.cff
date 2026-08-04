@@ -10,7 +10,7 @@ abstract: >-
   demostrados bajo las hipótesis H0-H3, obtenidos por propagación credal
   elemento focal a elemento focal.
 type: software
-version: 2.0.0-rc1
+version: 2.0.0-rc2
 date-released: "2026-08-04"
 license: MIT
 repository-code: "https://github.com/QuantuSync/AURA"
