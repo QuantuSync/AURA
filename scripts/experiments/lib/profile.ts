@@ -28,6 +28,12 @@
  * es los tirantes.)
  */
 
+import {
+  CONFLICT_RULE_IDS,
+  ConflictRuleId,
+} from '@/core/dempster-shafer/conflict-rules';
+import { DEFAULT_FUSION_CONFIG, FusionConfig } from '@/core/dempster-shafer/types';
+
 export type Profile = 'full' | 'verify';
 
 /**
@@ -64,7 +70,55 @@ export function profileOf(argv: readonly string[] = process.argv.slice(2)): Prof
   );
 }
 
-/** Nombre del experimento para el perfil dado: `coverage` / `coverage-verify`. */
-export function nameFor(base: string, profile: Profile): string {
-  return profile === 'verify' ? `${base}-verify` : base;
+/**
+ * Lee `--rule` de `argv`, con la MISMA lógica pre-`parseFlags` que
+ * {@link profileOf} y por el mismo motivo: la regla entra en el nombre del
+ * experimento, y el nombre se fija antes de `main()`.
+ *
+ * Existe para poder reproducir con un flag los números publicados bajo una
+ * regla de conflicto anterior —en particular los de C0, previos a la
+ * corrección de `docs/ERRATA.md` §9— sin tocar el default del sistema.
+ *
+ * @throws si el identificador no es una de las reglas conocidas.
+ */
+export function ruleOverrideOf(
+  argv: readonly string[] = process.argv.slice(2)
+): ConflictRuleId | undefined {
+  let value: string | undefined;
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === '--rule') {
+      value = argv[i + 1];
+    } else if (arg.startsWith('--rule=')) {
+      value = arg.slice('--rule='.length);
+    }
+  }
+
+  if (value === undefined) return undefined;
+  if ((CONFLICT_RULE_IDS as readonly string[]).includes(value)) return value as ConflictRuleId;
+
+  throw new Error(
+    `--rule debe ser una de {${CONFLICT_RULE_IDS.join(', ')}}; recibido '${value}'. ` +
+      `La regla determina la estrategia de fusión y el directorio de salida.`
+  );
+}
+
+/** Configuración de fusión efectiva para un override de regla. */
+export function fusionConfigFor(rule: ConflictRuleId | undefined): FusionConfig {
+  return rule === undefined ? DEFAULT_FUSION_CONFIG : { ...DEFAULT_FUSION_CONFIG, rule };
+}
+
+/**
+ * Nombre del experimento: `coverage`, `coverage-verify`, `coverage-c0`…
+ *
+ * La regla solo entra en el nombre cuando NO es la del sistema, por el mismo
+ * motivo que el perfil: `snapshots:check` compara `out/` entero, y una
+ * ejecución de referencia con otra regla no debe pisar el directorio cuya
+ * salida está versionada.
+ */
+export function nameFor(base: string, profile: Profile, rule?: ConflictRuleId): string {
+  const withRule =
+    rule === undefined || rule === DEFAULT_FUSION_CONFIG.rule ? base : `${base}-${rule.toLowerCase()}`;
+  return profile === 'verify' ? `${withRule}-verify` : withRule;
 }

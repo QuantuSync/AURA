@@ -40,7 +40,7 @@
  */
 
 import { contains, evaluate, METHOD_IDS, METHOD_LABELS, MethodId } from './lib/methods';
-import { nameFor, profileOf } from './lib/profile';
+import { fusionConfigFor, nameFor, profileOf, ruleOverrideOf } from './lib/profile';
 import { wilsonInterval } from './lib/stats';
 import { DEFAULT_BAND_WEIGHTS, parseBandWeights, sampleWorld } from './lib/world';
 import { ExperimentContext, ExperimentOutput, main } from './runner';
@@ -101,6 +101,10 @@ function counterOf(map: Map<string, VirgaCounter>, key: string): VirgaCounter {
 }
 
 function run(ctx: ExperimentContext): ExperimentOutput {
+  // Regla de conflicto efectiva. Sin `--rule` es la del sistema; con ella
+  // se reproducen los números de una regla anterior (ver ERRATA §9) en un
+  // directorio de salida propio.
+  const fusionConfig = fusionConfigFor(ruleOverride);
   const worlds = ctx.flags.number('worlds', 5000);
   if (!Number.isInteger(worlds) || worlds <= 0) {
     throw new Error(`--worlds debe ser un entero positivo; recibido ${worlds}.`);
@@ -126,7 +130,7 @@ function run(ctx: ExperimentContext): ExperimentOutput {
       virgaProbability: 1,
     });
 
-    const ev = evaluate(world);
+    const ev = evaluate(world, fusionConfig);
     const attenuatedTruth = world.gamma * world.truth;
     const bin = Math.min(GAMMA_BINS - 1, Math.floor(world.gamma * GAMMA_BINS));
     const binKey = `${(bin / GAMMA_BINS).toFixed(1)}-${((bin + 1) / GAMMA_BINS).toFixed(1)}`;
@@ -215,6 +219,12 @@ function run(ctx: ExperimentContext): ExperimentOutput {
 
   return {
     config: {
+      // La regla de decisión de la Def. 3.6 con que se produjeron estos
+      // números. Sin ella, `results.json` no dice bajo qué sistema se midió.
+      conflictRule: fusionConfig.rule,
+      kappa1: fusionConfig.kappa1,
+      kappa2: fusionConfig.kappa2,
+      kappaDegeneracy: fusionConfig.kappaDegeneracy,
       worlds,
       biasScale,
       bandWeights,
@@ -264,9 +274,10 @@ function run(ctx: ExperimentContext): ExperimentOutput {
 }
 
 const profile = profileOf();
+const ruleOverride = ruleOverrideOf();
 
 main({
-  name: nameFor('virga', profile),
+  name: nameFor('virga', profile, ruleOverride),
   description:
     'Caso virga (Ejemplo 3.1): fracción de mundos en que el intervalo de cada método no ' +
     'contiene ni P* ni γ·P*, y reparto de estrategias de fusión de AURA por tramo de γ.',

@@ -50,7 +50,7 @@ import {
   EVIDENCE_BAND_MASS,
   Z_95,
 } from './lib/methods';
-import { nameFor, profileOf } from './lib/profile';
+import { fusionConfigFor, nameFor, profileOf, ruleOverrideOf } from './lib/profile';
 import { StratumSummary, StratumTable } from './lib/stats';
 import {
   DECLARED_SOURCE_BIAS,
@@ -99,6 +99,10 @@ const CONDITION_LABELS: Readonly<Record<string, string>> = {
 const BAND_ORDER = INTENSITY_BANDS.map((b) => b.name);
 
 function run(ctx: ExperimentContext): ExperimentOutput {
+  // Regla de conflicto efectiva. Sin `--rule` es la del sistema; con ella
+  // se reproducen los números de una regla anterior (ver ERRATA §9) en un
+  // directorio de salida propio.
+  const fusionConfig = fusionConfigFor(ruleOverride);
   const worlds = ctx.flags.number('worlds', 10000);
   if (!Number.isInteger(worlds) || worlds <= 0) {
     throw new Error(`--worlds debe ser un entero positivo; recibido ${worlds}.`);
@@ -143,7 +147,7 @@ function run(ctx: ExperimentContext): ExperimentOutput {
 
   for (let i = 0; i < worlds; i++) {
     const world = sampleWorld(ctx.rng, config);
-    const ev = evaluate(world);
+    const ev = evaluate(world, fusionConfig);
 
     if (world.truth < DOMAIN.lower || world.truth > DOMAIN.upper) h0Violations++;
 
@@ -285,6 +289,12 @@ function run(ctx: ExperimentContext): ExperimentOutput {
 
   return {
     config: {
+      // La regla de decisión de la Def. 3.6 con que se produjeron estos
+      // números. Sin ella, `results.json` no dice bajo qué sistema se midió.
+      conflictRule: fusionConfig.rule,
+      kappa1: fusionConfig.kappa1,
+      kappa2: fusionConfig.kappa2,
+      kappaDegeneracy: fusionConfig.kappaDegeneracy,
       worlds,
       virgaProbability,
       biasScale,
@@ -334,9 +344,10 @@ function run(ctx: ExperimentContext): ExperimentOutput {
 }
 
 const profile = profileOf();
+const ruleOverride = ruleOverrideOf();
 
 main({
-  name: nameFor('coverage', profile),
+  name: nameFor('coverage', profile, ruleOverride),
   description:
     'Cobertura empírica y anchura del intervalo de los dos niveles de AURA frente a media ' +
     'ponderada y Kalman estático, sobre mundos sintéticos con ground truth conocido.',

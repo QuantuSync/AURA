@@ -35,6 +35,8 @@
 import { buildCredalSet } from '@/core/dempster-shafer/credal-set';
 import { createBPAFromGaussian } from '@/core/dempster-shafer/bpa';
 import { fuse } from '@/core/dempster-shafer/combination';
+import { DEFAULT_FUSION_CONFIG, FusionConfig } from '@/core/dempster-shafer/types';
+import { ConflictRuleId, FusionMethod } from '@/core/dempster-shafer/conflict-rules';
 import { toCredalIntervalSet } from '@/core/credal-propagation/credal-interval-set';
 import { PRECIPITATION_FRAME } from '@/lib/constants';
 
@@ -88,9 +90,25 @@ export interface AuraResult {
   existential: MethodInterval;
   band: MethodInterval;
   /** Estrategia de la Def. 3.6 extendida que se activó. */
-  fusionMethod: 'dempster' | 'cautious' | 'envelope';
-  /** K_decision = máx(K_máx, K_global). */
+  fusionMethod: FusionMethod;
+  /** Regla de decisión aplicada (`FusionConfig.rule`). */
+  rule: ConflictRuleId;
+  /** La magnitud que la regla comparó con κ₁ y κ₂. */
   decisionConflict: number;
+  /** K_máx por pares — Def. 3.5, literal del paper. */
+  maxConflict: number;
+  /** K_global — extensión n-aria. */
+  globalConflict: number;
+  /** K_norm, o `null` en las reglas que no lo usan. */
+  normalizedConflict: number | null;
+  /** `true` si la guardia κ_deg forzó la envolvente. */
+  degeneracyGuard: boolean;
+  /**
+   * máx_k K^(k) de la reducción secuencial, o `null` si el método no fue
+   * Dempster. Es la magnitud que (P2′) acota por K_global y la que fija el
+   * factor de normalización 1/(1−K) más agresivo que se aplicó realmente.
+   */
+  maxSequentialConflict: number | null;
 }
 
 /**
@@ -102,8 +120,18 @@ export interface AuraResult {
  * precipitación P, que es lo que los baselines estiman. Propagar por el DAG
  * respondería a otra pregunta (la acumulación h) y no habría con qué
  * compararla.
+ *
+ * @param fusionConfig Configuración de fusión. Existe SOLO para que
+ *        `conflict-rule.ts` pueda correr varias reglas de decisión sobre los
+ *        mismos mundos; el default es la configuración del sistema sin tocar, y
+ *        los tres experimentos de la campaña la usan tal cual. κ₁ y κ₂ no se
+ *        mueven nunca: lo único que este parámetro cambia es QUÉ magnitud se
+ *        compara con ellos.
  */
-export function auraEstimate(world: World): AuraResult {
+export function auraEstimate(
+  world: World,
+  fusionConfig: FusionConfig = DEFAULT_FUSION_CONFIG
+): AuraResult {
   const bpas = SOURCES.map((c, i) =>
     createBPAFromGaussian(
       PRECIPITATION_FRAME,
@@ -117,7 +145,8 @@ export function auraEstimate(world: World): AuraResult {
 
   const fusion = fuse(
     bpas,
-    SOURCES.map((c) => c.failureRate)
+    SOURCES.map((c) => c.failureRate),
+    fusionConfig
   );
 
   const credal = buildCredalSet(fusion);
@@ -127,7 +156,16 @@ export function auraEstimate(world: World): AuraResult {
     existential: interval(credal.continuousInterval.lower, credal.continuousInterval.upper),
     band: interval(band.lower, band.upper),
     fusionMethod: fusion.method,
+    rule: fusion.rule,
     decisionConflict: fusion.decisionConflict,
+    maxConflict: fusion.maxConflict,
+    globalConflict: fusion.globalConflict,
+    normalizedConflict: fusion.normalizedConflict,
+    degeneracyGuard: fusion.degeneracyGuard,
+    maxSequentialConflict:
+      fusion.sequentialConflicts === undefined || fusion.sequentialConflicts.length === 0
+        ? null
+        : Math.max(...fusion.sequentialConflicts),
   };
 }
 
@@ -197,12 +235,17 @@ export function kalmanEstimate(world: World): MethodInterval {
 /** Los cuatro intervalos de un mundo, más los metadatos de fusión de AURA. */
 export interface Evaluation {
   intervals: Record<MethodId, MethodInterval>;
-  fusionMethod: 'dempster' | 'cautious' | 'envelope';
+  fusionMethod: FusionMethod;
   decisionConflict: number;
+  /** Traza completa de la regla de conflicto, para los desgloses del experimento. */
+  aura: AuraResult;
 }
 
-export function evaluate(world: World): Evaluation {
-  const aura = auraEstimate(world);
+export function evaluate(
+  world: World,
+  fusionConfig: FusionConfig = DEFAULT_FUSION_CONFIG
+): Evaluation {
+  const aura = auraEstimate(world, fusionConfig);
   return {
     intervals: {
       'aura-existencial': aura.existential,
@@ -212,6 +255,7 @@ export function evaluate(world: World): Evaluation {
     },
     fusionMethod: aura.fusionMethod,
     decisionConflict: aura.decisionConflict,
+    aura,
   };
 }
 

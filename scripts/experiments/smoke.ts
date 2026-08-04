@@ -26,6 +26,7 @@ import {
   DemoSource,
   runDemoPipeline,
 } from '@/core/pipeline/demo-pipeline';
+import { DEFAULT_FUSION_CONFIG } from '@/core/dempster-shafer/types';
 import { SOURCE_CHARACTERIZATIONS } from '@/data/sources/characterization';
 import { normal, uniform } from '@/lib/prng';
 import { ExperimentContext, ExperimentOutput, main } from './runner';
@@ -95,7 +96,14 @@ function run(ctx: ExperimentContext): ExperimentOutput {
   );
 
   return {
-    config: { samples, maxTruePrecipitation: MAX_TRUE_PRECIPITATION },
+    config: {
+      samples,
+      maxTruePrecipitation: MAX_TRUE_PRECIPITATION,
+      // El reparto de estrategias de este barrido depende de la regla de
+      // conflicto vigente (ver docs/ERRATA.md §9): sin ella, `fusionMethods`
+      // no dice bajo qué sistema se contó.
+      conflictRule: DEFAULT_FUSION_CONFIG.rule,
+    },
     results: {
       samples,
       // El punto del experimento: un único status y un único reachable set para
