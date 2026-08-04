@@ -1,0 +1,319 @@
+{
+  "schemaVersion": 1,
+  "event": {
+    "id": "e2-filomena-madrid-2021",
+    "label": "E2 · Filomena Madrid 2021",
+    "description": "Borrasca Filomena, Madrid-Chamartín, 6-12 de enero de 2021. Evento secundario, incluido por la capa de fusión y por el contraste con E1.",
+    "startDate": "2021-01-06",
+    "endDate": "2021-01-12",
+    "timeZone": "UTC"
+  },
+  "nature": "EJERCICIO ILUSTRATIVO DEL COMPORTAMIENTO DEL PIPELINE SOBRE DATOS REALES. NO es una validación operativa. No hay ground truth (los tres productos son mallas de reanálisis, no el valor en el punto), el DAG es el de juguete de la demo (Ec. 34) y las fuentes no son independientes. Ninguna salida derivada de estos datos puede redactarse como «AURA habría evitado X» o «AURA habría predicho X».",
+  "caveat": "CAVEAT OBLIGATORIO — LA PRECIPITACIÓN DE FILOMENA FUE MAYORITARIAMENTE NIEVE, CON T < 0 °C SOSTENIDA. El DAG de la demo (Ec. 34) modela inundación por LLUVIA: acumula precipitación líquida y resta una capacidad de drenaje constante. Ese mecanismo NO existe en E2. La precipitación se acumuló como manto nival y su liberación al drenaje ocurrió días después, en la fusión, con una dinámica que el DAG no representa en absoluto. Por tanto: todo valor de h, de plUpper y toda decisión de E2 describe lo que el pipeline DIRÍA si esa precipitación hubiera sido lluvia, y NO una estimación del riesgo real de aquel episodio. El interés de E2 está en la capa de fusión (acuerdo y conflicto entre reanálisis en un régimen distinto) y en el contraste con E1.",
+  "point": {
+    "requested": {
+      "latitude": 40.472,
+      "longitude": -3.683
+    },
+    "rationale": "Madrid-Chamartín, el mismo punto que usan los escenarios de `fixtures/s*` del pipeline reproducible, para que el hindcast y la demo hablen del mismo sitio.",
+    "note": "Las coordenadas de `requested` son las EXACTAS que se enviaron a las tres APIs. Cada proveedor las ajusta al centro de su celda; el punto de malla que devolvió cada uno está en `sources[].gridPoint`, y las diferencias entre ellos son un efecto directo de la resolución de cada producto."
+  },
+  "capturedAt": "2026-08-04T13:40:50.767Z",
+  "resolutionWarning": "LOS REANÁLISIS SUAVIZAN LOS EXTREMOS CONVECTIVOS LOCALES. Los tres productos dan el valor MEDIO sobre una celda de 9, 25 y 50 km de lado; un núcleo convectivo de unos pocos km queda diluido en esa media. Los picos puntuales medidos por pluviómetros pueden superar CON MUCHO el valor de celda del mismo instante y lugar, y en los dos eventos de este hindcast lo hicieron. Ninguna cifra de estas series debe leerse como «lo que llovió en ese punto»: es «lo que el producto asigna a la celda que contiene ese punto». Es también el motivo por el que σ de la caracterización a priori crece linealmente con el lado de celda (ver `characterization` más abajo).",
+  "aemet": "AEMET QUEDA FUERA DEL HINDCAST. Su OpenData requiere API key, y un experimento que dependa de una credencial no es reproducible por quien no la tenga: quien clone este repositorio no podría regenerar los fixtures. La consecuencia está asumida y declarada: sin AEMET no hay ninguna fuente de OBSERVACIÓN DIRECTA en el hindcast, las tres son productos de asimilación que comparten observaciones, y por tanto (a) se espera conflicto bajo, (b) H3 del Teorema 6.1 no se cumple en sentido estricto y (c) el caso virga del paper (Ejemplo 3.1) no puede reproducirse aquí. Ver src/data/sources/hindcast-characterization.ts.",
+  "offline": "Tras esta captura, TODO lo demás funciona sin red desde estos ficheros, con el mismo patrón AURA_OFFLINE del resto del harness (src/data/sources/offline.ts). `npm run exp:hindcast` no toca la red.",
+  "payloadSerialization": "Los payloads se guardan tal como los sirvió la API, con indentación de 2, MENOS los campos volátiles de temporización (`generationtime_ms` en Open-Meteo, `times` en POWER), que son milisegundos de reloj del servidor y cambiarían el checksum en cada llamada sin que cambiara ningún dato. No se reordenan claves ni se redondean números: son datos ajenos.",
+  "unitsVerification": {
+    "conclusion": "PRECTOTCORR del endpoint HORARIO está en mm/day (tasa instantánea expresada por día), NO en mm/h. Comprobado contra el endpoint diario de la MISMA ventana: la MEDIA de las 24 horas coincide con el valor diario, luego el acumulado real del día es Σ(horarias)/24. La conversión a mm/h del marco es dividir por 24, que es lo que hace el pipeline.",
+    "ifItWereMmPerHour": "Entonces el acumulado del día sería la SUMA de las horarias y la razón suma/diario valdría 1. Se observa ≈ 24 en todos los días de la ventana, que es exactamente el factor en disputa.",
+    "toleranceRelative": 0.01,
+    "days": [
+      {
+        "day": "20210106",
+        "hours": 24,
+        "sumOfHourly": 0,
+        "meanOfHourly": 0,
+        "dailyEndpointValue": 0,
+        "ratioSumToDaily": null,
+        "meanMatchesDaily": true
+      },
+      {
+        "day": "20210107",
+        "hours": 24,
+        "sumOfHourly": 58.77000000000002,
+        "meanOfHourly": 2.448750000000001,
+        "dailyEndpointValue": 2.45,
+        "ratioSumToDaily": 23.987755102040822,
+        "meanMatchesDaily": true
+      },
+      {
+        "day": "20210108",
+        "hours": 24,
+        "sumOfHourly": 326.25,
+        "meanOfHourly": 13.59375,
+        "dailyEndpointValue": 13.59,
+        "ratioSumToDaily": 24.00662251655629,
+        "meanMatchesDaily": true
+      },
+      {
+        "day": "20210109",
+        "hours": 24,
+        "sumOfHourly": 364.2900000000001,
+        "meanOfHourly": 15.178750000000003,
+        "dailyEndpointValue": 15.18,
+        "ratioSumToDaily": 23.998023715415027,
+        "meanMatchesDaily": true
+      },
+      {
+        "day": "20210110",
+        "hours": 24,
+        "sumOfHourly": 13.360000000000003,
+        "meanOfHourly": 0.5566666666666668,
+        "dailyEndpointValue": 0.56,
+        "ratioSumToDaily": 23.85714285714286,
+        "meanMatchesDaily": true
+      },
+      {
+        "day": "20210111",
+        "hours": 24,
+        "sumOfHourly": 1.4000000000000001,
+        "meanOfHourly": 0.05833333333333334,
+        "dailyEndpointValue": 0.06,
+        "ratioSumToDaily": 23.333333333333336,
+        "meanMatchesDaily": true
+      },
+      {
+        "day": "20210112",
+        "hours": 24,
+        "sumOfHourly": 0,
+        "meanOfHourly": 0,
+        "dailyEndpointValue": 0,
+        "ratioSumToDaily": null,
+        "meanMatchesDaily": true
+      }
+    ]
+  },
+  "characterization": [
+    {
+      "sourceId": "era5",
+      "cellSizeKm": 25,
+      "precipitationStddev": 5,
+      "temperatureStddev": 1.5811388300841898,
+      "failureRate": 0.02,
+      "declaredAPriori": true
+    },
+    {
+      "sourceId": "ecmwf-ifs",
+      "cellSizeKm": 9,
+      "precipitationStddev": 1.8,
+      "temperatureStddev": 0.9486832980505138,
+      "failureRate": 0.02,
+      "declaredAPriori": true
+    },
+    {
+      "sourceId": "nasa-power",
+      "cellSizeKm": 50,
+      "precipitationStddev": 10,
+      "temperatureStddev": 2.23606797749979,
+      "failureRate": 0.02,
+      "declaredAPriori": true
+    }
+  ],
+  "characterizationNote": "σ y δ se declararon y commitearon ANTES de ejecutar el pipeline sobre un solo dato de estas series, y están bloqueados por __tests__/data/hindcast-characterization.test.ts. Se copian aquí para que el manifest de procedencia diga, por sí solo, bajo qué caracterización se produjeron los resultados del evento.",
+  "sources": [
+    {
+      "key": "era5",
+      "sourceId": "era5",
+      "usedInPipeline": true,
+      "label": "ERA5 (Open-Meteo Archive)",
+      "provider": "open-meteo",
+      "model": "era5",
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=40.472&longitude=-3.683&start_date=2021-01-06&end_date=2021-01-12&hourly=precipitation,temperature_2m&models=era5&timezone=GMT",
+      "resolution": "0,25° ≈ 25 km",
+      "license": "CC BY 4.0",
+      "attribution": "Datos meteorológicos de Open-Meteo.com (archivo ERA5/IFS de Copernicus/ECMWF), bajo licencia CC BY 4.0. https://open-meteo.com/",
+      "note": "Reanálisis global de ECMWF. Fuente 1 del pipeline.",
+      "gridPoint": {
+        "latitude": 40.5,
+        "longitude": -3.75,
+        "elevationM": 732
+      },
+      "timeStandard": "UTC (timezone=GMT, utc_offset_seconds=0)",
+      "units": {
+        "time": "iso8601",
+        "precipitation": "mm",
+        "temperature_2m": "°C"
+      },
+      "variables": {
+        "precipitation": {
+          "hours": 168,
+          "validHours": 168,
+          "gapHours": 0,
+          "min": 0,
+          "max": 2.1,
+          "sum": 39.50000000000001
+        },
+        "temperature_2m": {
+          "hours": 168,
+          "validHours": 168,
+          "gapHours": 0,
+          "min": -7.8,
+          "max": 5.9,
+          "sum": -152.89999999999995
+        }
+      },
+      "file": "era5.json",
+      "bytes": 8208,
+      "sha256": "9f51f8ae4dd2c64e1add87cc3f89f08fc7384c66d0ff47276e8c468506f4d9f8"
+    },
+    {
+      "key": "era5-land",
+      "sourceId": null,
+      "usedInPipeline": false,
+      "label": "ERA5-Land (Open-Meteo Archive)",
+      "provider": "open-meteo",
+      "model": "era5_land",
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=40.472&longitude=-3.683&start_date=2021-01-06&end_date=2021-01-12&hourly=precipitation,temperature_2m&models=era5_land&timezone=GMT",
+      "resolution": "0,1° ≈ 9 km",
+      "license": "CC BY 4.0",
+      "attribution": "Datos meteorológicos de Open-Meteo.com (archivo ERA5/IFS de Copernicus/ECMWF), bajo licencia CC BY 4.0. https://open-meteo.com/",
+      "note": "CAPTURADA PERO NO USADA. Era la segunda fuente prevista. Open-Meteo expone ERA5-Land en su Archive API pero NO sirve precipitación para él: devuelve null en TODAS las horas de los dos eventos, y también para `rain` y `snowfall`; solo la temperatura tiene datos. El fichero se versiona igualmente para que esa ausencia sea verificable sin volver a la red. Su sustituto en el pipeline es `ecmwf-ifs`, de la misma clase de resolución (~9 km).",
+      "gridPoint": {
+        "latitude": 40.5,
+        "longitude": -3.699997,
+        "elevationM": 732
+      },
+      "timeStandard": "UTC (timezone=GMT, utc_offset_seconds=0)",
+      "units": {
+        "time": "iso8601",
+        "precipitation": "mm",
+        "temperature_2m": "°C"
+      },
+      "variables": {
+        "precipitation": {
+          "hours": 168,
+          "validHours": 0,
+          "gapHours": 168,
+          "min": null,
+          "max": null,
+          "sum": 0
+        },
+        "temperature_2m": {
+          "hours": 168,
+          "validHours": 168,
+          "gapHours": 0,
+          "min": -6.4,
+          "max": 5.7,
+          "sum": -95.7
+        }
+      },
+      "file": "era5-land.json",
+      "bytes": 8644,
+      "sha256": "14ebef194bca8bc56435d810129e0d712d3c9f9ebca9da835d23666170ca30f3"
+    },
+    {
+      "key": "ecmwf-ifs",
+      "sourceId": "ecmwf-ifs",
+      "usedInPipeline": true,
+      "label": "ECMWF IFS (Open-Meteo Archive)",
+      "provider": "open-meteo",
+      "model": "ecmwf_ifs",
+      "url": "https://archive-api.open-meteo.com/v1/archive?latitude=40.472&longitude=-3.683&start_date=2021-01-06&end_date=2021-01-12&hourly=precipitation,temperature_2m&models=ecmwf_ifs&timezone=GMT",
+      "resolution": "≈ 9 km",
+      "license": "CC BY 4.0",
+      "attribution": "Datos meteorológicos de Open-Meteo.com (archivo ERA5/IFS de Copernicus/ECMWF), bajo licencia CC BY 4.0. https://open-meteo.com/",
+      "note": "Archivo del ANÁLISIS OPERATIVO de ECMWF (no un reanálisis: es el modelo tal como estaba en producción en cada fecha). Fuente 2 del pipeline, en sustitución de ERA5-Land.",
+      "gridPoint": {
+        "latitude": 40.45694,
+        "longitude": -3.6812134,
+        "elevationM": 732
+      },
+      "timeStandard": "UTC (timezone=GMT, utc_offset_seconds=0)",
+      "units": {
+        "time": "iso8601",
+        "precipitation": "mm",
+        "temperature_2m": "°C"
+      },
+      "variables": {
+        "precipitation": {
+          "hours": 168,
+          "validHours": 168,
+          "gapHours": 0,
+          "min": 0,
+          "max": 2.2,
+          "sum": 48.99999999999999
+        },
+        "temperature_2m": {
+          "hours": 168,
+          "validHours": 168,
+          "gapHours": 0,
+          "min": -7.5,
+          "max": 5.8,
+          "sum": -98.69999999999997
+        }
+      },
+      "file": "ecmwf-ifs.json",
+      "bytes": 8236,
+      "sha256": "7b6a4a57eeca78e62059ca94f5dc8c21cb6c74b6a306f37f3be3ea4f7eb6663d"
+    },
+    {
+      "key": "nasa-power",
+      "sourceId": "nasa-power",
+      "usedInPipeline": true,
+      "label": "NASA POWER horario (MERRA-2)",
+      "provider": "nasa-power",
+      "url": "https://power.larc.nasa.gov/api/temporal/hourly/point?parameters=PRECTOTCORR,T2M&community=RE&latitude=40.472&longitude=-3.683&start=20210106&end=20210112&format=JSON",
+      "resolution": "0,5° × 0,625° ≈ 50 km",
+      "license": "dominio público (se exige atribución)",
+      "attribution": "These data were obtained from the NASA Langley Research Center (LaRC) POWER Project funded through the NASA Earth Science/Applied Science Program.",
+      "note": "Reanálisis MERRA-2 de NASA/GMAO servido por el endpoint horario de POWER. Fuente 3 del pipeline, y la más gruesa de las tres.",
+      "gridPoint": {
+        "latitude": 40.472,
+        "longitude": -3.683,
+        "elevationM": 779.85
+      },
+      "timeStandard": "LST (LST). POWER define LST = UTC + round(lon/15); con las longitudes de los dos eventos ese redondeo vale 0, luego LST ≡ UTC y las claves horarias YYYYMMDDHH se leen directamente como UTC. El experimento lo COMPRUEBA al cargar el fixture y lanza si deja de cumplirse.",
+      "fillValue": -999,
+      "units": {
+        "PRECTOTCORR": "mm/day",
+        "T2M": "C"
+      },
+      "variables": {
+        "PRECTOTCORR": {
+          "hours": 168,
+          "validHours": 168,
+          "gapHours": 0,
+          "min": 0,
+          "max": 37.83,
+          "sum": 764.0699999999997
+        },
+        "T2M": {
+          "hours": 168,
+          "validHours": 168,
+          "gapHours": 0,
+          "min": -12.03,
+          "max": 4.9,
+          "sum": -532.7499999999999
+        }
+      },
+      "file": "nasa-power.json",
+      "bytes": 10148,
+      "sha256": "5b894a6e4ae6249df86558a6f9e03d502f731362b6080bd8e7e0f02c5b0aed13"
+    },
+    {
+      "key": "nasa-power-daily",
+      "sourceId": null,
+      "usedInPipeline": false,
+      "label": "NASA POWER diario (solo verificación de unidades)",
+      "provider": "nasa-power",
+      "url": "https://power.larc.nasa.gov/api/temporal/daily/point?parameters=PRECTOTCORR&community=RE&latitude=40.472&longitude=-3.683&start=20210106&end=20210112&format=JSON",
+      "resolution": "0,5° × 0,625° ≈ 50 km",
+      "license": "dominio público (se exige atribución)",
+      "attribution": "These data were obtained from the NASA Langley Research Center (LaRC) POWER Project funded through the NASA Earth Science/Applied Science Program.",
+      "note": "Se captura únicamente para comprobar contra la API que PRECTOTCORR horario está en mm/day. No entra en el pipeline.",
+      "file": "nasa-power-daily.json",
+      "bytes": 826,
+      "sha256": "bd96e981f269d774cafef901bbd45b9419369dd813396a26bfdd85df3fe9ab1e"
+    }
+  ]
+}
