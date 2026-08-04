@@ -1,0 +1,96 @@
+name: verify
+
+# Puerta de calidad del repositorio. `npm run verify` encadena, parando en el
+# primer fallo: tipos → tests → properties → repro → experimento smoke →
+# comparación byte a byte contra snapshots/.
+#
+# DOS REGÍMENES DE PROPERTIES:
+#   · push y pull_request → FC_NUM_RUNS=1000, el mínimo del protocolo de
+#     evidencia (__tests__/properties/_config.ts). Ciclo rápido, para que la
+#     verificación no desincentive los commits pequeños.
+#   · workflow_dispatch   → FC_NUM_RUNS=20000 por defecto, la campaña de
+#     referencia del README. Se lanza a mano antes de publicar números.
+#
+# La semilla (FC_SEED) NO se fija aquí: su valor por defecto es 20260804
+# (src/lib/prng.ts), de modo que dos ejecuciones sobre el mismo commit exploran
+# exactamente el mismo espacio de entradas.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      fc_num_runs:
+        description: 'Casos generados por propiedad (campaña larga)'
+        required: false
+        default: '20000'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: verify (FC_NUM_RUNS=1000)
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      FC_NUM_RUNS: '1000'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Verificación completa
+        run: npm run verify
+
+      - name: Publicar out/ ante divergencia con snapshots/
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: out-divergente
+          path: out/
+          retention-days: 14
+          if-no-files-found: ignore
+
+  campaign:
+    name: campaña de properties (manual)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      FC_NUM_RUNS: ${{ github.event.inputs.fc_num_runs }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Verificación completa
+        run: npm run verify
+
+      - name: Publicar out/ ante divergencia con snapshots/
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: out-divergente-campana
+          path: out/
+          retention-days: 14
+          if-no-files-found: ignore
