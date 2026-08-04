@@ -1,0 +1,5 @@
+scenario,K_max,K_global,method,credal_lower,credal_upper,reachable_lower,reachable_upper,status,belLower,plUpper,decision
+s1-normal,0.0255915338782,0.0271608265379,dempster,0,500,-12,992,unsafe-possible,0,0.000123350297397,warning
+s2-light-rain,0.157631649442,0.184412329213,dempster,0,500,-12,992,unsafe-possible,0,0.00015594380712,warning
+s3-virga-conflict,0.915884772475,0.951199997033,envelope,0,500,-12,992,unsafe-possible,0,0.999970848848,critical
+s4-extreme,3.2211383104e-9,3.31578000303e-9,dempster,0,500,-12,992,unsafe-possible,0.999879999994,0.999999999999,critical

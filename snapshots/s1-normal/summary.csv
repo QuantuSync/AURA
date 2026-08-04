@@ -1,0 +1,2 @@
+scenario,K_max,K_global,method,credal_lower,credal_upper,reachable_lower,reachable_upper,status,belLower,plUpper,decision
+s1-normal,0.0255915338782,0.0271608265379,dempster,0,500,-12,992,unsafe-possible,0,0.000123350297397,warning

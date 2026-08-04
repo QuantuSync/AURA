@@ -1,0 +1,562 @@
+{
+  "bpas": [
+    {
+      "focalElements": [
+        {
+          "indices": [
+            0
+          ],
+          "labels": [
+            "nula"
+          ],
+          "mass": 0.0216125589135
+        },
+        {
+          "indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "labels": [
+            "nula",
+            "ligera",
+            "moderada",
+            "intensa",
+            "torrencial"
+          ],
+          "mass": 0.05
+        },
+        {
+          "indices": [
+            1
+          ],
+          "labels": [
+            "ligera"
+          ],
+          "mass": 0.928385985366
+        },
+        {
+          "indices": [
+            2
+          ],
+          "labels": [
+            "moderada"
+          ],
+          "mass": 0.00000145572015396
+        }
+      ],
+      "sourceId": "aemet"
+    },
+    {
+      "focalElements": [
+        {
+          "indices": [
+            0
+          ],
+          "labels": [
+            "nula"
+          ],
+          "mass": 0.0220675601538
+        },
+        {
+          "indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "labels": [
+            "nula",
+            "ligera",
+            "moderada",
+            "intensa",
+            "torrencial"
+          ],
+          "mass": 0.03
+        },
+        {
+          "indices": [
+            1
+          ],
+          "labels": [
+            "ligera"
+          ],
+          "mass": 0.946622971641
+        },
+        {
+          "indices": [
+            2
+          ],
+          "labels": [
+            "moderada"
+          ],
+          "mass": 0.00130946820557
+        }
+      ],
+      "sourceId": "open-meteo"
+    },
+    {
+      "focalElements": [
+        {
+          "indices": [
+            0
+          ],
+          "labels": [
+            "nula"
+          ],
+          "mass": 0.145962838798
+        },
+        {
+          "indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "labels": [
+            "nula",
+            "ligera",
+            "moderada",
+            "intensa",
+            "torrencial"
+          ],
+          "mass": 0.08
+        },
+        {
+          "indices": [
+            1
+          ],
+          "labels": [
+            "ligera"
+          ],
+          "mass": 0.772795191357
+        },
+        {
+          "indices": [
+            2
+          ],
+          "labels": [
+            "moderada"
+          ],
+          "mass": 0.00124196984446
+        }
+      ],
+      "sourceId": "nasa-power"
+    }
+  ],
+  "certificate": {
+    "assumptions": [
+      "H0 (Soporte acotado): El valor real de cada variable de entrada no excede el domainBound declarado de su marco de discernimiento. H0 es lógicamente previa a H1: si falla, el conjunto credal no puede contener la realidad por construcción del marco (Def. 3.1 con cola cerrada; ver docs/ERRATA.md §5).",
+      "H1 (Cobertura sensorial): El valor real de cada variable de entrada está en el conjunto credal producido por la Capa 1 (i.e., al menos una fuente es compatible con la realidad).",
+      "H2 (Fidelidad del modelo): El error de cada ecuación estructural del DAG está dentro de su bound calibrado: |u_i| ≤ ε_i para todo i (bounds calibrados según Definición 4.4).",
+      "H3 (Regularidad dinámica): Las funciones del DAG satisfacen las condiciones de Lipschitz del Teorema 5.1 dentro del zonotope de trabajo."
+    ],
+    "basis": [
+      "Definición 5.5 (decisión certificada), §5.5",
+      "Definición 5.3 (conjunto alcanzable R(t)), §5.5",
+      "Teorema 5.2 (corrección de la decisión), §5.5",
+      "Teorema 6.1 (soundness composicional end-to-end), §6.3",
+      "EXTENSIÓN a la Definición 5.5 — nivel probabilístico: bounds [Bel(E), Pl(E)] del evento inseguro por propagación credal por elementos focales. Candidata a Definición 5.5′ en la v3; ver docs/ERRATA.md §8.",
+      "Definición 3.2 (BPA) y Definición 3.3 y Ec. (1)-(2) (Bel/Pl), §3.2 — aplicadas a la función de creencia imagen sobre el dominio continuo",
+      "Teorema 4.1 (soundness de la propagación intervalar), §4.4.2 — aplicado a cada elemento focal por separado"
+    ],
+    "domainBounds": [
+      {
+        "domainBound": 500,
+        "unit": "mm/h",
+        "variable": "precipitation"
+      }
+    ],
+    "justification": "Reachable set [-12.00, 992.00] interseca la región insegura en [25.00, 992.00] para 'h' (región segura [-Infinity, 25.00]). Existe al menos un escenario alcanzable que viola la especificación, luego la Def. 5.5 exige disparar la decisión protectora. IMPORTANTE: por ser el reachable set una sobre-aproximación, este veredicto NO demuestra que exista un estado real inseguro — demuestra que no puede descartarse. Válido bajo H0 (soporte acotado) y H1–H3 del Teorema 6.1 (ver `assumptions`). Bajo H0 se asume soporte acotado de las entradas: precipitation ≤ 500.00 mm/h. NIVEL PROBABILÍSTICO (EXTENSIÓN a la Def. 5.5, ver docs/ERRATA.md §8): la probabilidad del evento inseguro está acotada por Bel(E) = 0 ≤ P(E) ≤ Pl(E) = 1.559e-4, por propagación credal elemento focal a elemento focal (Def. 4.3 / Ec. 24 aplicada a cada elemento focal, con su masa intacta). Son bounds DEMOSTRADOS bajo las mismas H0-H3 que el veredicto existencial, no una heurística: los intervalos propagados sobre-aproximan, y sobre-aproximar solo puede quitar términos a Bel(E) y añadirlos a Pl(E), luego [Bel, Pl] contiene al intervalo de probabilidad real.",
+    "probabilityBounds": {
+      "belLower": 0,
+      "plUpper": 0.00015594380712
+    },
+    "reachableInterval": {
+      "lower": -12,
+      "upper": 992
+    },
+    "spec": {
+      "riskThreshold": 0.5,
+      "safeRegion": {
+        "lower": "-Infinity",
+        "upper": 25
+      },
+      "unsafeProbabilityThreshold": 0.05,
+      "variable": "h"
+    },
+    "status": "unsafe-possible",
+    "witness": [
+      {
+        "lower": 25,
+        "upper": 992
+      }
+    ]
+  },
+  "credalSetEq10": {
+    "bounds": [
+      {
+        "belief": 0.000885920274089,
+        "hypothesis": 0,
+        "label": "nula",
+        "plausibility": 0.00103305344481
+      },
+      {
+        "belief": 0.998958135919,
+        "hypothesis": 1,
+        "label": "ligera",
+        "plausibility": 0.99910526909
+      },
+      {
+        "belief": 0.00000881063640332,
+        "hypothesis": 2,
+        "label": "moderada",
+        "plausibility": 0.00015594380712
+      },
+      {
+        "belief": 0,
+        "hypothesis": 3,
+        "label": "intensa",
+        "plausibility": 0.000147133170716
+      },
+      {
+        "belief": 0,
+        "hypothesis": 4,
+        "label": "torrencial",
+        "plausibility": 0.000147133170716
+      }
+    ],
+    "continuousInterval": {
+      "lower": 0,
+      "upper": 500
+    },
+    "fusionMethod": "dempster",
+    "maxConflict": 0.157631649442
+  },
+  "dag": {
+    "edges": [
+      {
+        "from": "P",
+        "to": "h",
+        "weight": {
+          "lower": 2,
+          "upper": 2
+        }
+      }
+    ],
+    "equations": [
+      {
+        "modelErrorBound": 2,
+        "nodeId": "h"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "P",
+        "label": "Precipitación fusionada",
+        "unit": "mm/h"
+      },
+      {
+        "id": "h",
+        "label": "Acumulación de agua h(t)",
+        "unit": "mm"
+      }
+    ],
+    "params": {
+      "drainageCapacity": {
+        "lower": 5,
+        "upper": 5
+      },
+      "horizon": {
+        "lower": 2,
+        "upper": 2
+      },
+      "initialLevel": {
+        "lower": 0,
+        "upper": 0
+      },
+      "modelErrorBound": 2
+    }
+  },
+  "decision": {
+    "escalationBasis": "probability-bound",
+    "severity": 0.963147410359,
+    "status": "warning"
+  },
+  "frame": {
+    "domainBound": 500,
+    "hypotheses": [
+      {
+        "label": "nula",
+        "lower": 0,
+        "upper": 5
+      },
+      {
+        "label": "ligera",
+        "lower": 5,
+        "upper": 15
+      },
+      {
+        "label": "moderada",
+        "lower": 15,
+        "upper": 30
+      },
+      {
+        "label": "intensa",
+        "lower": 30,
+        "upper": 60
+      },
+      {
+        "label": "torrencial",
+        "lower": 60,
+        "upper": 500
+      }
+    ],
+    "unit": "mm/h",
+    "variable": "precipitation"
+  },
+  "fusion": {
+    "conflictMatrix": [
+      [
+        0,
+        0.0421915613529,
+        0.153393142525
+      ],
+      [
+        0.0421915613529,
+        0,
+        0.157631649442
+      ],
+      [
+        0.153393142525,
+        0.157631649442,
+        0
+      ]
+    ],
+    "decisionConflict": 0.184412329213,
+    "fused": {
+      "focalElements": [
+        {
+          "indices": [
+            0
+          ],
+          "labels": [
+            "nula"
+          ],
+          "mass": 0.000885920274089
+        },
+        {
+          "indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "labels": [
+            "nula",
+            "ligera",
+            "moderada",
+            "intensa",
+            "torrencial"
+          ],
+          "mass": 0.000147133170716
+        },
+        {
+          "indices": [
+            1
+          ],
+          "labels": [
+            "ligera"
+          ],
+          "mass": 0.998958135919
+        },
+        {
+          "indices": [
+            2
+          ],
+          "labels": [
+            "moderada"
+          ],
+          "mass": 0.00000881063640332
+        }
+      ],
+      "sourceId": "dempster(dempster(aemet,open-meteo),nasa-power)"
+    },
+    "globalConflict": 0.184412329213,
+    "maxConflict": 0.157631649442,
+    "method": "dempster",
+    "sequentialConflicts": [
+      0.0421915613529,
+      0.148485607479
+    ],
+    "sourceWeights": [
+      0.334507042254,
+      0.341549295775,
+      0.323943661972
+    ]
+  },
+  "inputCredalSet": {
+    "elements": [
+      {
+        "interval": {
+          "lower": 0,
+          "upper": 5
+        },
+        "mass": 0.000885920274089
+      },
+      {
+        "interval": {
+          "lower": 0,
+          "upper": 500
+        },
+        "mass": 0.000147133170716
+      },
+      {
+        "interval": {
+          "lower": 5,
+          "upper": 15
+        },
+        "mass": 0.998958135919
+      },
+      {
+        "interval": {
+          "lower": 15,
+          "upper": 30
+        },
+        "mass": 0.00000881063640332
+      }
+    ],
+    "frameRef": {
+      "domainBound": 500,
+      "unit": "mm/h",
+      "variable": "precipitation"
+    }
+  },
+  "measurements": [
+    {
+      "failureRate": 0.05,
+      "latitude": 40.4718,
+      "longitude": -3.6828,
+      "observedAt": "2026-03-10T09:00:00.000Z",
+      "precipitation": 8,
+      "precipitationStddev": 1.5,
+      "sourceId": "aemet",
+      "temperature": 17.2,
+      "temperatureStddev": 0.3,
+      "timestamp": 1773133200000,
+      "windSpeed": 20.88,
+      "windSpeedStddev": 1
+    },
+    {
+      "failureRate": 0.03,
+      "latitude": 40.4718,
+      "longitude": -3.6828,
+      "observedAt": "2026-03-10T09:00:00.000Z",
+      "precipitation": 9,
+      "precipitationStddev": 2,
+      "sourceId": "open-meteo",
+      "temperature": 17.5,
+      "temperatureStddev": 0.5,
+      "timestamp": 1773133200000,
+      "windSpeed": 22,
+      "windSpeedStddev": 2
+    },
+    {
+      "failureRate": 0.08,
+      "latitude": 40.4718,
+      "longitude": -3.6828,
+      "observedAt": "2026-03-10T23:00:00.000Z",
+      "precipitation": 7.5,
+      "precipitationStddev": 2.5,
+      "sourceId": "nasa-power",
+      "temperature": 17,
+      "temperatureStddev": 1,
+      "timestamp": 1773183600000,
+      "windSpeed": 21.96,
+      "windSpeedStddev": 3
+    }
+  ],
+  "probabilityBounds": {
+    "belLower": 0,
+    "plUpper": 0.00015594380712
+  },
+  "propagatedCredalSet": {
+    "elements": [
+      {
+        "interval": {
+          "lower": -12,
+          "upper": 2
+        },
+        "mass": 0.000885920274089
+      },
+      {
+        "interval": {
+          "lower": -12,
+          "upper": 992
+        },
+        "mass": 0.000147133170716
+      },
+      {
+        "interval": {
+          "lower": -2,
+          "upper": 22
+        },
+        "mass": 0.998958135919
+      },
+      {
+        "interval": {
+          "lower": 18,
+          "upper": 52
+        },
+        "mass": 0.00000881063640332
+      }
+    ],
+    "frameRef": {
+      "domainBound": 500,
+      "unit": "mm/h",
+      "variable": "precipitation"
+    },
+    "nodeId": "h"
+  },
+  "reachableInterval": {
+    "lower": -12,
+    "upper": 992
+  },
+  "scenario": {
+    "date": "2026-03-10",
+    "description": "Lluvia ligera concordante (~8 mm/h). Escenario de referencia de la §7 del paper: el nivel existencial es vacuo y el probabilistico informativo (plUpper ~ 1,56e-4).",
+    "location": {
+      "latitude": 40.4718,
+      "longitude": -3.6828,
+      "name": "Madrid-Chamartín"
+    },
+    "name": "s2-light-rain",
+    "provenance": "sintetico"
+  },
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "failureRate": 0.05,
+      "sourceId": "aemet",
+      "stddev": 1.5,
+      "value": 8
+    },
+    {
+      "failureRate": 0.03,
+      "sourceId": "open-meteo",
+      "stddev": 2,
+      "value": 9
+    },
+    {
+      "failureRate": 0.08,
+      "sourceId": "nasa-power",
+      "stddev": 2.5,
+      "value": 7.5
+    }
+  ]
+}
