@@ -710,10 +710,128 @@ la masa y la consistencia con el nivel existencial en ambas direcciones.
 arriba **incluyendo la vacuidad del nivel existencial**: si alguien intentara
 "arreglar" el problema estrechando el intervalo credal, esos tests fallarían.
 
+**Confirmación empírica (campaña de cobertura, agosto 2026).** El experimento 2
+(`npm run exp:h1`, `scripts/experiments/README.md`) lleva de 0 % a 50 % la
+fracción de mundos en que **las tres fuentes fallan a la vez** —violación
+directa de H1 del Teorema 6.1— y mide qué le pasa a cada nivel:
+
+| fracción de violación | nivel existencial, Ec. (10) | banda de evidencia 95 % |
+|---:|---:|---:|
+| 0 % | 100,00 % | 100,00 % |
+| 25 % | 100,00 % | 84,00 % |
+| 50 % | 100,00 % | 67,75 % |
+
+El nivel existencial cubre el 100 % **también dentro de los mundos violados**:
+es insensible a que H1 sea falsa. No es robustez, es la vacuidad de esta entrada
+medida por otra vía — la masa δ_i sobre Θ mantiene Pl > 0 sobre todas las
+hipótesis y el lifting devuelve el marco entero sea cual sea la evidencia, luego
+también cuando no hay evidencia válida ninguna. La banda de evidencia, que sí
+conserva la estructura de masa, mantiene 99,7-100 % en los mundos intactos y cae
+a ~35 % dentro de los violados: degrada exactamente donde la hipótesis se rompe
+y en ningún otro sitio, que es el comportamiento que se le pide a un nivel
+informativo.
+
 **Lo que NO cambia.** El nivel existencial conserva su semántica exacta:
 `proven-safe` sigue significando reachable ⊆ safeRegion y `unsafe-possible`
 sigue siendo existencial. El nivel probabilístico **cualifica**, no decide, y
 depende de las mismas H0–H3 y de ninguna hipótesis más.
+
+---
+
+## 9 · Definición 3.6 — κ₁ y κ₂ están declarados para K_máx y se reutilizan para K_global
+
+**Clase:** SALVEDAD
+**Ubicación:** §3.4.2, Definición 3.6 (umbrales de la estrategia escalonada), en
+combinación con la entrada 2 de este documento.
+
+### Texto actual
+
+> **Nivel 1: Bajo conflicto** (K_máx ≤ κ₁): Aplicar regla de Dempster […]
+> **Nivel 2: Conflicto moderado** (κ₁ < K_máx ≤ κ₂) […]
+> **Nivel 3: Alto conflicto** (K_máx > κ₂) […]
+> con κ₁ = 0,3 y κ₂ = 0,7.
+
+### Problema
+
+La entrada 2 sustituye K_máx por K_decision = máx(K_máx, K_global) y declara que
+«los umbrales κ₁ = 0,3 y κ₂ = 0,7 **no cambian**». Esa frase es correcta como
+decisión de diseño —cambiarlos habría sido ajustar el sistema a un resultado—
+pero **oculta un desplazamiento del punto de operación** que la campaña de
+cobertura ha medido y que el paper no declara en ninguna parte.
+
+La causa es estructural. Para BPAs gaussianas sobre singletons (Def. 3.4), y
+despreciando los términos de Θ,
+
+```
+K_global ≈ 1 − Σ_j Π_{i=1}^{n} m_i(θ_j)
+```
+
+es decir, K_global es pequeño **solo si las n fuentes concentran masa sobre la
+MISMA hipótesis a la vez**. Con n = 3 y un marco de cinco hipótesis anchas, tres
+fuentes que miden exactamente la misma verdad con σ = 1,5 / 2,0 / 2,5 mm/h se
+reparten entre dos o tres hipótesis contiguas por puro ruido instrumental, y el
+producto colapsa. K_global crece con n y con la dispersión **aunque no exista
+ningún desacuerdo físico entre las fuentes**: no distingue conflicto de
+discretización.
+
+Medido (`npm run exp:coverage`, 10.000 mundos, semilla 20260804; ver
+`scripts/experiments/README.md`), sobre los 7.258 mundos **sin fallo de fuente y
+sin conflicto físico**:
+
+| estrategia elegida | fracción |
+|---|---:|
+| Dempster (K_decision ≤ 0,3) | 54,1 % |
+| cautelosa (0,3 < K_decision ≤ 0,7) | 30,3 % |
+| envolvente (K_decision > 0,7) | 15,6 % |
+
+Casi la mitad de los mundos *tranquilos* no llegan al Nivel 1. Los cuatro
+escenarios de `fixtures/` sugieren lo contrario (K_global = 0,027 / 0,184 /
+0,951 / 3,3e-9: Dempster en tres de cuatro), porque fijan mediciones que
+concuerdan dentro de ±0,75 mm/h — media desviación estándar de la fuente más
+precisa.
+
+Consecuencia práctica, no de soundness: en la mitad de los casos ordinarios la
+salida es la BPA sintética de la envolvente o una media cautelosa, y la banda de
+evidencia al 95 % pasa de una mediana de 30 mm/h a los 500 mm/h del marco
+entero. El sistema **no se equivoca** —pierde informatividad, que es la
+dirección conservadora— pero lo hace mucho más a menudo de lo que el paper deja
+suponer.
+
+### Corrección propuesta
+
+No tocar κ₁ ni κ₂: ajustarlos a la vista de esta medición sería exactamente el
+error que la campaña prohíbe. Lo que hay que añadir a §3.4.2 es la **declaración
+del régimen de validez de los umbrales**:
+
+1. Decir explícitamente que κ₁ = 0,3 y κ₂ = 0,7 fueron elegidos para el K por
+   pares de la Definición 3.5, y que aplicarlos a K_decision los vuelve más
+   estrictos de un modo que **depende de n y de la granularidad del marco**.
+2. Declarar la dependencia: para un mismo escenario físico, K_global crece con
+   el número de fuentes y con la anchura relativa de las hipótesis frente a σ_i.
+   Un marco más fino con la misma evidencia produce MÁS conflicto aparente, no
+   menos.
+3. Anotar en §7 que los escenarios de la demo tienen una concordancia
+   inter-fuente muy por encima de la que implica su propia caracterización de
+   σ_i, y no deben leerse como el caso medio.
+
+Una v3 que quiera recuperar el punto de operación tiene dos vías legítimas, y
+ninguna es mover κ: normalizar K_global por n (p. ej. `1 − (1−K_global)^{1/(n−1)}`,
+que lo devuelve a la escala del K por pares) o descontar la parte del conflicto
+atribuible a la discretización. Las dos son cambios de **definición**, no de
+umbral, y las dos exigen rehacer (P1)/(P2).
+
+### Estado en el código
+
+**Sin cambios, deliberadamente.** `assessConflict` sigue comparando K_decision
+con κ₁ y κ₂ tal cual (`src/lib/constants.ts`: `DEFAULT_KAPPA1 = 0.3`,
+`DEFAULT_KAPPA2 = 0.7`). La regla dura de la campaña de cobertura es que ningún
+parámetro de AURA se ajusta a la vista de sus resultados: esto se **reporta**,
+no se corrige aquí.
+
+**Verificación.** El reparto está en
+`out/experiments/coverage/results.json → fusionByCondition`, reproducible con
+`npm run exp:coverage`, y el desglose por γ del conflicto físico en
+`out/experiments/virga/results.json → fusion.byGamma`.
 
 ---
 
@@ -729,3 +847,4 @@ depende de las mismas H0–H3 y de ninguna hipótesis más.
 | 6 | Teo. 5.1, jacobiana numérica | SALVEDAD | pendiente | corregido |
 | 7 | Def. 5.2 / Ec. (27), lifting en coma flotante | SALVEDAD | pendiente | corregido |
 | 8 | Def. 3.9 / Ec. (10), "el bound externo es suficiente" | EXTENSIÓN *(→ Def. 3.9′ y Def. 5.5′ en v3)* | pendiente | **implementado** |
+| 9 | Def. 3.6, κ₁/κ₂ declarados para K_máx y usados con K_global | SALVEDAD | pendiente | sin cambios *(se reporta, no se ajusta)* |

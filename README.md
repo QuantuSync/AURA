@@ -79,7 +79,7 @@ npm run verify   # puerta completa: tipos → tests → properties → repro →
 npm run repro    # solo la regeneración de resultados y figuras
 ```
 
-`npm run verify` encadena seis pasos y para en el primer fallo:
+`npm run verify` encadena siete pasos y para en el primer fallo:
 
 | # | Paso | Qué comprueba |
 |---|------|---------------|
@@ -88,7 +88,8 @@ npm run repro    # solo la regeneración de resultados y figuras
 | 3 | `npm run test:properties` | Campaña de property-based testing |
 | 4 | `npm run repro` | Regeneración de los cuatro escenarios |
 | 5 | `npm run exp:smoke` | El contrato del runner de experimentos |
-| 6 | `npm run snapshots:check` | `out/` **byte a byte** contra `snapshots/` |
+| 6 | `npm run exp:verify` | Los tres experimentos de cobertura, con N = 200 |
+| 7 | `npm run snapshots:check` | `out/` **byte a byte** contra `snapshots/` |
 
 ### Escenarios
 
@@ -165,7 +166,27 @@ salida estándar en `out/experiments/<nombre>/`—. El detalle está en
 
 ```bash
 npx tsx scripts/experiments/smoke.ts --seed 20260804 --samples 200
+npm run exp:all    # campaña de cobertura: los tres experimentos, ~3 s
 ```
+
+La **campaña de cobertura** compara el pipeline credal contra dos baselines
+clásicos sobre mundos sintéticos con ground truth conocido. Titulares (semilla
+20260804; tablas completas y método en el README de `scripts/experiments/`):
+
+| | cobertura global | anchura media |
+|---|---:|---:|
+| AURA, nivel existencial (Ec. 10) | **100,00 %** [99,96 · 100,00] | 500,00 mm/h |
+| AURA, banda de evidencia 95 % | **99,97 %** [99,91 · 99,99] | 295,26 mm/h |
+| media ponderada (δ_i en el peso) | 76,20 % [75,36 · 77,02] | 4,60 mm/h |
+| Kalman estático (pesos por precisión) | 76,68 % [75,84 · 77,50] | 4,24 mm/h |
+
+Los dos baselines están **bien calibrados mientras su modelo se cumple** (94,8 %
+y 95,3 % en mundos sin fallo ni conflicto, contra un 95 % nominal) y caen a ~2 %
+en cuanto **una sola** de las tres fuentes falla, sin que su intervalo se
+ensanche un milímetro. En el caso *virga* del Ejemplo 3.1, un tercio de los
+mundos produce una media que no contiene **ni P\* ni γ·P\***: ni lo que ocurre
+arriba ni lo que ocurre abajo. La contrapartida está en la columna de la
+derecha, y es enorme.
 
 ## Trazabilidad matemática
 
@@ -268,8 +289,8 @@ mano. Semilla fija → CI reproducible; `FC_NUM_RUNS` escala la campaña.
 Cada propiedad ejecuta `FC_NUM_RUNS` casos generados: **1.000** en `test:run`
 (CI) y **20.000** en `test:properties`. Campaña de referencia: 91 propiedades ×
 20.000 casos (más 7 contraejemplos deterministas de regresión), semilla 20260804
-— todas pasan, en 99 s de reloj. La suite completa (`npm run test:run`) son 372
-tests en 29 ficheros, y `npm run verify` entero, 109 s.
+— todas pasan, en 107 s de reloj. La suite completa (`npm run test:run`) son 386
+tests en 30 ficheros, y `npm run verify` entero, 120 s.
 
 ### Ratio de conservatismo medido (Definición 5.6)
 
