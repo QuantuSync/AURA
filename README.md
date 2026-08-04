@@ -75,11 +75,11 @@ red y sin reloj.
 
 ```bash
 npm ci           # instalación exacta desde package-lock.json
-npm run verify   # puerta completa: tipos → tests → properties → repro → snapshots
+npm run verify   # puerta completa: tipos → tests → properties → repro → experimentos → snapshots
 npm run repro    # solo la regeneración de resultados y figuras
 ```
 
-`npm run verify` encadena siete pasos y para en el primer fallo:
+`npm run verify` encadena ocho pasos y para en el primer fallo:
 
 | # | Paso | Qué comprueba |
 |---|------|---------------|
@@ -89,7 +89,8 @@ npm run repro    # solo la regeneración de resultados y figuras
 | 4 | `npm run repro` | Regeneración de los cuatro escenarios |
 | 5 | `npm run exp:smoke` | El contrato del runner de experimentos |
 | 6 | `npm run exp:verify` | Los tres experimentos de cobertura, con N = 200 |
-| 7 | `npm run snapshots:check` | `out/` **byte a byte** contra `snapshots/` |
+| 7 | `npm run exp:hindcast:verify` | El hindcast sobre datos reales, 24 h del pico de E1 |
+| 8 | `npm run snapshots:check` | `out/` **byte a byte** contra `snapshots/` |
 
 ### Escenarios
 
@@ -240,6 +241,84 @@ mundos produce una media que no contiene **ni P\* ni γ·P\***: ni lo que ocurre
 arriba ni lo que ocurre abajo. La contrapartida está en la columna de la
 derecha, y es enorme.
 
+### Hindcast sobre dos eventos reales
+
+```bash
+npm run hindcast:capture   # UNA VEZ: descarga y versiona fixtures/hindcast/
+npm run exp:hindcast       # los dos eventos, sin red      (~1,5 s)
+```
+
+El pipeline completo, **hora a hora**, sobre dos episodios meteorológicos reales
+con datos públicos sin API key: la **DANA de Valencia** (28-31 oct 2024, 39,42 N
+−0,72 E, 96 h) y la **borrasca Filomena** en Madrid (6-12 ene 2021, 40,472 N
+−3,683 E, 168 h). Tres reanálisis por evento —ERA5 a ~25 km, análisis operativo
+del IFS a ~9 km y MERRA-2 vía NASA POWER a ~50 km— con σ y δ **declaradas antes
+de ejecutar nada**. Detalle completo en
+[`scripts/experiments/README.md`](scripts/experiments/README.md).
+
+> #### ⚠ Es un ejercicio ILUSTRATIVO, no una validación operativa
+>
+> Muestra **cómo se comporta el pipeline** sobre entrada real. No muestra —ni
+> puede— que AURA «habría evitado» ni «habría predicho» nada de lo que ocurrió en
+> aquellos episodios, y ninguna cifra de esta sección debe leerse así: no hay
+> ground truth (los tres productos son mallas de reanálisis, no el valor en el
+> punto), el DAG es el de juguete de la demo (Ec. 34) y las tres fuentes
+> comparten observaciones asimiladas, luego H3 no se cumple en sentido estricto.
+
+> #### ⚠ CAVEAT OBLIGATORIO DE FILOMENA (E2)
+>
+> Su precipitación fue mayoritariamente **nieve**, con T < 0 °C sostenida (53,6 %
+> de las horas por debajo de cero en las tres fuentes a la vez, mínimo −12,03 °C).
+> El DAG de la demo modela inundación por **lluvia**: acumula precipitación
+> líquida y resta un drenaje constante. Ese mecanismo no existió. **Todo h,
+> plUpper y decisión de E2 describe lo que el pipeline diría si aquello hubiera
+> sido lluvia, y no una estimación del riesgo real de aquel episodio.** El
+> interés de E2 está en la capa de fusión y en el contraste con E1. La
+> advertencia viaja también en el manifest de sus fixtures y en las cuatro
+> figuras del evento.
+
+| | **E1 · DANA Valencia** | **E2 · Filomena Madrid** |
+|---|---|---|
+| horas evaluadas / excluidas por huecos | 96 / **0** | 168 / **0** |
+| K_máx mediana · p95 · máx | 0,371 · 0,707 · 0,941 | 0,365 · 0,421 · 0,441 |
+| fusión Dempster / cautelosa / envolvente | 0 % / 93,8 % / 6,3 % | 0 % / 100 % / 0 % |
+| plUpper máximo | 0,963 | 0,0505 |
+| horas critical / warning / safe | 19 / 77 / 0 | 2 / 166 / 0 |
+| anchura banda 95 %, mín-media-máx | 15 · 47,3 · 500 mm/h | 15 · 15,2 · 30 mm/h |
+
+**Lo que se ve.** Los dos baselines tienen anchura **constante** en las 264 horas
+—14,80 y 6,55 mm/h— porque depende solo de σ y δ, nunca de la evidencia; en la
+hora de máximo desacuerdo de E1 el intervalo del Kalman deja fuera a **dos de las
+tres fuentes** que dice resumir, y AURA responde con la envolvente y una banda de
+[0, 500] mm/h: no resume, declara que no puede. El pipeline **no consume la
+temperatura**, de modo que en E2 dice exactamente lo mismo con −12 °C que con
+18 °C — que es, literalmente, el modo de fallo «hielo bloqueando drenes» que §6.3
+del paper cita al motivar H2.
+
+**Y un hallazgo que los mundos sintéticos no habían mostrado.** Dempster **no se
+aplica ni una vez** en las 264 horas. Con tres fuentes midiendo *exactamente lo
+mismo* y σ = 1,8 / 5,0 / 10,0 mm/h, K_máx ya vale **0,365** — por encima de
+κ₁ = 0,3. Es un **suelo estructural** que no procede de ningún desacuerdo, sino
+de que BPAs con σ muy distintas reparten la misma medición de forma distinta
+sobre las hipótesis del marco. El mínimo observado en los dos eventos coincide
+con ese suelo (a 2·10⁻⁴ en E1, exactamente en E2): **el conflicto mínimo del
+hindcast no mide desacuerdo entre reanálisis, mide discretización.** Las σ no se
+han tocado — retocarlas a la vista del resultado es justo lo que la declaración a
+priori existe para impedir. Consecuencia registrada como limitación: **κ₁ y κ₂
+están declarados para un marco y una heterogeneidad de σ dados**, y no son
+transportables sin más a fuentes de resolución muy dispar.
+
+**Atribución de los datos.** Series de Open-Meteo (`archive-api.open-meteo.com`,
+modelos `era5` y `ecmwf_ifs`, sobre archivo ERA5/IFS de Copernicus/ECMWF), bajo
+licencia **CC BY 4.0** — <https://open-meteo.com/>. Series de NASA POWER
+(endpoint horario, MERRA-2), **dominio público con atribución exigida**:
+*«These data were obtained from the NASA Langley Research Center (LaRC) POWER
+Project funded through the NASA Earth Science/Applied Science Program.»* AEMET
+queda deliberadamente fuera: su OpenData exige API key y rompería la
+reproducibilidad para quien no la tenga. URLs exactas, fechas de captura,
+resoluciones y checksums SHA-256 de cada fichero están en
+`fixtures/hindcast/<evento>/manifest.json`.
+
 ## Trazabilidad matemática
 
 Cada módulo referencia definiciones, lemas y teoremas de `papers/AURA_v2.pdf`,
@@ -342,8 +421,8 @@ mano. Semilla fija → CI reproducible; `FC_NUM_RUNS` escala la campaña.
 Cada propiedad ejecuta `FC_NUM_RUNS` casos generados: **1.000** en `test:run`
 (CI) y **20.000** en `test:properties`. Campaña de referencia: 91 propiedades ×
 20.000 casos (más 7 contraejemplos deterministas de regresión), semilla 20260804
-— todas pasan, en 107 s de reloj. La suite completa (`npm run test:run`) son 386
-tests en 30 ficheros, y `npm run verify` entero, 120 s.
+— todas pasan, en 107 s de reloj. La suite completa (`npm run test:run`) son 476
+tests en 34 ficheros, y `npm run verify` entero, 125 s.
 
 ### Ratio de conservatismo medido (Definición 5.6)
 

@@ -1050,6 +1050,43 @@ continuo, y sin violaciones de bounds (0 antes y después).
 lleva el criterio, la traza de la selección y las métricas de los cuatro
 candidatos.
 
+### Addendum — lo que el hindcast añade, y que esta entrada NO resuelve
+
+Esta entrada corrigió **qué magnitud** se compara con κ₁ y κ₂. El hindcast sobre
+datos reales (`npm run exp:hindcast`) deja ver que hay una segunda pregunta
+debajo, que sigue abierta: **con qué escala fueron elegidos κ₁ y κ₂**.
+
+Al fusionar tres mediciones **idénticas** —acuerdo perfecto, dispersión cero— con
+las σ del hindcast (1,8 / 5,0 / 10,0 mm/h, declaradas a priori a partir del lado
+de celda de cada producto), el conflicto por pares **no es cero**:
+
+| las tres fuentes miden | K_máx | método elegido |
+|---:|---:|---|
+| 0 mm/h | **0,365** | cautelosa |
+| 5 mm/h | 0,561 | cautelosa |
+| 10 mm/h | 0,619 | cautelosa |
+| 40 mm/h | 0,189 | dempster |
+
+Es un **suelo estructural**: BPAs con σ muy distintas reparten la MISMA medición
+de forma distinta sobre las cinco hipótesis del marco —la fina concentra la masa
+en una, la gruesa la extiende sobre tres—, el solape es incompleto y K_ij > 0 sin
+ningún desacuerdo físico. Como ese suelo (0,365) supera κ₁ = 0,3, **la rama de
+Dempster es inalcanzable** en todo el régimen de intensidades bajas y medias: en
+las 264 horas de los dos eventos no se aplica ni una sola vez, y el K_máx mínimo
+observado coincide con el suelo (a 2·10⁻⁴ en E1, exactamente en E2).
+
+**Consecuencia, registrada como limitación medida y no como corrección:** κ₁ y κ₂
+están declarados para un marco y una heterogeneidad de σ **dados**, y no son
+transportables sin más a un despliegue con fuentes de resolución muy dispar.
+Ninguna de las cuatro reglas C0-C3 aborda esto, porque las cuatro comparan una
+magnitud con umbrales fijos y el problema está en el par (magnitud, umbral). Un
+candidato natural —restar el suelo, o normalizar K por él— **no se propone aquí**
+porque no se ha estudiado su soundness; hacerlo exige un experimento
+pre-registrado propio, como el que resolvió esta entrada.
+
+Detalle completo, tablas y por qué las σ **no** se retocaron a la vista del
+resultado, en [`scripts/experiments/README.md`](../scripts/experiments/README.md).
+
 ---
 
 ## Resumen de estados

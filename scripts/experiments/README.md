@@ -371,16 +371,262 @@ frente a la impresión de «tres de cuatro a Dempster» que dan los fixtures.
 
 ---
 
+# El hindcast sobre dos eventos reales
+
+`hindcast.ts` · E1 = 96 h · E2 = 168 h · figuras f1-f4 · **sin aleatoriedad**.
+
+```bash
+npm run hindcast:capture      # UNA VEZ: descarga y versiona fixtures/hindcast/
+npm run exp:hindcast          # los dos eventos            (~1,5 s)
+npm run exp:hindcast:e1       # DANA de Valencia, 28-31 oct 2024
+npm run exp:hindcast:e2       # Filomena, Madrid, 6-12 ene 2021
+npm run exp:hindcast:verify   # 24 h del pico de E1, lo que ve `verify`
+```
+
+> ### ⚠ EJERCICIO ILUSTRATIVO, NO VALIDACIÓN OPERATIVA
+>
+> Enseña **el comportamiento del pipeline** cuando la entrada deja de ser un
+> mundo sintético: cuánto conflicto ve entre tres reanálisis, qué estrategia de
+> fusión elige, cómo se mueve el conjunto credal y qué dicen los dos niveles del
+> certificado. **No** enseña que AURA «habría evitado» ni «habría predicho»
+> nada, y ninguna cifra de esta sección puede redactarse así. Tres razones
+> independientes, cada una suficiente:
+>
+> 1. **No hay ground truth.** Los tres productos son mallas de reanálisis, no el
+>    valor en el punto. Sin verdad no hay acierto que medir — para eso está la
+>    campaña de mundos sintéticos de arriba.
+> 2. **El DAG es el de juguete de la demo** (Ec. 34): acumulación menos un
+>    drenaje constante, con parámetros declarados. No es la hidrología de ninguna
+>    cuenca real.
+> 3. **Las fuentes no son independientes** (H3): las tres asimilan el mismo pool
+>    de observaciones globales.
+
+## Los datos
+
+| fuente | producto | resolución | licencia | en el pipeline |
+|---|---|---|---|---|
+| `era5` | ERA5, Open-Meteo Archive | 0,25° ≈ **25 km** | CC BY 4.0 | sí |
+| `ecmwf-ifs` | análisis operativo IFS, Open-Meteo Archive | ≈ **9 km** | CC BY 4.0 | sí |
+| `nasa-power` | MERRA-2, POWER horario | 0,5°×0,625° ≈ **50 km** | dominio público | sí |
+| `era5-land` | ERA5-Land, Open-Meteo Archive | 0,1° ≈ 9 km | CC BY 4.0 | **no** — ver abajo |
+
+**Dos cosas que la captura descubrió, y las dos están en el manifest.**
+
+*ERA5-Land no sirve precipitación.* Era la segunda fuente prevista. Open-Meteo la
+expone en su Archive API, pero devuelve `null` en las 96 + 168 horas de los dos
+eventos, y también para `rain` y `snowfall`; solo la temperatura tiene datos. El
+fichero se versiona igualmente para que la ausencia sea verificable sin volver a
+la red. Su sustituto es el **análisis operativo del IFS**: misma clase de
+resolución (~9 km) y producto genuinamente distinto de ERA5, que es lo que la
+segunda fuente debía aportar.
+
+*`PRECTOTCORR` horario de POWER está en mm/day, no en mm/h.* La captura no se fía
+del comentario: descarga también el endpoint **diario** de la misma ventana y
+comprueba día a día que la **media** de las 24 horas coincide con el valor diario
+(21,864 frente a 21,86 el 29 de octubre). La razón suma/diario vale 24,00 en los
+cuatro días. Si la comprobación fallara, la captura **aborta**.
+
+*AEMET queda fuera* porque su OpenData exige API key, y un experimento que
+dependa de una credencial no lo puede reproducir quien no la tenga. La
+consecuencia está asumida: **sin AEMET no hay ninguna fuente de observación
+directa**, las tres son productos de asimilación, y por eso (a) se esperaba
+conflicto bajo, (b) H3 no se cumple en sentido estricto y (c) **el caso virga no
+puede reproducirse aquí** — su conflicto es vertical, entre sensores a alturas
+distintas, y tres reanálisis estiman la misma magnitud en la misma celda.
+
+## La caracterización, declarada **antes** de ejecutar nada
+
+`src/data/sources/hindcast-characterization.ts`, commiteada en su propio commit
+antes de correr el pipeline sobre un solo dato, y pineada por
+`__tests__/data/hindcast-characterization.test.ts`. Dos reglas cerradas y **un
+único parámetro por fuente**, el lado de celda:
+
+| fuente | L | σ_P = 2,0·(L/10) | σ_T = 1,0·√(L/10) | δ |
+|---|---:|---:|---:|---:|
+| `ecmwf-ifs` | 9 km | **1,8** mm/h | 0,95 °C | 0,02 |
+| `era5` | 25 km | **5,0** mm/h | 1,58 °C | 0,02 |
+| `nasa-power` | 50 km | **10,0** mm/h | 2,24 °C | 0,02 |
+
+σ_P **lineal** en L porque la precipitación es un campo intermitente y convectivo
+—al duplicar el lado, el núcleo se diluye en cuatro veces más área—; σ_T en **√L**
+porque la temperatura sí es suave y su error dominante al bajar de resolución es
+orográfico. δ **iguales y no nulas**: no hay histórico de fallos por producto con
+que ordenarlas, y δ = 0 afirmaría que un reanálisis no puede errar la celda ni el
+tipo de precipitación. No hay ningún número escrito a mano por fuente, luego no
+existe el grado de libertad con que afinar una a la vista de su serie.
+
+**Regla dura: si los resultados sugieren que la caracterización es mala, se
+REPORTA, no se retoca.** Se ha reportado; ver el hallazgo de abajo.
+
+## Resultados
+
+| | **E1 · DANA Valencia** | **E2 · Filomena Madrid** |
+|---|---|---|
+| ventana | 28-31 oct 2024, 96 h | 6-12 ene 2021, 168 h |
+| punto | 39,42 N · −0,72 E | 40,472 N · −3,683 E |
+| horas excluidas por huecos | **0** | **0** |
+| pico de las fuentes (media) | 7,49 mm/h @ 29T17:00Z | 1,80 mm/h @ 08T22:00Z |
+| K_máx mediana / p95 / máx | 0,371 / 0,707 / **0,941** | 0,365 / 0,421 / **0,441** |
+| K_global mediana / máx | 0,423 / 0,983 | 0,412 / 0,543 |
+| fusión D / C / E | 0 % / 93,8 % / **6,3 %** | 0 % / **100 %** / 0 % |
+| guardia κ_deg | 1 h | 0 h |
+| plUpper máximo | **0,963** | **0,0505** |
+| horas critical / warning / safe | 19 / 77 / 0 | 2 / 166 / 0 |
+| anchura banda 95 % (mín/media/máx) | 15 / 47,3 / 500 mm/h | 15 / 15,2 / 30 mm/h |
+| T < 0 °C en las tres fuentes | 0 h | **90 h (53,6 %)**, mín −12,03 °C |
+
+### E1 — ¿cuándo escala, qué método domina, qué dicen los baselines?
+
+**El escalado.** `plUpper` cruza p_crít = 0,05 ya en la **primera hora evaluada**
+(28T00:00Z, plUpper = 0,0559), 41 h antes del pico de precipitación de las
+fuentes. Ese «41 h antes» es una **cota inferior y un artefacto del recorte
+temporal**, no una medida: el cruce pudo ocurrir antes de que empezara la ventana
+capturada. `results.json` lo marca con `firstCriticalAtWindowStart: true`
+precisamente para que no se lea como anticipación. Las 19 horas `critical` no son
+contiguas: caen en tres bloques —28T00-04, 29T07-14 y 29T16-22 con dos huecos
+dentro— siguiendo al conflicto, no a la lluvia. En el pico, plUpper = 0,963, el
+máximo del evento.
+
+**El método durante el pico.** En la ventana de ±6 h alrededor del pico, la
+**envolvente sube al 38,5 %** frente al 6,3 % del evento completo; el resto es
+media cautelosa. Dempster **nunca** se aplica (ver el hallazgo). La hora del pico
+es el caso extremo: ERA5 2,9 · IFS 18,2 · POWER 1,35 mm/h, K_máx = 0,941,
+K_global = 0,983 → **la guardia de degeneración se dispara** y fuerza la
+envolvente. Es la única hora de los dos eventos en que lo hace.
+
+**Los baselines.** No señalan nada distinto de su intervalo fijo, y eso es
+literal: su anchura toma **un solo valor distinto** en las 96 horas —14,80 mm/h
+la media ponderada, 6,55 mm/h el Kalman— porque depende solo de σ y δ, nunca de
+la evidencia. Lo único que se mueve es el centro. El precio se ve en el pico: el
+intervalo del Kalman, [12,75 · 19,30], **deja fuera a dos de las tres fuentes que
+dice resumir** (ERA5 con 2,9 y POWER con 1,35 mm/h). En total el Kalman excluye a
+alguna fuente en **15 de las 96 horas**; la media ponderada, en 1. La banda de
+AURA, en la misma hora, es [0, 500]: no resume, declara que no puede resumir.
+
+### E2 — el mismo pipeline sobre un evento que su DAG no modela
+
+> **CAVEAT OBLIGATORIO.** La precipitación de Filomena fue mayoritariamente
+> **nieve**, con T < 0 °C sostenida (53,6 % de las horas por debajo de cero en las
+> tres fuentes a la vez, mínimo −12,03 °C). El DAG de la demo acumula **lluvia**
+> y resta un drenaje constante; ese mecanismo no existió. La precipitación se
+> acumuló como manto nival y se liberó días después, en la fusión, con una
+> dinámica que el DAG no representa en absoluto. **Todo h, plUpper y decisión de
+> E2 describe lo que el pipeline diría si aquello hubiera sido lluvia.**
+
+Con eso dicho, lo que el pipeline **dice** es informativo por lo que revela del
+sistema. Escala a `critical` en exactamente **2 horas** (08T20:00Z y 08T21:00Z),
+con plUpper máximo de 0,0505 — apenas un 1 % por encima del umbral. Frente a las
+19 horas y el plUpper de 0,963 de E1, el contraste está bien graduado: menos
+lluvia, menos conflicto, menos escalado.
+
+**Y el pipeline no puede saber lo del hielo.** La temperatura se captura, se
+reporta y **no entra en el DAG**: la Ec. (34) solo consume precipitación. El
+sistema dirá exactamente lo mismo con 18 °C que con −12 °C. Ese silencio es un
+límite del **modelo**, no del motor de fusión, y es exactamente el modo de fallo
+que §6.3 del paper cita al motivar H2: *hielo bloqueando drenes* es error de
+modelo, no incertidumbre de medida, y ningún ε_h lo cubre porque cambia la
+ECUACIÓN, no su residuo. E2 es la ilustración empírica de esa frase. Un sistema
+desplegado necesitaría, o un DAG con nodo de fase, o una guardia que se niegue a
+emitir certificado fuera del régimen declarado.
+
+Un detalle que conviene mirar: las dos horas `critical` de E2 **no son** las dos
+de mayor precipitación. La de mayor precipitación (08T22:00Z, plUpper = 0,0494)
+es `warning`, y lo son 20:00 y 21:00. La causa es que plUpper depende de la
+ESTRUCTURA de la banda —de cuántos elementos focales tocan la región insegura— y
+no de un valor puntual: con la banda en [0, 30] toca, con la banda en [0, 15] no.
+
+### E1 frente a E2 — el perfil de conflicto
+
+| cuantil de K_máx | E1 | E2 |
+|---|---:|---:|
+| mín | 0,3653 | 0,3651 |
+| p25 | 0,3675 | 0,3651 |
+| mediana | 0,3714 | 0,3652 |
+| p75 | 0,4418 | 0,3742 |
+| p95 | 0,7066 | 0,4207 |
+| máx | 0,9413 | 0,4411 |
+
+Los dos eventos comparten **exactamente el mismo suelo** y difieren solo en la
+cola. E2 es casi una constante: su rango intercuartílico mide **0,009** (el de E1
+es 0,074, ocho veces mayor) y 55 de sus 168 horas —el 32,7 %— son de
+precipitación cero en las tres fuentes, con las tres BPAs concentradas en la
+hipótesis *nula*. E1 tiene una cola larga —p95 = 0,71, máximo
+0,94— que se corresponde una a una con las horas convectivas del 29 de octubre,
+en las que el IFS de 9 km ve un núcleo que la celda de 50 km de MERRA-2 promedia
+hasta hacerlo desaparecer. **El conflicto que AURA mide en E1 es, sobre todo,
+diferencia de resolución**, y era lo esperado antes de ejecutar nada: tres
+productos que asimilan las mismas observaciones no se contradicen, se
+promedian distinto.
+
+---
+
+## Hallazgo: hay un **suelo estructural de conflicto** que hace inalcanzable la regla de Dempster
+
+**Dempster no se aplica ni una sola vez en las 264 horas de los dos eventos.** No
+es un bug: es una consecuencia medible de la caracterización declarada, y el
+experimento la computa en vez de dejarla a la interpretación
+(`analysis.conflictProfile.structuralFloor`).
+
+Fusionando tres mediciones **idénticas** —acuerdo perfecto, dispersión cero— con
+las σ declaradas:
+
+| las tres fuentes miden | K_máx | K_global | método |
+|---:|---:|---:|---|
+| 0 mm/h | **0,365** | 0,411 | cautelosa |
+| 1 mm/h | 0,411 | 0,480 | cautelosa |
+| 5 mm/h | 0,561 | 0,779 | cautelosa |
+| 10 mm/h | **0,619** | 0,727 | cautelosa |
+| 20 mm/h | 0,501 | 0,554 | cautelosa |
+| 40 mm/h | **0,189** | 0,196 | **dempster** |
+
+El K_máx **mínimo observado** en E1 es 0,3653 y en E2 es 0,3651; el suelo con
+lluvia nula es 0,3651. La diferencia en E1 es de 2·10⁻⁴ y en E2 es **exactamente
+cero**. Es decir: el conflicto mínimo de los dos eventos **no mide desacuerdo
+entre reanálisis, mide discretización**.
+
+**De dónde sale.** Tres fuentes que miden lo mismo con σ = 1,8 / 5,0 / 10,0 mm/h
+reparten esa misma medición de forma muy distinta sobre las cinco hipótesis del
+marco: la fina concentra casi toda la masa en una, la gruesa la extiende sobre
+tres. El solape es incompleto y K_ij > 0 aunque no haya ningún desacuerdo físico.
+Como el suelo (0,365) supera κ₁ = 0,3, **la rama de Dempster es inalcanzable en
+todo el régimen de intensidades bajas y medias**, por mucho que las fuentes
+concuerden. Solo se abre en 40 mm/h, donde las tres BPAs caen dentro de la
+hipótesis *intensa* [30, 60), que es ancha; ninguno de los dos eventos llega
+ahí en el valor de celda.
+
+**Qué NO se ha hecho.** No se han tocado las σ. Bajar σ_P de POWER hasta que
+Dempster vuelva a aparecer sería exactamente el retro-ajuste que la declaración a
+priori existe para impedir, y produciría un número que no significa nada.
+
+**Qué generaliza.** El «hallazgo colateral» de la campaña sintética —los fixtures
+son más concordantes que el ruido real— atribuía el conflicto alto a la
+**dispersión entre mediciones**. Aquí se ve que existe con dispersión **cero**,
+por la sola heterogeneidad de las σ. Son dos mecanismos distintos con el mismo
+efecto, y el segundo es más incómodo: no depende del dato en absoluto.
+
+**Qué abre.** La Def. 3.6 compara un conflicto con umbrales fijos, y la entrada 9
+de `docs/ERRATA.md` ya corrigió *qué magnitud* se compara. Esto es la pregunta
+siguiente y no está resuelta: **κ₁ y κ₂ están declarados para un marco y una
+heterogeneidad de σ dados**, y no son transportables a un despliegue con fuentes
+de resolución muy dispar sin volver a mirarlos. Un candidato natural —restar el
+suelo, o normalizar K por él— no se propone aquí porque no se ha estudiado su
+soundness; queda registrado como lo que es, una limitación medida.
+
+---
+
 ## Experimentos previstos
 
 Todos usarán este runner:
 
-- **Hindcast** — el pipeline sobre series históricas reales de AEMET, para
-  calibrar por fin `ε_h` con la Def. 4.4 / Ec. (25) y sustituir los valores hoy
-  **declarados** (`DEMO_H_MODEL_ERROR_BOUND`, `SOURCE_CHARACTERIZATIONS`, y el
-  sesgo por fuente que esta campaña declara en `lib/world.ts`) por otros
-  calibrados.
-- **Cobertura del nivel probabilístico** — lo de aquí mide el Puente 1→2 sobre
-  P. Falta la campaña equivalente sobre `h` tras la Capa 2, comprobando
+- **Calibración de ε_h y de σ** — el hindcast de aquí *usa* valores declarados;
+  no calibra ninguno. Calibrar `DEMO_H_MODEL_ERROR_BOUND` con la Def. 4.4 /
+  Ec. (25), y las σ contra una referencia observacional, exige una fuente de
+  observación directa (AEMET con credencial, o una red de pluviómetros abierta) y
+  un modelo hidrológico real. Sin eso, H1 del Teorema 6.1 se sigue asumiendo.
+- **Cobertura del nivel probabilístico** — la campaña sintética mide el Puente
+  1→2 sobre P. Falta la equivalente sobre `h` tras la Capa 2, comprobando
   `Bel(E) ≤ P(E) ≤ Pl(E)` empíricamente contra la frecuencia de inundación real
   del mundo sintético.
+- **Umbrales frente al suelo estructural** — la pregunta que abre el hallazgo de
+  arriba: si κ₁ y κ₂ deben depender del marco y de la heterogeneidad de σ, y con
+  qué garantía.
