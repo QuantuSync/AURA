@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "Si usas este software, cítalo mediante estos metadatos."
+title: "AURA v2 — Autonomous Uncertainty-Aware Resilience Architecture"
+abstract: >-
+  Motor de fusión de datos con cuantificación formal de incertidumbre para
+  decisiones en infraestructura crítica. Encadena fusión Dempster-Shafer con
+  conjuntos credales, propagación causal por aritmética de intervalos y
+  zonotopes, y emite un certificado de seguridad de dos niveles: un veredicto
+  existencial (Def. 5.5) y unos bounds de probabilidad [Bel(E), Pl(E)]
+  demostrados bajo las hipótesis H0-H3, obtenidos por propagación credal
+  elemento focal a elemento focal.
+type: software
+version: 2.0.0
+date-released: "2026-08-04"
+license: MIT
+repository-code: "https://github.com/QuantuSync/AURA"
+authors:
+  - family-names: "Alaniz Pintos"
+    given-names: "Lucas"
+    affiliation: "INECO"
+keywords:
+  - "Dempster-Shafer"
+  - "credal sets"
+  - "interval arithmetic"
+  - "zonotopes"
+  - "reachability analysis"
+  - "formal safety certificate"
+  - "uncertainty quantification"
+  - "structural causal models"
+  - "critical infrastructure"
