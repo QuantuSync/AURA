@@ -138,8 +138,19 @@ la Ecuación (6) al producto conjunto de las n BPAs:
 K_global = Σ_{A₁∩…∩Aₙ = ∅}  m₁(A₁) · m₂(A₂) · … · mₙ(Aₙ)                    (6′)
 ```
 
-y sustituir K_máx por **K_decision = máx(K_máx, K_global)** en los tres niveles
-de la Definición 3.6. Los umbrales κ₁ = 0,3 y κ₂ = 0,7 **no cambian**.
+y usarlo para acotar la reducción secuencial. Esta entrada propuso además
+sustituir K_máx por **K_decision = máx(K_máx, K_global)** en los tres niveles de
+la Definición 3.6, con κ₁ = 0,3 y κ₂ = 0,7 sin cambio.
+
+> ⚠ **Esa segunda parte fue revisada por la entrada 9.** Aplicar los umbrales
+> del par a K_global desplaza el punto de operación de un modo que depende de n
+> y de la granularidad del marco. El experimento pre-registrado
+> `npm run exp:conflict-rule` sustituyó la regla `máx(K_máx, K_global)` (hoy
+> «C0») por la regla **C1**: κ₁/κ₂ vuelven a compararse con el K_máx por pares,
+> y K_global se conserva como **guardia de degeneración** (K_global ≥ κ_deg =
+> 0,95 ⟹ envolvente). Lo que sigue vigente de esta entrada es K_global como
+> magnitud —su definición, (P1), (P2) y la nueva (P2′)—, no la regla de
+> decisión que se construyó con él. Ver la entrada 9.
 
 K_global se define sobre el producto conjunto, donde no hay orden: es
 independiente de la permutación de las fuentes, coherentemente con la
@@ -151,8 +162,9 @@ magnitud correcta (candidatas a **Proposición 3.3** en la v3):
 > K_global contiene todos los términos de K_ij; y esos términos factorizan como
 > K_ij · Π_{l≠i,j} (Σ_A m_l(A)) = K_ij · 1. ∎
 >
-> Corolario: K_decision = K_global. El máximo se conserva en el código solo por
-> trazabilidad y robustez numérica.
+> *Vigente sin cambios.* Es una propiedad de K_global, no de la regla de
+> decisión. Lo que CAYÓ con la entrada 9 es su antiguo corolario
+> «K_decision = K_global», que solo describía a la regla C0.
 
 > **(P2)** Si K_global < 1, ninguna reducción secuencial de Dempster alcanza
 > conflicto total, **en ningún orden**.
@@ -161,10 +173,32 @@ magnitud correcta (candidatas a **Proposición 3.3** en la v3):
 > tiene masa > 0 sobre ∩_{i∈P} A_i ⊇ S ≠ ∅, conjunto que interseca al A_j de
 > cualquier fuente restante (contiene S). Luego el K de ese paso es < 1. ∎
 
-(P2) es lo que cierra el hallazgo **por construcción**: con κ₁ = 0,3 < 1, la
-rama Dempster solo se alcanza con K_global ≤ 0,3, y entonces está demostrado
-que ningún paso intermedio degenera. La protección deja de ser un accidente de
-los umbrales.
+> **(P2′)** *(nueva, entrada 9)* El conflicto de **cada** paso de la reducción
+> secuencial cumple K^(k) ≤ K_global, en cualquier orden. Más aún, con
+> U_k := 1 − K_global(m₁,…,m_k),
+>
+> ```
+> 1 − K^(k) = U_{k+1} / U_k        (I1)      Π_{k=1}^{n−1} (1 − K^(k)) = 1 − K_global   (I2)
+> ```
+>
+> *Demostración.* La BPA acumulada tras k pasos es m^(k)(B) = ũ_k(B)/U_k, con
+> ũ_k la masa sin normalizar sobre la intersección B ≠ ∅. Entonces
+> 1 − K^(k) = Σ_{B∩A≠∅} m^(k)(B)·m_{k+1}(A) = U_{k+1}/U_k, que es (I1); (I2) es
+> su telescopio con U_1 = 1. Como U_k ≤ 1 y U es decreciente en k,
+> 1 − K^(k) = U_{k+1}/U_k ≥ U_{k+1} ≥ U_n = 1 − K_global. ∎
+
+(P2) es el caso débil de (P2′) y es lo que cierra el hallazgo **por
+construcción**: cualquier regla de decisión que garantice una cota
+K_global ≤ B < 1 en la rama Dempster impide que un paso intermedio degenere, y
+(P2′) añade que ninguno supera esa misma B — con lo que el factor 1/(1−K) de la
+Ecuación (5) queda acotado por 1/(1−B). La protección deja de ser un accidente
+de los umbrales, y deja también de depender de QUÉ regla se use: las cuatro de
+`src/core/dempster-shafer/conflict-rules.ts` declaran su B (§9).
+
+(I2) tiene además una consecuencia que la entrada 9 explota: 1 − K_global es el
+producto de los (n−1) factores (1 − K^(k)), luego 1 − (1−K_global)^{1/(n−1)} es
+la **media geométrica** del conflicto por paso, expresada en la escala del par.
+No es una analogía; es una identidad.
 
 **Coste.** K_global es exponencial en n (Π_i |F_i| combinaciones en el peor
 caso, con poda al primer prefijo vacío). Aceptable en nuestro dominio: la demo
@@ -176,10 +210,14 @@ superarlo, en lugar de degradar en silencio a la decisión por pares.
 
 **Implementada.** `globalConflict` y `assessConflict`
 (`src/core/dempster-shafer/conflict.ts`); `FusionResult` expone `maxConflict`
-(el K_máx literal del paper), `globalConflict` y `decisionConflict`.
-Propiedades verificadas en `__tests__/properties/global-conflict.property.test.ts`.
+(el K_máx literal del paper), `globalConflict`, `rule`, `decisionConflict`,
+`normalizedConflict` y `degeneracyGuard`.
+Propiedades verificadas en `__tests__/properties/global-conflict.property.test.ts`,
+hoy parametrizadas por regla. La regla de decisión que esta entrada proponía es
+la «C0» de `conflict-rules.ts`; el sistema usa **C1** desde la entrada 9.
 
-**Impacto medido** sobre 20.000 casos generados (semilla 20260804,
+**Impacto medido** de la regla C0 frente a la Definición 3.6 literal, sobre
+20.000 casos generados (semilla 20260804,
 2–4 fuentes): la estrategia cambia en **3.213 casos (16,1 %)**, todos hacia una
 rama más conservadora. De los 7.996 casos que la Def. 3.6 literal enviaba a
 Dempster, **1.133 (14,2 %)** dejan de hacerlo. Con n = 2 no cambia nada, como
@@ -738,9 +776,10 @@ depende de las mismas H0–H3 y de ninguna hipótesis más.
 
 ---
 
-## 9 · Definición 3.6 — κ₁ y κ₂ están declarados para K_máx y se reutilizan para K_global
+## 9 · Definición 3.6 — κ₁ y κ₂ están declarados para K_máx y se reutilizaban para K_global
 
-**Clase:** SALVEDAD
+**Clase:** ERRATA DE DISEÑO *(reclasificada: la iteración anterior la registró
+como SALVEDAD, «se reporta, no se corrige»)*
 **Ubicación:** §3.4.2, Definición 3.6 (umbrales de la estrategia escalonada), en
 combinación con la entrada 2 de este documento.
 
@@ -757,7 +796,7 @@ La entrada 2 sustituye K_máx por K_decision = máx(K_máx, K_global) y declara 
 «los umbrales κ₁ = 0,3 y κ₂ = 0,7 **no cambian**». Esa frase es correcta como
 decisión de diseño —cambiarlos habría sido ajustar el sistema a un resultado—
 pero **oculta un desplazamiento del punto de operación** que la campaña de
-cobertura ha medido y que el paper no declara en ninguna parte.
+cobertura midió y que el paper no declara en ninguna parte.
 
 La causa es estructural. Para BPAs gaussianas sobre singletons (Def. 3.4), y
 despreciando los términos de Θ,
@@ -774,64 +813,242 @@ producto colapsa. K_global crece con n y con la dispersión **aunque no exista
 ningún desacuerdo físico entre las fuentes**: no distingue conflicto de
 discretización.
 
-Medido (`npm run exp:coverage`, 10.000 mundos, semilla 20260804; ver
-`scripts/experiments/README.md`), sobre los 7.258 mundos **sin fallo de fuente y
-sin conflicto físico**:
+Medido con la regla C0 (10.000 mundos, semilla 20260804), sobre los 7.258
+mundos **sin fallo de fuente y sin conflicto físico**: Dempster 54,1 %,
+cautelosa 30,3 %, envolvente **15,6 %**. Casi la mitad de los mundos
+*tranquilos* no llegaban al Nivel 1.
 
-| estrategia elegida | fracción |
-|---|---:|
-| Dempster (K_decision ≤ 0,3) | 54,1 % |
-| cautelosa (0,3 < K_decision ≤ 0,7) | 30,3 % |
-| envolvente (K_decision > 0,7) | 15,6 % |
+El diagnóstico, en una línea: **κ₁/κ₂ y K_global viven en escalas distintas**.
+Los umbrales fueron elegidos para el conflicto POR PARES de la Definición 3.5;
+K_global es una magnitud n-aria que crece con n y con la granularidad del marco.
+La regla C0 mezclaba dos funciones que hay que separar:
 
-Casi la mitad de los mundos *tranquilos* no llegan al Nivel 1. Los cuatro
-escenarios de `fixtures/` sugieren lo contrario (K_global = 0,027 / 0,184 /
-0,951 / 3,3e-9: Dempster en tres de cuatro), porque fijan mediciones que
-concuerdan dentro de ±0,75 mm/h — media desviación estándar de la fuente más
-precisa.
+1. **informatividad** — qué magnitud decide entre Dempster, media cautelosa y
+   envolvente;
+2. **protección** — qué impide que la reducción secuencial degenere, es decir la
+   propiedad (P2) de la entrada 2.
 
-Consecuencia práctica, no de soundness: en la mitad de los casos ordinarios la
-salida es la BPA sintética de la envolvente o una media cautelosa, y la banda de
-evidencia al 95 % pasa de una mediana de 30 mm/h a los 500 mm/h del marco
-entero. El sistema **no se equivoca** —pierde informatividad, que es la
-dirección conservadora— pero lo hace mucho más a menudo de lo que el paper deja
-suponer.
+La protección debía conservarse. La sobre-conservación estructural, no.
 
-### Corrección propuesta
+### Corrección — experimento pre-registrado
 
-No tocar κ₁ ni κ₂: ajustarlos a la vista de esta medición sería exactamente el
-error que la campaña prohíbe. Lo que hay que añadir a §3.4.2 es la **declaración
-del régimen de validez de los umbrales**:
+La iteración anterior dejó esto sin corregir por una razón sólida: elegir una
+regla nueva a la vista de sus propios resultados es el error que la campaña
+prohíbe. La corrección se hizo por tanto **pre-registrando** candidatos,
+requisito y criterio ANTES de ejecutar nada, y con una **semilla distinta**
+(20260311) de la canónica con que se publican los números (20260804), para que
+la regla elegida no pudiera quedar ajustada a la realización del PRNG que luego
+se cita.
 
-1. Decir explícitamente que κ₁ = 0,3 y κ₂ = 0,7 fueron elegidos para el K por
-   pares de la Definición 3.5, y que aplicarlos a K_decision los vuelve más
-   estrictos de un modo que **depende de n y de la granularidad del marco**.
-2. Declarar la dependencia: para un mismo escenario físico, K_global crece con
-   el número de fuentes y con la anchura relativa de las hipótesis frente a σ_i.
-   Un marco más fino con la misma evidencia produce MÁS conflicto aparente, no
-   menos.
-3. Anotar en §7 que los escenarios de la demo tienen una concordancia
-   inter-fuente muy por encima de la que implica su propia caracterización de
-   σ_i, y no deben leerse como el caso medio.
+**Los cuatro candidatos** (`src/core/dempster-shafer/conflict-rules.ts`, tras la
+interfaz común `ConflictDecisionRule`; κ₁ y κ₂ **no se mueven en ninguno**):
 
-Una v3 que quiera recuperar el punto de operación tiene dos vías legítimas, y
-ninguna es mover κ: normalizar K_global por n (p. ej. `1 − (1−K_global)^{1/(n−1)}`,
-que lo devuelve a la escala del K por pares) o descontar la parte del conflicto
-atribuible a la discretización. Las dos son cambios de **definición**, no de
-umbral, y las dos exigen rehacer (P1)/(P2).
+| | K_decision (contra κ₁/κ₂) | guardia | cota B sobre K_global en la rama Dempster |
+|---|---|---|---|
+| **C0** *(la vigente)* | máx(K_máx, K_global) | — | κ₁ = 0,30 |
+| **C1** | K_máx por pares | K_global ≥ κ_deg ⟹ envolvente | κ_deg = 0,95 |
+| **C2** | máx(K_máx, K_norm) | — | 1 − (1−κ₁)^{n−1} = 0,51 *(n = 3)* |
+| **C3** | máx(K_máx, K_norm) | K_global ≥ κ_deg ⟹ envolvente | 0,51 |
+
+con **K_norm = 1 − (1 − K_global)^{1/(n−1)}** y κ_deg = 0,95. Por (I2) de la
+entrada 2, K_norm es exactamente la **media geométrica del conflicto por paso**
+de la reducción secuencial, llevada a la escala del par; para n = 2 vale
+K_global = K_par de forma exacta, bit a bit.
+
+**Requisito innegociable**, verificado ANTES de comparar nada. Un candidato que
+falle cualquiera de los tres queda descalificado por informativo que sea:
+
+- (a) el contraejemplo del ciclo va a envolvente o cautelosa, nunca a Dempster
+  (`__tests__/core/dempster-shafer/conflict-rules.test.ts`);
+- (b) la rama Dempster no se ejecuta nunca con K_decision > κ₂, y su K_global
+  respeta la cota B < 1 declarada
+  (`__tests__/properties/global-conflict.property.test.ts`, 20.000 casos × las
+  cuatro reglas × todas las permutaciones);
+- (c) la campaña de soundness de `__tests__/experiments/world-soundness.test.ts`,
+  hoy parametrizada por regla: 4 reglas × 3 configuraciones × 2.000 mundos.
+
+**Criterio de selección**, lexicográfico y aplicado mecánicamente por
+`scripts/experiments/lib/selection.ts` (probado aparte de las cifras que
+consume, en `__tests__/experiments/conflict-rule-selection.test.ts`):
+
+1. pasa el requisito innegociable;
+2. cobertura existencial 100 % y cobertura de banda-95 ≥ 99,5 % global;
+3. mayor fracción de mundos limpios concordantes que alcanza Dempster;
+4. empate a < 1 punto porcentual en 3 → menor anchura media de la banda-95;
+5. empate también en 4 → el más simple, orden C1 > C2 > C3.
+
+### Fase A — calibración y selección
+
+`npm run exp:conflict-rule` · semilla **20260311** · 10.000 mundos de
+calibración + 5.000 solo-virga, los **mismos** para los cuatro candidatos.
+
+| candidato | requisito | cob. existencial | cob. banda-95 | limpios → Dempster | anchura banda-95 | virga: ni P\* ni γP\* | virga (D/C/E) |
+|---|---|---:|---:|---:|---:|---:|---|
+| C0 | ✅ | 100,00 % | 99,910 % | 53,49 % | 296,99 mm/h | 0,00 % | 29 / 20 / 51 % |
+| **C1** | ✅ | 100,00 % | 99,840 % | **57,62 %** | **280,67 mm/h** | 0,02 % | 31 / 24 / 45 % |
+| C2 | ✅ | 100,00 % | 99,840 % | **57,62 %** | **280,67 mm/h** | 0,02 % | 31 / 24 / 45 % |
+| C3 | ✅ | 100,00 % | 99,840 % | **57,62 %** | **280,67 mm/h** | 0,02 % | 31 / 24 / 45 % |
+
+**Ningún candidato fue descalificado.** Los cuatro pasan el requisito y los
+pasos 1–2 del criterio; C1, C2 y C3 empatan en el paso 3 (identidad exacta, no
+aproximación) y en el paso 4, y **decide el paso 5: se selecciona C1** por
+simplicidad.
+
+**Acuerdo par a par**, sobre los 15.000 mundos:
+
+| | C0 | C1 | C2 | C3 |
+|---|---:|---:|---:|---:|
+| C0 | — | 88,53 % | 88,53 % | 88,53 % |
+| C1 | | — | **100 %** | **100 %** |
+| C2 | | | — | **100 %** |
+
+C1, C2 y C3 eligen la MISMA estrategia en los 15.000 mundos. Dos coincidencias
+distintas se superponen ahí:
+
+- **C3 ≡ C2 es un teorema para n ≤ 3**, no una casualidad. La guardia añade algo
+  a C2 solo si existe un caso con K_global ≥ κ_deg y máx(K_máx, K_norm) ≤ κ₂; el
+  peor caso es K_global = κ_deg, y entonces
+  K_norm(κ_deg, n) > κ₂ ⟺ n − 1 < ln(1−κ_deg)/ln(1−κ₂) = **2,4882**.
+  Con κ_deg = 0,95 y κ₂ = 0,7 la guardia es **redundante para n ≤ 3** y
+  **operativa para n ≥ 4**: con n = 4 y K_global = 0,95, K_norm = 0,6316 ≤ κ₂ y
+  C2 va a la media cautelosa mientras C3 fuerza la envolvente. En el dominio de
+  la demo (3 fuentes, §7.2) **C3 colapsa en C2 exactamente**; en el régimen que
+  `maxSourcesForGlobalConflict` = 6 admite, **no**. Demostrado y testeado.
+- **C1 ≡ C2 es empírico, no un teorema.** Con tres fuentes gaussianas sobre este
+  marco resultó que K_norm ≤ K_máx en los 15.000 mundos, de modo que el máximo
+  de C2 se lo lleva siempre K_máx —que es justo lo que C1 usa—. No vale en
+  general: en el ciclo del contraejemplo K_máx = 0,75 y K_norm = 1.
+
+**Margen numérico realmente usado** en la rama Dempster (peor caso sobre los
+15.000 mundos):
+
+| | cota B declarada | peor K_global observado | peor K^(k) secuencial | peor factor 1/(1−K) |
+|---|---:|---:|---:|---:|
+| C0 | 0,30 | 0,2999 | 0,2954 | 1,419 |
+| C1 | 0,95 | 0,4474 | 0,3070 | 1,443 |
+| C2, C3 | 0,51 | 0,4474 | 0,3070 | 1,443 |
+
+La cota teórica de C1 es mucho más laxa que la de C2 (20 frente a 2,04 sobre el
+factor de normalización), y el criterio pre-registrado no la contempla. Medido,
+la diferencia no se materializa: el peor factor realmente aplicado es 1,443 con
+C1 frente a 1,419 con C0. Se declara igualmente como el punto débil de la regla
+elegida, y como la razón por la que C2 seguiría siendo preferible si algún día
+se opera con n ≥ 4 fuentes o con marcos mucho más finos.
+
+### Fase B — validación con la semilla canónica
+
+`npm run exp:all` · semilla **20260804** · regla C1. La columna C0 se regenera
+con `npm run exp:all:c0` y reproduce exactamente los números publicados antes de
+esta corrección, lo que confirma que nada más ha cambiado.
+
+**Experimento 1 — reparto de estrategias** (10.000 mundos):
+
+| condición | n | C0 (D / C / E) | **C1 (D / C / E)** |
+|---|---:|---|---|
+| global | 10.000 | 44,10 / 24,87 / 31,03 % | **47,93 / 30,06 / 22,01 %** |
+| **sin fallo ni virga** | 7.258 | 54,08 / 30,30 / **15,62** % | **58,82 / 36,55 / 4,63 %** |
+| fallo δ | 1.495 | 3,88 / 1,07 / 95,05 % | 3,88 / 1,74 / 94,38 % |
+| virga | 1.247 | 34,24 / 21,81 / 43,95 % | 37,37 / 26,22 / 36,41 % |
+
+**Experimento 1 — cobertura y anchura**:
+
+| método · estrato | C0 cobertura | C1 cobertura | C0 anchura | C1 anchura |
+|---|---:|---:|---:|---:|
+| existencial · global | 100,00 % | **100,00 %** | 500,00 | 500,00 |
+| banda-95 · global | 99,97 % | **99,91 %** | 295,26 | **276,51** |
+| banda-95 · sin fallo | 100,00 % | 99,92 % | 247,96 | **224,77** |
+| banda-95 · fallo δ | 99,87 % | 99,87 % | 492,01 | 492,01 |
+| banda-95 · virga | 99,92 % | 99,92 % | 334,70 | **319,29** |
+
+Los dos baselines no se mueven ni un dígito (76,20 % y 76,68 %, anchuras 4,60 y
+4,24 mm/h): no dependen de la regla de fusión, y sirven de control.
+
+**Experimento 2 — violación de H1** (11 puntos × 2.000 mundos), banda-95:
+
+| violación | C0 todos | C1 todos | C0 violados | C1 violados | C0 intactos | C1 intactos |
+|---:|---:|---:|---:|---:|---:|---:|
+| 0 % | 100,00 % | 99,95 % | — | — | 100,00 % | 99,95 % |
+| 25 % | 84,00 % | 83,95 % | 34,29 % | 34,09 % | 100,00 % | 100,00 % |
+| 50 % | 67,75 % | 67,70 % | 37,17 % | 37,17 % | 99,90 % | 99,79 % |
+
+El nivel existencial se mantiene en 100,00 % en los once puntos con las dos
+reglas. La estructura del hallazgo —degrada dentro de los mundos violados y solo
+allí— no cambia; la anchura media baja (365,00 frente a 375,51 mm/h al 50 %).
+
+**Experimento 3 — virga** (5.000 mundos solo-virga):
+
+| | C0 | C1 |
+|---|---:|---:|
+| existencial · ni P\* ni γP\* | 0,00 % | 0,00 % |
+| banda-95 · ni P\* ni γP\* (todos) | 0,02 % | **0,04 %** |
+| banda-95 · ni P\* ni γP\* (sin fallo δ) | 0,00 % | 0,02 % |
+| banda-95 · anchura media | 356,01 | **343,19** mm/h |
+| reparto D / C / E | 30,06 / 18,92 / 51,02 % | **32,68 / 23,22 / 44,10 %** |
+| K_decision mediana (p25 / p75) | 0,718 (0,228 / 0,935) | 0,596 (0,200 / 0,892) |
+
+`media-ponderada` y `kalman-estatico` siguen en 43,12 % y 41,58 %: la afirmación
+del Ejemplo 3.1 queda cuantificada igual que antes.
+
+### Qué se compró y qué se pagó
+
+**Comprado.** En mundos limpios y concordantes, la envolvente cae de **15,6 % a
+4,6 %** (un factor 3,4) y el Nivel 1 sube de 54,1 % a 58,8 %. La anchura media
+de la banda de evidencia baja un 6,4 % en global y un 9,4 % en mundos limpios.
+El objetivo declarado —eliminar la sobre-conservación estructural— se cumple.
+
+**Pagado, y hay que decirlo:**
+
+1. La cobertura de la banda-95 baja de 99,97 % a 99,91 % en global y de 100,00 %
+   a 99,92 % en mundos limpios. Sigue muy por encima del 95 % nominal y del piso
+   pre-registrado del 99,5 %, pero es una pérdida real: la banda es más estrecha
+   y falla más. En virga, la métrica «ni P\* ni γ·P\*» sube de 0,02 % a 0,04 %
+   (2 mundos de 5.000). **La soundness no se toca**: el nivel existencial sigue
+   en 100,00 % en las tres campañas y bajo las cuatro reglas.
+2. **Un conflicto n-ario real con pares moderados baja de Nivel 3 a Nivel 2.**
+   El ciclo atenuado del test de regresión (m_i = {a:0,4; b:0,4; Θ:0,2}, pares a
+   0,48 y K_global = 0,784) iba a envolvente con C0 y va a media cautelosa con
+   C1 —y también con C2 y C3, luego es el precio de reescalar, no de C1—. La
+   media cautelosa es una combinación convexa (Prop. 3.2), sigue siendo sound y
+   no normaliza: se pierde conservadurismo, no corrección. Está fijado
+   explícitamente en `__tests__/properties/dempster-validity.property.test.ts`.
+3. La cota teórica sobre el factor de normalización se relaja de 1,43 a 20 (ver
+   la tabla de márgenes; el valor observado no llega a 1,45).
 
 ### Estado en el código
 
-**Sin cambios, deliberadamente.** `assessConflict` sigue comparando K_decision
-con κ₁ y κ₂ tal cual (`src/lib/constants.ts`: `DEFAULT_KAPPA1 = 0.3`,
-`DEFAULT_KAPPA2 = 0.7`). La regla dura de la campaña de cobertura es que ningún
-parámetro de AURA se ajusta a la vista de sus resultados: esto se **reporta**,
-no se corrige aquí.
+**Corregido.** `assessConflict` delega en `ruleOf(config).decide(...)`
+(`src/core/dempster-shafer/conflict.ts`), y `DEFAULT_FUSION_CONFIG.rule = 'C1'`.
+Las cuatro reglas siguen disponibles por configuración —`FusionConfig.rule` y
+`FusionConfig.kappaDegeneracy`— y los experimentos aceptan `--rule` para
+reproducir cualquier número publicado bajo una regla anterior
+(`npm run exp:all:c0`). `FusionResult` expone `rule`, `decisionConflict`,
+`normalizedConflict` y `degeneracyGuard`, y esos campos viajan a
+`out/<escenario>/result.json` y a las columnas `rule`, `K_decision` y `guard` de
+`summary.csv`.
 
-**Verificación.** El reparto está en
-`out/experiments/coverage/results.json → fusionByCondition`, reproducible con
-`npm run exp:coverage`, y el desglose por γ del conflicto físico en
-`out/experiments/virga/results.json → fusion.byGamma`.
+**κ₁ y κ₂ no se han movido.** Siguen valiendo 0,3 y 0,7
+(`src/lib/constants.ts`). Lo único que ha cambiado es qué magnitud se compara
+con ellos.
+
+**Impacto en los cuatro escenarios del harness:** ninguno cambia de método de
+fusión ni de veredicto. s2 sigue dando plUpper = 1,559438e-4 exactamente, y los
+cuatro conservan su `credal`, su `reachable`, su `belLower`, su `plUpper` y su
+decisión. Lo único que cambia en `summary.csv` son las columnas nuevas y el
+valor de `K_decision`, que ahora es el K_máx por pares. Detalle a anotar:
+**s3-virga-conflict activa la guardia** (K_global = 0,9512 ≥ κ_deg = 0,95); ya
+iba a envolvente por K_máx = 0,9159 > κ₂, de modo que el resultado es el mismo
+por dos vías independientes.
+
+**Impacto en el barrido `smoke`** (200 escenarios concordantes, semilla
+20260804): las estrategias pasan de 116/47/37 a **126/65/9** (D/C/E) y tres
+escenarios de 200 bajan de `critical` a `warning`. Es el mismo efecto que mide
+el experimento 1 —menos envolventes, más informatividad— visto en un barrido
+continuo, y sin violaciones de bounds (0 antes y después).
+
+**Verificación.** `npm run exp:conflict-rule` (Fase A, semilla 20260311) y
+`npm run exp:all` (Fase B, semilla 20260804); `out/experiments/conflict-rule/results.json`
+lleva el criterio, la traza de la selección y las métricas de los cuatro
+candidatos.
 
 ---
 
@@ -840,11 +1057,11 @@ no se corrige aquí.
 | # | Entrada | Clase | Paper | Código |
 |---|---------|-------|-------|--------|
 | 1 | Ec. (7), pesos de la media cautelosa | ERRATA | pendiente | corregido |
-| 2 | Def. 3.6, conflicto global n-ario | EXTENSIÓN | pendiente | implementado |
+| 2 | Def. 3.6, conflicto global n-ario | EXTENSIÓN *(regla de decisión revisada por la entrada 9)* | pendiente | implementado |
 | 3 | Prop. 4.1, redondeo IEEE-754 | SALVEDAD | pendiente | documentado |
 | 4 | Def. 4.1 vs Ec. (24), error aditivo | ERRATA | pendiente | explícito |
 | 5 | Def. 3.9 / Ec. (10), cola infinita del marco | EXTENSIÓN *(→ Def. 3.1 y Teo. 6.1 en v3)* | pendiente | corregido |
 | 6 | Teo. 5.1, jacobiana numérica | SALVEDAD | pendiente | corregido |
 | 7 | Def. 5.2 / Ec. (27), lifting en coma flotante | SALVEDAD | pendiente | corregido |
 | 8 | Def. 3.9 / Ec. (10), "el bound externo es suficiente" | EXTENSIÓN *(→ Def. 3.9′ y Def. 5.5′ en v3)* | pendiente | **implementado** |
-| 9 | Def. 3.6, κ₁/κ₂ declarados para K_máx y usados con K_global | SALVEDAD | pendiente | sin cambios *(se reporta, no se ajusta)* |
+| 9 | Def. 3.6, κ₁/κ₂ declarados para K_máx y usados con K_global | ERRATA DE DISEÑO *(→ regla C1 en v3)* | pendiente | **corregido** *(experimento pre-registrado)* |

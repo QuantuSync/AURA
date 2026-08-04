@@ -98,12 +98,16 @@ modo offline (`AURA_OFFLINE=1`, o `{ offline: true }` en la llamada). El modo po
 defecto **no cambia**: sin esa señal, los clientes hacen `fetch`. Procedencia y
 formato de cada fixture, en [`fixtures/README.md`](fixtures/README.md).
 
-| Escenario | Precipitación (mm/h) | `K_global` | Método | Bel(E) | Pl(E) | Decisión |
-|---|---|---|---|---|---|---|
-| `s1-normal` | 0 / 0 / 0 | 0,0272 | dempster | 0 | 1,234e-4 | `warning` |
-| `s2-light-rain` | 8 / 9 / 7,5 | 0,1844 | dempster | 0 | **1,559e-4** | `warning` |
-| `s3-virga-conflict` | 3 / 18 / 25 | 0,9512 | envelope | 0 | 0,99997 | `critical` |
-| `s4-extreme` | 45 / 46 / 44,5 | 3,32e-9 | dempster | 0,99988 | ≈ 1 | `critical` |
+| Escenario | Precipitación (mm/h) | `K_máx` | `K_global` | Método | Bel(E) | Pl(E) | Decisión |
+|---|---|---|---|---|---|---|---|
+| `s1-normal` | 0 / 0 / 0 | 0,0256 | 0,0272 | dempster | 0 | 1,234e-4 | `warning` |
+| `s2-light-rain` | 8 / 9 / 7,5 | 0,1576 | 0,1844 | dempster | 0 | **1,559e-4** | `warning` |
+| `s3-virga-conflict` | 3 / 18 / 25 | 0,9159 | 0,9512 | envelope † | 0 | 0,99997 | `critical` |
+| `s4-extreme` | 45 / 46 / 44,5 | 3,22e-9 | 3,32e-9 | dempster | 0,99988 | ≈ 1 | `critical` |
+
+† `s3` es además el único que activa la **guardia de degeneración**
+(`K_global ≥ κ_deg = 0,95`); ya iba a envolvente por `K_máx > κ₂`, de modo que
+llega al mismo sitio por dos vías independientes. Ver «Estrategia de fusión».
 
 En los cuatro, el veredicto **existencial** es el mismo (`unsafe-possible`) sobre
 el mismo reachable set (`[−12, 992]` mm) y con la misma severidad heurística: es
@@ -130,9 +134,57 @@ out/
         └── credal-mass.svg        masa por hipótesis, antes y después de la fusión
 ```
 
-Columnas de `summary.csv`: `scenario`, `K_max`, `K_global`, `method`,
-`credal_lower`, `credal_upper`, `reachable_lower`, `reachable_upper`, `status`,
-`belLower`, `plUpper`, `decision`.
+Columnas de `summary.csv`: `scenario`, `K_max`, `K_global`, `rule`,
+`K_decision`, `guard`, `method`, `credal_lower`, `credal_upper`,
+`reachable_lower`, `reachable_upper`, `status`, `belLower`, `plUpper`,
+`decision`. Las tres del medio son la traza de la regla de conflicto: sin ellas,
+`K_max` y `K_global` no explican por sí solos por qué se eligió `method`.
+
+### Estrategia de fusión (Def. 3.6) — qué magnitud decide
+
+El paper elige entre regla de Dempster, media ponderada cautelosa y envolvente
+conservativa comparando **un** número con κ₁ = 0,3 y κ₂ = 0,7. Cuál es ese
+número no es obvio con n > 2 fuentes, y el repositorio ha pasado por dos
+respuestas:
+
+- **K_máx por pares** (Def. 3.5, literal del paper) **no acota** el conflicto de
+  la reducción secuencial `(((m₁⊕m₂)⊕m₃)⊕…)`: hay un contraejemplo con todos los
+  pares a 0,75 que degenera a conflicto total. Ver [`docs/ERRATA.md`](docs/ERRATA.md) §2.
+- **K_decision = máx(K_máx, K_global)** lo cierra, pero aplica a una magnitud
+  n-aria unos umbrales elegidos para la escala del par: K_global crece con n y
+  con la granularidad del marco aunque no exista desacuerdo físico. Ver
+  [`docs/ERRATA.md`](docs/ERRATA.md) §9.
+
+La regla vigente separa las dos funciones que aquello mezclaba:
+
+```
+K_decision = K_máx por pares          →  comparada con κ₁ y κ₂   (informatividad)
+K_global ≥ κ_deg = 0,95               →  fuerza envolvente        (protección)
+```
+
+es decir, κ₁/κ₂ vuelven a comparar el conflicto por pares para el que fueron
+elegidos, y K_global hace **solo** aquello que motivó su introducción: impedir
+que la reducción degenere. Es sound por construcción — la rama Dempster exige
+K_global < 0,95 < 1, y la propiedad (P2′) de [`docs/ERRATA.md`](docs/ERRATA.md)
+§2 acota entonces el conflicto de **todo** paso intermedio por ese mismo valor.
+
+Las cuatro reglas candidatas conviven tras `FusionConfig.rule`
+(`src/core/dempster-shafer/conflict-rules.ts`) y la vigente se eligió con un
+**experimento pre-registrado** —candidatos, requisito innegociable y criterio de
+selección fijados antes de ver ningún resultado, y con una semilla distinta de
+la canónica:
+
+```bash
+npm run exp:conflict-rule   # Fase A: los 4 candidatos sobre los mismos mundos
+npm run exp:all             # Fase B: los números publicables, regla vigente
+npm run exp:all:c0          # los mismos, con la regla anterior, para comparar
+```
+
+Efecto medido (10.000 mundos, semilla 20260804): en mundos limpios y
+concordantes la envolvente cae del **15,6 % al 4,6 %** y la anchura media de la
+banda de evidencia baja un 9,4 %, con la cobertura existencial intacta en el
+100 % y la de la banda de evidencia en 99,91 % (era 99,97 %). El desglose
+completo, con lo que se paga por ello, en [`docs/ERRATA.md`](docs/ERRATA.md) §9.
 
 ### Determinismo
 
@@ -199,6 +251,7 @@ con su sección real:
 | `dempster-shafer/frame.ts` | Def. 3.1 *(marco de soporte acotado, extensión)* | §3.2 |
 | `dempster-shafer/bpa.ts` | Def. 3.3 y Ec. (1)-(2); Def. 3.4 y Ec. (3)-(4) | §3.2–3.3 |
 | `dempster-shafer/conflict.ts` | Def. 3.5 y Ec. (6); Def. 3.6 *(+ K_global, extensión)* | §3.4 |
+| `dempster-shafer/conflict-rules.ts` | Def. 3.6 *(qué magnitud se compara con κ₁/κ₂; extensión, ERRATA §9)* | §3.4.2 |
 | `dempster-shafer/combination.ts` | Ec. (5)-(6) Dempster; Ec. (7) cautelosa; Def. 3.7 y Ec. (8)-(9) | §3.4 |
 | `dempster-shafer/credal-set.ts` | Def. 3.8; Prop. 3.1, 3.2; Def. 3.9 y Ec. (10) | §3.4–3.6 |
 | `credal-propagation/credal-interval-set.ts` | Def. 3.9 y Ec. (10) *(→ Def. 3.9′ y Ec. (10′), extensión)* | §3.6 |
@@ -360,12 +413,14 @@ provocaron, todos corregidos o documentados en el código:
    Def. 3.5 define K solo entre pares y la Def. 3.6 decide con K_máx, pero
    `dempsterCombineMultiple` reduce secuencialmente y la BPA acumulada se
    concentra. Contraejemplo con K_máx = 0,75 en todos los pares que alcanza
-   conflicto **total** al tercer paso. *Cerrado por construcción*: la decisión
-   usa ahora `K_decision = máx(K_máx, K_global)` con `K_global` el conflicto
-   n-ario sobre el producto conjunto, y `K_global < 1` **demuestra** que ningún
-   paso de la reducción degenera, en ningún orden (extensión del paper, ver
-   [`docs/ERRATA.md`](docs/ERRATA.md) §2). La estrategia cambia en el 16,1 % de
-   20.000 casos generados, siempre hacia una rama más conservadora.
+   conflicto **total** al tercer paso. *Cerrado por construcción* con `K_global`,
+   el conflicto n-ario sobre el producto conjunto: `K_global < 1` **demuestra**
+   que ningún paso de la reducción degenera en ningún orden, y la versión
+   cuantitativa (P2′) acota además el conflicto de cada paso por el propio
+   `K_global` (extensión del paper, ver [`docs/ERRATA.md`](docs/ERRATA.md) §2).
+   La primera regla construida con él, `K_decision = máx(K_máx, K_global)`,
+   cambiaba la estrategia en el 16,1 % de 20.000 casos generados, siempre hacia
+   una rama más conservadora — y **demasiado** a menudo: ver el punto 6.
 4. **El intervalo credal se truncaba sin respaldo formal cuando la cola del
    marco es plausible.** La Ec. (10) devuelve `+∞` para el marco de la Def. 3.1
    (última hipótesis `[60, ∞)`), y `buildCredalSet` lo sustituía en silencio
@@ -390,6 +445,23 @@ provocaron, todos corregidos o documentados en el código:
    segundo nivel demostrado `[Bel(E), Pl(E)]` que separa esos escenarios por más
    de tres órdenes de magnitud. El nivel existencial conserva su semántica
    intacta. Ver [`docs/ERRATA.md`](docs/ERRATA.md) §8.
+6. **Cerrado el (3), el sistema abandonaba la regla de Dempster demasiado a
+   menudo.** κ₁ = 0,3 y κ₂ = 0,7 fueron elegidos para el conflicto POR PARES,
+   y `K_decision = máx(K_máx, K_global)` los aplicaba a una magnitud n-aria que
+   crece con el número de fuentes y con la granularidad del marco **aunque no
+   haya desacuerdo físico** (es `1 − Σ_j Π_i m_i(θ_j)` salvo Θ: basta que tres
+   fuentes concordantes se repartan entre hipótesis contiguas por ruido
+   instrumental). Medido: en mundos limpios y concordantes, solo el 54,1 %
+   llegaba al Nivel 1 y el 15,6 % caía en envolvente. No era un fallo de
+   soundness —el sistema pierde informatividad, que es la dirección
+   conservadora— pero sí un punto de operación que el paper no declara.
+   *Corregido con un experimento pre-registrado* (`npm run exp:conflict-rule`,
+   semilla 20260311, distinta de la canónica): cuatro candidatos tras una
+   interfaz común, requisito innegociable y criterio lexicográfico fijados antes
+   de ver ningún resultado. Se seleccionó **C1** — κ₁/κ₂ contra el K_máx del
+   paper, y K_global reducido a guardia de degeneración. La envolvente en mundos
+   limpios cae al 4,6 % con la cobertura existencial intacta. Ver
+   [`docs/ERRATA.md`](docs/ERRATA.md) §9.
 
 ### Límites conocidos de la garantía formal
 
@@ -401,6 +473,12 @@ provocaron, todos corregidos o documentados en el código:
 - La aritmética de intervalos usa coma flotante **sin redondeo dirigido hacia
   fuera**, de modo que la Prop. 4.1 se cumple hasta el error de redondeo (las
   properties lo verifican con tolerancia relativa 1e-12, y 1e-9 en la división).
+- La regla de conflicto vigente (C1) garantiza `K_global < κ_deg = 0,95` en la
+  rama de Dempster, lo que por (P2′) acota el factor `1/(1−K)` de cada paso por
+  **20**. Es una cota mucho más laxa que el 1,43 de la regla anterior, aunque el
+  peor factor observado en 15.000 mundos fue 1,443. Con n ≥ 4 fuentes o marcos
+  mucho más finos, la regla C2 —disponible en `FusionConfig.rule`— tiene una
+  cota estructuralmente mejor (2,04 con n = 3). Ver [`docs/ERRATA.md`](docs/ERRATA.md) §9.
 - El bound de error de modelo ε_i de la Ec. (24) es ahora un campo obligatorio
   de `StructuralEquation` y la propagación aplica `⊕ [−ε_i, ε_i]` por
   construcción. Lo que **no** puede verificar el código es que cada ε_i esté

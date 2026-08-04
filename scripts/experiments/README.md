@@ -51,6 +51,7 @@ npx tsx scripts/experiments/mi-experimento.ts --seed 20260804 --samples 5000
 | Regla | Motivo |
 |---|---|
 | `--seed` obligatorio, entero positivo | Sin él no hay reproducibilidad |
+| Los parámetros del sistema que afecten al resultado van en `config.json` | Un `results.json` que no dice bajo qué regla de conflicto se midió no es auditable |
 | Aleatoriedad solo desde `ctx.rng` | Semilla compartida con las properties |
 | Sin red, sin reloj, sin estado global | El resultado debe depender solo de (código, semilla, flags) |
 | Salida en `out/experiments/<nombre>/` | `config.json` + `results.json` + `results.csv`, siempre |
@@ -82,6 +83,10 @@ campaña completa dejaría allí un resultado que no coincide con el snapshot
 reducido y `verify` fallaría sin que nada estuviera roto. Ver
 `scripts/experiments/lib/profile.ts`.
 
+`--rule` sigue exactamente la misma convención por el mismo motivo: una
+ejecución con una regla de conflicto que no es la del sistema escribe en
+`out/experiments/<nombre>-c0/` y no puede pisar el directorio versionado.
+
 ## Cuándo entra en `npm run verify`
 
 Un experimento entra en la verificación cuando su salida es **determinista y
@@ -97,17 +102,26 @@ el README o en `docs/`, citando semilla y flags.
 
 # La campaña de cobertura
 
-Tres experimentos sobre un **mundo sintético con ground truth conocido**, que es
-lo que permite medir cobertura: la verdad se sortea primero y las mediciones se
-derivan de ella, de modo que «el intervalo contiene P*» tiene respuesta exacta.
+Cuatro experimentos sobre un **mundo sintético con ground truth conocido**, que
+es lo que permite medir cobertura: la verdad se sortea primero y las mediciones
+se derivan de ella, de modo que «el intervalo contiene P*» tiene respuesta
+exacta.
 
 ```bash
-npm run exp:all        # los tres, semilla canónica 20260804  (~3 s)
-npm run exp:coverage   # experimento 1, N = 10.000
-npm run exp:h1         # experimento 2, 11 puntos × N = 2.000
-npm run exp:virga      # experimento 3, N = 5.000
-npm run exp:verify     # los tres reducidos a N = 200 (los que ve `verify`)
+npm run exp:all           # los tres primeros, semilla canónica 20260804  (~3 s)
+npm run exp:coverage      # experimento 1, N = 10.000
+npm run exp:h1            # experimento 2, 11 puntos × N = 2.000
+npm run exp:virga         # experimento 3, N = 5.000
+npm run exp:conflict-rule # experimento 4, semilla PROPIA 20260311 (pre-registrado)
+npm run exp:verify        # los tres primeros reducidos a N = 200 (los que ve `verify`)
+npm run exp:all:c0        # los tres primeros con la regla de conflicto anterior
 ```
+
+Los tres primeros usan la **regla de conflicto del sistema**; `--rule` la
+sustituye y escribe en su propio directorio (`out/experiments/coverage-c0/`…),
+que es como se regeneran los números publicados antes de `docs/ERRATA.md` §9.
+El cuarto es el experimento pre-registrado que eligió esa regla, y corre con una
+semilla distinta a propósito.
 
 ## El mundo (`lib/world.ts`)
 
@@ -154,16 +168,21 @@ lo que se mide, no un hombre de paja.
 
 `coverage.ts` · N = 10.000 · semilla 20260804 · figuras f1, f2.
 
+> **Los números de esta sección son los de la regla de conflicto C1**, la
+> seleccionada por el experimento pre-registrado de `docs/ERRATA.md` §9. Los
+> publicados antes de esa corrección salían de la regla C0 y se regeneran con
+> `npm run exp:all:c0`; la comparación completa entre las dos está en §9.
+
 | método | condición | n | cobertura | IC Wilson 95 % | anchura media | mediana |
 |---|---|---:|---:|---|---:|---:|
 | `aura-existencial` | global | 10.000 | **100,00 %** | [99,96 · 100,00] | 500,00 | 500,00 |
 | | sin fallo | 7.258 | 100,00 % | [99,95 · 100,00] | 500,00 | 500,00 |
 | | fallo δ | 1.495 | 100,00 % | [99,74 · 100,00] | 500,00 | 500,00 |
 | | virga | 1.247 | 100,00 % | [99,69 · 100,00] | 500,00 | 500,00 |
-| `aura-banda-95` | global | 10.000 | **99,97 %** | [99,91 · 99,99] | 295,26 | 500,00 |
-| | sin fallo | 7.258 | 100,00 % | [99,95 · 100,00] | 247,96 | 30,00 |
+| `aura-banda-95` | global | 10.000 | **99,91 %** | [99,83 · 99,95] | 276,51 | 500,00 |
+| | sin fallo | 7.258 | 99,92 % | [99,82 · 99,96] | 224,77 | 30,00 |
 | | fallo δ | 1.495 | 99,87 % | [99,51 · 99,96] | 492,01 | 500,00 |
-| | virga | 1.247 | 99,92 % | [99,55 · 99,99] | 334,70 | 500,00 |
+| | virga | 1.247 | 99,92 % | [99,55 · 99,99] | 319,29 | 500,00 |
 | `media-ponderada` | global | 10.000 | **76,20 %** | [75,36 · 77,02] | 4,60 | 4,60 |
 | | sin fallo | 7.258 | 94,81 % | [94,27 · 95,29] | 4,60 | 4,60 |
 | | fallo δ | 1.495 | **2,01 %** | [1,41 · 2,85] | 4,60 | 4,60 |
@@ -175,7 +194,7 @@ lo que se mide, no un hombre de paja.
 
 Por tramo de intensidad (cobertura), los baselines caen de 82 % en *seco* a
 69 % en *extrema*; AURA se mantiene en 100 % en los cinco tramos (banda:
-99,91 % en *ligera*, el único tramo con fallos). Tabla completa en
+99,74 % en *ligera*, el único tramo con fallos). Tabla completa en
 `results.csv`.
 
 **Lo que dicen estos números.**
@@ -191,7 +210,7 @@ Por tramo de intensidad (cobertura), los baselines caen de 82 % en *seco* a
 - El nivel existencial de AURA cubre el 100 % de los 10.000 mundos y mide
   siempre 500 mm/h: el marco entero. **Ese es su contenido informativo, y es
   poco**. La cifra que hay que citar junto a la cobertura es la anchura.
-- La banda de evidencia al 95 % da 99,97 % de cobertura con 295 mm/h de anchura
+- La banda de evidencia al 95 % da 99,91 % de cobertura con 277 mm/h de anchura
   media pero **30 mm/h de mediana en mundos limpios**: la media está dominada
   por la cola de mundos en que la fusión escala a envolvente (ver abajo).
 
@@ -205,16 +224,16 @@ punto:
 
 | violación | `aura-existencial` | `aura-banda-95` | `media-ponderada` | `kalman-estatico` |
 |---:|---:|---:|---:|---:|
-| 0 % | 100,00 % | 100,00 % | 80,35 % | 80,35 % |
-| 25 % | 100,00 % | 84,00 % | 61,55 % | 61,80 % |
-| 50 % | 100,00 % | 67,75 % | 39,80 % | 39,90 % |
+| 0 % | 100,00 % | 99,95 % | 80,35 % | 80,35 % |
+| 25 % | 100,00 % | 83,95 % | 61,55 % | 61,80 % |
+| 50 % | 100,00 % | 67,70 % | 39,80 % | 39,90 % |
 
 Desglosado por si el mundo estaba violado o no (al 50 %):
 
 | método | mundos violados | mundos intactos |
 |---|---:|---:|
 | `aura-existencial` | 100,00 % | 100,00 % |
-| `aura-banda-95` | 37,17 % | 99,90 % |
+| `aura-banda-95` | 37,17 % | 99,79 % |
 | `media-ponderada` | 0,00 % | 81,64 % |
 | `kalman-estatico` | 0,10 % | 81,74 % |
 
@@ -231,7 +250,7 @@ favor de AURA.**
   formulación empírica más nítida de la tesis de `docs/ERRATA.md` §8.
 - La estructura predicha sí aparece, pero en el nivel informativo: la banda de
   evidencia mantiene **99,7-100 % en los mundos intactos en los once puntos** y
-  cae a ~35 % dentro de los violados. Degrada exactamente donde la hipótesis se
+  cae a ~34 % dentro de los violados. Degrada exactamente donde la hipótesis se
   rompe y en ningún otro sitio.
 - *«los baselines degradan también fuera de los mundos violados»*: **no en
   función de la fracción**. Su cobertura restringida a mundos intactos es
@@ -252,7 +271,7 @@ verdades y elegir una decidiría el resultado antes de medirlo.
 | método | ni P\* ni γ·P\* (todos) | IC Wilson | ni P\* ni γ·P\* (sin fallo δ) | cob. P\* | cob. γ·P\* | anchura |
 |---|---:|---|---:|---:|---:|---:|
 | `aura-existencial` | **0,00 %** | [0,00 · 0,08] | 0,00 % | 100,0 % | 100,0 % | 500,00 |
-| `aura-banda-95` | **0,02 %** | [0,00 · 0,11] | 0,00 % | 99,8 % | 99,5 % | 356,01 |
+| `aura-banda-95` | **0,04 %** | [0,02 · 0,15] | 0,02 % | 99,7 % | 99,3 % | 343,19 |
 | `media-ponderada` | **43,12 %** | [41,75 · 44,50] | 33,71 % | 49,9 % | 44,4 % | 4,60 |
 | `kalman-estatico` | **41,58 %** | [40,22 · 42,95] | 32,04 % | 49,2 % | 46,0 % | 4,24 |
 
@@ -265,35 +284,70 @@ fusión de AURA lo sigue:
 
 | γ | n | `media-ponderada` | `kalman-estatico` | fusión AURA (D / C / E) |
 |---|---:|---:|---:|---|
-| 0,0-0,1 | 506 | 58,9 % | 57,7 % | 24 % / 12 % / **65 %** |
-| 0,2-0,3 | 516 | 57,0 % | 54,1 % | 20 % / 13 % / **67 %** |
-| 0,4-0,5 | 497 | 45,3 % | 44,1 % | 30 % / 17 % / 53 % |
-| 0,6-0,7 | 498 | 37,3 % | 37,1 % | 27 % / 28 % / 45 % |
-| 0,8-0,9 | 490 | 24,3 % | 23,9 % | 43 % / 25 % / 32 % |
-| 0,9-1,0 | 476 | 19,7 % | 18,3 % | 43 % / 25 % / 32 % |
+| 0,0-0,1 | 506 | 58,9 % | 57,7 % | 25 % / 13 % / **62 %** |
+| 0,2-0,3 | 516 | 57,0 % | 54,1 % | 23 % / 14 % / **64 %** |
+| 0,4-0,5 | 497 | 45,3 % | 44,1 % | 33 % / 22 % / 45 % |
+| 0,6-0,7 | 498 | 37,3 % | 37,1 % | 31 % / 31 % / 37 % |
+| 0,8-0,9 | 490 | 24,3 % | 23,9 % | 46 % / 32 % / 22 % |
+| 0,9-1,0 | 476 | 19,7 % | 18,3 % | 47 % / 32 % / 21 % |
 
-Reparto global de estrategias (Def. 3.6 con K_decision): **dempster 30,06 % ·
-cautelosa 18,92 % · envolvente 51,02 %**. K_decision tiene mediana 0,718 y
-cuartiles 0,228 / 0,935.
+Reparto global de estrategias (Def. 3.6 con la regla C1): **dempster 32,68 % ·
+cautelosa 23,22 % · envolvente 44,10 %**. K_decision tiene mediana 0,596 y
+cuartiles 0,200 / 0,892.
 
-## Hallazgo colateral: los fixtures son más concordantes que el ruido real
+## Experimento 4 — qué magnitud decide la Definición 3.6
+
+`conflict-rule.ts` · N = 10.000 + 5.000 virga · **semilla 20260311**.
+
+Es el experimento **pre-registrado** que corrigió `docs/ERRATA.md` §9. Se
+ejecuta con una semilla distinta de la canónica a propósito: la regla que sale
+de aquí no debe quedar ajustada a la realización del PRNG con la que después se
+publican los números de los experimentos 1-3.
+
+```bash
+npm run exp:conflict-rule
+```
+
+Corre los cuatro candidatos —C0 (la regla anterior), C1, C2 y C3, definidos en
+`src/core/dempster-shafer/conflict-rules.ts`— sobre **los mismos** 15.000
+mundos, comprueba el requisito innegociable ANTES de comparar nada y aplica el
+criterio de selección de `lib/selection.ts`, que está escrito antes de la
+ejecución y probado aparte de las cifras que consume.
+
+| candidato | requisito | cob. existencial | cob. banda-95 | limpios → Dempster | anchura banda-95 |
+|---|---|---:|---:|---:|---:|
+| C0 | ✅ | 100,00 % | 99,910 % | 53,49 % | 296,99 mm/h |
+| **C1** *(seleccionado)* | ✅ | 100,00 % | 99,840 % | **57,62 %** | **280,67 mm/h** |
+| C2 | ✅ | 100,00 % | 99,840 % | **57,62 %** | **280,67 mm/h** |
+| C3 | ✅ | 100,00 % | 99,840 % | **57,62 %** | **280,67 mm/h** |
+
+Ninguno fue descalificado; C1, C2 y C3 eligen la misma estrategia en los 15.000
+mundos y decide el paso 5 del criterio (simplicidad). El razonamiento completo,
+las identidades que lo sostienen y lo que se paga por la corrección están en
+[`docs/ERRATA.md`](../../docs/ERRATA.md) §9.
+
+---
+
+## Hallazgo colateral, y su corrección: los fixtures son más concordantes que el ruido real
 
 Reparto de estrategias de fusión en el experimento 1 (`results.json`,
-`fusionByCondition`):
+`fusionByCondition`), con la regla vigente C1 y con la anterior C0
+(`npm run exp:all:c0`):
 
-| condición | n | dempster | cautelosa | envolvente |
-|---|---:|---:|---:|---:|
-| global | 10.000 | 44,1 % | 24,9 % | 31,0 % |
-| **sin fallo ni virga** | 7.258 | **54,1 %** | **30,3 %** | **15,6 %** |
-| fallo δ | 1.495 | 3,9 % | 1,1 % | 95,1 % |
-| virga | 1.247 | 34,2 % | 21,8 % | 43,9 % |
+| condición | n | C0 (D / C / E) | **C1 (D / C / E)** |
+|---|---:|---|---|
+| global | 10.000 | 44,1 / 24,9 / 31,0 % | **47,9 / 30,1 / 22,0 %** |
+| **sin fallo ni virga** | 7.258 | 54,1 / 30,3 / **15,6 %** | **58,8 / 36,6 / 4,6 %** |
+| fallo δ | 1.495 | 3,9 / 1,1 / 95,1 % | 3,9 / 1,7 / 94,4 % |
+| virga | 1.247 | 34,2 / 21,8 / 43,9 % | 37,4 / 26,2 / 36,4 % |
 
-Es decir: en **casi la mitad** de los mundos donde no pasa nada —ni fallo de
-fuente ni conflicto físico— el sistema ya no aplica la regla de Dempster. Los
-cuatro escenarios de `fixtures/` dan K_global = 0,027 / 0,184 / 0,951 / 3,3e-9,
-es decir dempster en tres de cuatro.
+**El hallazgo original.** Con C0, en casi la mitad de los mundos donde no pasa
+nada —ni fallo de fuente ni conflicto físico— el sistema ya no aplicaba la regla
+de Dempster, y el 15,6 % escalaba a envolvente. Los cuatro escenarios de
+`fixtures/` dan K_global = 0,027 / 0,184 / 0,951 / 3,3e-9, es decir dempster en
+tres de cuatro, y sugerían lo contrario.
 
-La diferencia no es un error de ninguno de los dos: los fixtures fijan
+La diferencia no era un error de ninguno de los dos: los fixtures fijan
 mediciones que concuerdan dentro de ±0,75 mm/h, mientras que tres fuentes con
 σ = 1,5 / 2,0 / 2,5 mm/h midiendo la MISMA verdad se separan típicamente varios
 mm/h, y sobre un marco de cinco hipótesis anchas eso basta para que sus soportes
@@ -302,14 +356,18 @@ dejen de solaparse. K_global crece muy deprisa con la dispersión porque es
 tres fuentes concentren masa a la vez, el conflicto n-ario es alto **aunque no
 haya ningún desacuerdo físico**.
 
-Consecuencia para el paper: la demo de §7 **subrepresenta** con cuánta
-frecuencia el sistema abandona la regla de Dempster en operación normal, y con
-ella la pérdida de informatividad de la banda de evidencia (mediana 30 mm/h en
-mundos limpios, media 248 por la cola de envolventes, en las que la BPA
-sintética de `envelopeCombine` manda casi toda la masa a Θ). No es una errata
-—el motor hace exactamente lo que la Def. 3.6 extendida dice— pero sí un régimen
-que conviene declarar antes de que alguien lea los cuatro fixtures como
-representativos del caso medio.
+**Qué se hizo con él.** La segunda mitad de ese diagnóstico —que K_global no
+distingue conflicto de dispersión de discretización— es lo que corrigió el
+experimento 4: la regla C1 devuelve κ₁/κ₂ a la escala del par para la que fueron
+elegidos y deja a K_global haciendo solo de guardia de degeneración. La
+envolvente en mundos limpios cae del 15,6 % al **4,6 %** y la mediana de la
+banda en esos mundos sigue en 30 mm/h con la media bajando de 248 a 225 mm/h.
+
+**Lo que NO cambia.** La primera mitad sigue en pie: los cuatro fixtures son más
+concordantes que el ruido instrumental declarado de las propias fuentes, y no
+deben leerse como el caso medio. Con C1 el sistema todavía abandona la regla de
+Dempster en el 41 % de los mundos limpios (36,6 % cautelosa + 4,6 % envolvente),
+frente a la impresión de «tres de cuatro a Dempster» que dan los fixtures.
 
 ---
 
