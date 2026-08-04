@@ -1,0 +1,47 @@
+{
+  "scenario": "s4-extreme",
+  "description": "SINTETICO. Lluvia torrencial concordante (~45 mm/h) sobre un DANA. No corresponde a ninguna observacion real: existe para ejercitar el regimen en que belLower ~ 1 y el certificado escala a critical.",
+  "provenance": "sintetico (etiquetado explicitamente: valores no observados)",
+  "date": "2026-09-12",
+  "location": {
+    "name": "Madrid-Chamartin",
+    "latitude": 40.4718,
+    "longitude": -3.6828
+  },
+  "files": {
+    "open-meteo": {
+      "file": "open-meteo.json",
+      "endpoint": "https://api.open-meteo.com/v1/forecast",
+      "provenance": "sintetico: estructura real de la API, valores fijados para el escenario",
+      "precipitationField": "current.precipitation",
+      "precipitationUnit": "mm (acumulado de la hora precedente) = mm/h",
+      "precipitationValue": 46
+    },
+    "aemet": {
+      "files": [
+        "aemet-metadata.json",
+        "aemet-observacion.json"
+      ],
+      "endpoint": "https://opendata.aemet.es/opendata/api/observacion/convencional/todas/",
+      "provenance": "sintetico: estructura documentada de AEMET OpenData (respuesta en dos pasos: sobre con `datos` + array de observaciones). No se pudo capturar respuesta real por requerir API key.",
+      "precipitationField": "prec (estacion mas cercana)",
+      "precipitationUnit": "mm acumulados en la ultima hora = mm/h",
+      "precipitationValue": 45,
+      "nearestStation": "3129 MADRID, CIUDAD UNIVERSITARIA"
+    },
+    "nasa-power": {
+      "file": "nasa-power.json",
+      "endpoint": "https://power.larc.nasa.gov/api/temporal/hourly/point",
+      "provenance": "sintetico: estructura real de la API, valores fijados para el escenario",
+      "precipitationField": "properties.parameter.PRECTOTCORR (ultima hora con dato valido)",
+      "precipitationUnit": "mm/day (tasa instantanea expresada por dia; verificado empiricamente: media de las 24 horas = valor diario). Se convierte a mm/h dividiendo por 24.",
+      "precipitationValueRaw": 1068,
+      "precipitationValue": 44.5
+    }
+  },
+  "expectedPrecipitationMmH": {
+    "aemet": 45,
+    "open-meteo": 46,
+    "nasa-power": 44.5
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "scenario": "s1-normal",
+  "description": "Dia estival seco en Madrid-Chamartin. Las tres fuentes concuerdan en precipitacion nula; la masa credal se concentra en la hipotesis *nula* [0, 5) mm/h.",
+  "provenance": "real (open-meteo, nasa-power) / sintetico (aemet)",
+  "date": "2026-08-04",
+  "location": {
+    "name": "Madrid-Chamartin",
+    "latitude": 40.4718,
+    "longitude": -3.6828
+  },
+  "files": {
+    "open-meteo": {
+      "file": "open-meteo.json",
+      "endpoint": "https://api.open-meteo.com/v1/forecast",
+      "provenance": "real: respuesta capturada de la API el 2026-08-04",
+      "precipitationField": "current.precipitation",
+      "precipitationUnit": "mm (acumulado de la hora precedente) = mm/h",
+      "precipitationValue": 0
+    },
+    "aemet": {
+      "files": [
+        "aemet-metadata.json",
+        "aemet-observacion.json"
+      ],
+      "endpoint": "https://opendata.aemet.es/opendata/api/observacion/convencional/todas/",
+      "provenance": "sintetico: estructura documentada de AEMET OpenData (respuesta en dos pasos: sobre con `datos` + array de observaciones). No se pudo capturar respuesta real por requerir API key.",
+      "precipitationField": "prec (estacion mas cercana)",
+      "precipitationUnit": "mm acumulados en la ultima hora = mm/h",
+      "precipitationValue": 0,
+      "nearestStation": "3129 MADRID, CIUDAD UNIVERSITARIA"
+    },
+    "nasa-power": {
+      "file": "nasa-power.json",
+      "endpoint": "https://power.larc.nasa.gov/api/temporal/hourly/point",
+      "provenance": "real: respuesta capturada de la API el 2026-08-04 para el dia 2026-08-01",
+      "precipitationField": "properties.parameter.PRECTOTCORR (ultima hora con dato valido)",
+      "precipitationUnit": "mm/day (tasa instantanea expresada por dia; verificado empiricamente: media de las 24 horas = valor diario). Se convierte a mm/h dividiendo por 24.",
+      "precipitationValueRaw": 0,
+      "precipitationValue": 0
+    }
+  },
+  "expectedPrecipitationMmH": {
+    "aemet": 0,
+    "open-meteo": 0,
+    "nasa-power": 0
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "scenario": "s3-virga-conflict",
+  "description": "Conflicto tipo virga (Ejemplo 3.1 del paper): el producto satelital/reanalisis ve ~25 mm/h en altura mientras el pluviometro en superficie mide ~3 mm/h porque la precipitacion se evapora antes de llegar al suelo. Conflicto alto entre fuentes.",
+  "provenance": "sintetico",
+  "date": "2026-07-18",
+  "location": {
+    "name": "Madrid-Chamartin",
+    "latitude": 40.4718,
+    "longitude": -3.6828
+  },
+  "files": {
+    "open-meteo": {
+      "file": "open-meteo.json",
+      "endpoint": "https://api.open-meteo.com/v1/forecast",
+      "provenance": "sintetico: estructura real de la API, valores fijados para el escenario",
+      "precipitationField": "current.precipitation",
+      "precipitationUnit": "mm (acumulado de la hora precedente) = mm/h",
+      "precipitationValue": 18
+    },
+    "aemet": {
+      "files": [
+        "aemet-metadata.json",
+        "aemet-observacion.json"
+      ],
+      "endpoint": "https://opendata.aemet.es/opendata/api/observacion/convencional/todas/",
+      "provenance": "sintetico: estructura documentada de AEMET OpenData (respuesta en dos pasos: sobre con `datos` + array de observaciones). No se pudo capturar respuesta real por requerir API key.",
+      "precipitationField": "prec (estacion mas cercana)",
+      "precipitationUnit": "mm acumulados en la ultima hora = mm/h",
+      "precipitationValue": 3,
+      "nearestStation": "3129 MADRID, CIUDAD UNIVERSITARIA"
+    },
+    "nasa-power": {
+      "file": "nasa-power.json",
+      "endpoint": "https://power.larc.nasa.gov/api/temporal/hourly/point",
+      "provenance": "sintetico: estructura real de la API, valores fijados para el escenario",
+      "precipitationField": "properties.parameter.PRECTOTCORR (ultima hora con dato valido)",
+      "precipitationUnit": "mm/day (tasa instantanea expresada por dia; verificado empiricamente: media de las 24 horas = valor diario). Se convierte a mm/h dividiendo por 24.",
+      "precipitationValueRaw": 600,
+      "precipitationValue": 25
+    }
+  },
+  "expectedPrecipitationMmH": {
+    "aemet": 3,
+    "open-meteo": 18,
+    "nasa-power": 25
+  }
+}
