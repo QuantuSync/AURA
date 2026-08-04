@@ -83,11 +83,13 @@ export function dempsterCombine(bpa1: BPA, bpa2: BPA): { combined: BPA; conflict
  * conflicto n-ario de `globalConflict`. Si K_global < 1 existe una combinación
  * (A₁,…,Aₙ) de masa positiva con intersección total no vacía, y esa
  * intersección sobrevive en TODO prefijo, de modo que ningún paso puede
- * alcanzar K = 1 en NINGÚN orden. `fuse` decide con K_decision ≤ κ₁ = 0,3 antes
- * de entrar aquí, así que esta función ya no puede lanzar por esa vía cuando se
- * la llama desde el pipeline. Sigue pudiendo lanzar si se la llama
- * directamente con fuentes en conflicto total, que es el comportamiento
- * correcto: la regla de Dempster no está definida ahí.
+ * alcanzar K = 1 en NINGÚN orden. Más aún, por (P2′) cada paso cumple
+ * K^(k) ≤ K_global. `fuse` solo entra aquí con una cota K_global ≤ B < 1
+ * garantizada por la regla de decisión vigente (ver `./conflict-rules.ts`), así
+ * que esta función ya no puede lanzar por esa vía cuando se la llama desde el
+ * pipeline. Sigue pudiendo lanzar si se la llama directamente con fuentes en
+ * conflicto total, que es el comportamiento correcto: la regla de Dempster no
+ * está definida ahí.
  *
  * Los K de cada paso se devuelven para auditoría y `fuse` los propaga en
  * `FusionResult.sequentialConflicts`.
@@ -277,15 +279,17 @@ export function envelopeCombine(bpas: BPA[]): BPA {
  * Paper ref: Definición 3.6 (estrategia de fusión por nivel de conflicto), §3.4.2.
  * Niveles: K ≤ κ₁ → Dempster; κ₁ < K ≤ κ₂ → cautelosa; K > κ₂ → envolvente.
  *
- * Los umbrales κ₁ = 0,3 y κ₂ = 0,7 son los del paper. La magnitud comparada es
- * K_decision = máx(K_máx por pares, K_global) — ver {@link assessConflict} y la
- * EXTENSIÓN documentada en `globalConflict`. Con ella, la rama Dempster solo se
- * alcanza con K_global ≤ κ₁ < 1, y entonces ningún paso de la reducción
- * secuencial puede degenerar, en ningún orden.
+ * Los umbrales κ₁ = 0,3 y κ₂ = 0,7 son los del paper. La magnitud comparada
+ * —K_decision— la construye la regla de `config.rule` a partir de K_máx,
+ * K_global y n: ver {@link assessConflict} y `./conflict-rules.ts`. Bajo
+ * cualquiera de las cuatro reglas, la rama Dempster exige K_global ≤ B < 1 con B
+ * explícito, y entonces (P2′) acota el conflicto de TODO paso de la reducción
+ * secuencial por ese mismo B, en cualquier orden.
  *
  * 1. Calcula conflicto entre fuentes (por pares y global).
  * 2. Según el nivel de conflicto, aplica Dempster / cautelosa / envolvente.
- * 3. Retorna resultado fusionado con metadatos completos.
+ * 3. Retorna resultado fusionado con metadatos completos, incluida la traza de
+ *    la regla (`rule`, `normalizedConflict`, `degeneracyGuard`).
  */
 export function fuse(
   bpas: BPA[],
@@ -305,8 +309,9 @@ export function fuse(
     case 'dempster': {
       // `conflicts` NO se descarta: los K de la reducción secuencial siguen
       // pudiendo superar al K_máx por pares que se reporta (ver JSDoc de
-      // dempsterCombineMultiple). Ya no pueden llegar a 1 —lo impide
-      // K_global ≤ κ₁— pero el consumidor debe poder verlos.
+      // dempsterCombineMultiple). Ya no pueden llegar a 1 —lo impide la cota
+      // K_global ≤ B < 1 que la regla garantiza en esta rama— pero el
+      // consumidor debe poder verlos.
       const { combined, conflicts } = dempsterCombineMultiple(bpas);
       fused = combined;
       sequentialConflicts = conflicts;
@@ -337,7 +342,10 @@ export function fuse(
     conflictMatrix: assessment.matrix,
     maxConflict: assessment.maxConflict,
     globalConflict: assessment.globalConflict,
-    decisionConflict: assessment.decisionConflict,
+    rule: assessment.decision.rule,
+    decisionConflict: assessment.decision.decisionConflict,
+    normalizedConflict: assessment.decision.normalizedConflict,
+    degeneracyGuard: assessment.decision.degeneracyGuard,
     sourceWeights,
     envelope,
     sequentialConflicts,

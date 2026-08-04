@@ -7,6 +7,11 @@
  * Cada intervalo es una hipótesis sobre el valor de una variable.
  */
 
+// Import SOLO de tipos: `conflict-rules.ts` importa a su vez `FusionConfig` de
+// aquí, y `import type` se borra en la emisión, de modo que el ciclo existe en
+// el grafo de tipos y no en el de módulos.
+import type { ConflictRuleId, FusionMethod } from './conflict-rules';
+
 /** Un intervalo [lower, upper) representando una hipótesis — Definición 3.1 */
 export interface Hypothesis {
   label: string;        // e.g., "nula", "ligera", "moderada"
@@ -128,12 +133,12 @@ export interface Envelope {
 /** Resultado de fusión con metadatos */
 export interface FusionResult {
   fused: BPA;
-  method: 'dempster' | 'cautious' | 'envelope';
+  method: FusionMethod;
   conflictMatrix: number[][];
   /**
    * K_máx = máx_{i≠j} K_ij — el conflicto por pares de la Definición 3.5,
-   * literal del paper. NO es la magnitud con que se decide la estrategia:
-   * ver {@link FusionResult.decisionConflict}.
+   * literal del paper. NO es necesariamente la magnitud con que se decide la
+   * estrategia: ver {@link FusionResult.decisionConflict}.
    */
   maxConflict: number;
   /**
@@ -143,10 +148,30 @@ export interface FusionResult {
    */
   globalConflict: number;
   /**
-   * K_decision = máx(`maxConflict`, `globalConflict`) — la magnitud que se
-   * compara con κ₁ y κ₂ para elegir `method` (Definición 3.6 extendida).
+   * Identificador de la regla de decisión aplicada (`FusionConfig.rule`). Va en
+   * el resultado y no solo en la configuración para que un artefacto publicado
+   * diga por sí mismo bajo qué regla se produjo.
+   */
+  rule: ConflictRuleId;
+  /**
+   * La magnitud que la regla comparó con κ₁ y κ₂ — el «conflicto» de la
+   * Definición 3.6. Cada regla lo define distinto; ver `./conflict-rules.ts`.
+   *
+   * ⚠ `method` no se deduce solo de aquí: la guardia de degeneración puede
+   * forzar la envolvente con `decisionConflict ≤ κ₂`. Lo que sí se cumple en
+   * las cuatro reglas es `method === 'dempster'` ⟹ `decisionConflict ≤ κ₁`.
    */
   decisionConflict: number;
+  /**
+   * K_norm = 1 − (1 − K_global)^{1/(n−1)} — conflicto del par equivalente.
+   * `null` en las reglas que no lo usan (C0, C1).
+   */
+  normalizedConflict: number | null;
+  /**
+   * `true` si la guardia de degeneración (K_global ≥ κ_deg) forzó la
+   * envolvente. Siempre `false` en las reglas sin guardia (C0, C2).
+   */
+  degeneracyGuard: boolean;
   sourceWeights: number[];
   /**
    * Envolvente exacta según Definición 3.7. Presente únicamente cuando
@@ -203,6 +228,29 @@ export interface FusionConfig {
   kappa1: number;       // Umbral bajo conflicto (default 0.3)
   kappa2: number;       // Umbral alto conflicto (default 0.7)
   /**
+   * Regla que decide QUÉ magnitud se compara con κ₁ y κ₂ (y si además hay
+   * guardia de degeneración). EXTENSIÓN al paper: la Definición 3.6 no
+   * parametriza esto porque solo contempla el conflicto por pares.
+   *
+   * Las cuatro reglas conviven tras `./conflict-rules.ts`; el default es la
+   * seleccionada por el experimento pre-registrado `exp:conflict-rule` (ver
+   * `docs/ERRATA.md` §9). C0 sigue disponible para reproducir cualquier número
+   * publicado antes de esa selección.
+   */
+  rule: ConflictRuleId;
+  /**
+   * κ_deg — umbral de la guardia de degeneración de las reglas C1 y C3: si
+   * K_global ≥ κ_deg se fuerza la envolvente, decida lo que decida la
+   * comparación con κ₁/κ₂.
+   *
+   * NO es un umbral de informatividad y no debe leerse como un tercer κ. Es la
+   * distancia mínima que se exige frente a K_global = 1, el régimen que (P2)
+   * previene: con κ_deg = 0,95, el factor 1/(1−K) de cada paso de la reducción
+   * secuencial queda acotado por 20 (consecuencia (C1) de `conflict-rules.ts`).
+   * Las reglas sin guardia (C0, C2) lo ignoran.
+   */
+  kappaDegeneracy: number;
+  /**
    * Número máximo de fuentes para las que se computa el conflicto global
    * n-ario (default 6). EXTENSIÓN al paper, no un parámetro de la Def. 3.6.
    *
@@ -215,8 +263,21 @@ export interface FusionConfig {
   maxSourcesForGlobalConflict: number;
 }
 
+/**
+ * Configuración del sistema.
+ *
+ * `rule: 'C1'` es el resultado del experimento pre-registrado
+ * `npm run exp:conflict-rule` (semilla 20260311, `docs/ERRATA.md` §9): los
+ * cuatro candidatos pasaron el requisito innegociable y los pasos 1-2 del
+ * criterio, C1/C2/C3 empataron exactamente en los pasos 3 y 4 —eligen la misma
+ * estrategia en los 15.000 mundos— y decidió el paso 5, simplicidad.
+ *
+ * κ₁ y κ₂ siguen siendo los del paper y no se han movido.
+ */
 export const DEFAULT_FUSION_CONFIG: FusionConfig = {
   kappa1: 0.3,
   kappa2: 0.7,
+  rule: 'C1',
+  kappaDegeneracy: 0.95,
   maxSourcesForGlobalConflict: 6,
 };

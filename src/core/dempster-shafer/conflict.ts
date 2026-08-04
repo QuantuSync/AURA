@@ -11,6 +11,7 @@
  */
 
 import { BPA, FusionConfig, DEFAULT_FUSION_CONFIG } from './types';
+import { ConflictDecision, ruleOf } from './conflict-rules';
 
 /**
  * Calcula el factor de conflicto K entre dos BPAs.
@@ -85,9 +86,10 @@ export function conflictMatrix(bpas: BPA[]): number[][] {
  *      Demostración: A_i∩A_j=∅ ⟹ A₁∩…∩Aₙ=∅, luego la suma que define K_global
  *      incluye todos los términos de K_ij; y esos términos factorizan como
  *      K_ij · Π_{l≠i,j} (Σ_A m_l(A)) = K_ij · 1. ∎
- *      En consecuencia K_decision = máx(K_máx, K_global) = K_global salvo
- *      redondeo, y el máximo se conserva solo por trazabilidad y robustez
- *      numérica.
+ *      (P1) es una propiedad de K_global, NO de la regla de decisión: sigue
+ *      siendo cierta bajo las cuatro de `./conflict-rules.ts`. Lo que dejó de
+ *      valer al abandonar C0 es su corolario «K_decision = K_global salvo
+ *      redondeo», que solo describía a C0.
  *
  * (P2) K_global < 1 ⟹ NINGUNA reducción secuencial de Dempster alcanza
  *      conflicto total, en NINGÚN orden.
@@ -97,10 +99,26 @@ export function conflictMatrix(bpas: BPA[]): number[][] {
  *      masa interseca a A_j de la siguiente fuente (contiene S). Luego el K de
  *      ese paso es < 1. ∎
  *
- * (P2) es lo que cierra el hallazgo POR CONSTRUCCIÓN: con κ₁ = 0,3 < 1, la
- * rama Dempster solo se ejecuta con K_global ≤ 0,3, y entonces está demostrado
- * que ningún paso intermedio degenera — sin depender de que el conflicto por
- * pares sea representativo.
+ * (P2′) VERSIÓN CUANTITATIVA, más fuerte y más útil: el conflicto de CADA paso
+ *      de la reducción secuencial cumple K^(k) ≤ K_global, en cualquier orden.
+ *      Demostración: con U_k := 1 − K_global(m₁,…,m_k) (masa conjunta de las k
+ *      primeras fuentes sobre intersecciones no vacías, U_1 = 1), la BPA
+ *      acumulada es m^(k)(B) = ũ_k(B)/U_k y por tanto
+ *          1 − K^(k) = Σ_{B∩A≠∅} m^(k)(B)·m_{k+1}(A) = U_{k+1}/U_k,
+ *      de donde Π_k (1 − K^(k)) = U_n = 1 − K_global (telescopio). Como U_k ≤ 1
+ *      y U es decreciente, 1 − K^(k) ≥ U_{k+1} ≥ U_n, es decir K^(k) ≤ K_global. ∎
+ *
+ *      (P2) es el caso K_global < 1 de (P2′). La identidad del producto es
+ *      además la justificación exacta de la normalización K_norm del candidato
+ *      C2: 1 − K_global es el producto de los (n−1) factores (1 − K^(k)), luego
+ *      1 − (1−K_global)^{1/(n−1)} es la MEDIA GEOMÉTRICA del conflicto por
+ *      paso, expresada en la escala del par en que κ₁ y κ₂ fueron elegidos.
+ *
+ * (P2′) es lo que cierra el hallazgo POR CONSTRUCCIÓN, y de forma independiente
+ * de la regla: las cuatro reglas de `./conflict-rules.ts` garantizan una cota
+ * K_global ≤ B < 1 en la rama Dempster —B = κ₁ en C0, B = κ_deg en C1,
+ * B = 1−(1−κ₁)^{n−1} en C2 y C3— y entonces ningún paso intermedio supera B, en
+ * ningún orden, sin depender de que el conflicto por pares sea representativo.
  *
  * COMPLEJIDAD: exponencial en n (produce Π_i |F_i| combinaciones en el peor
  * caso, con poda al primer prefijo vacío). Es aceptable para nuestro dominio:
@@ -174,27 +192,29 @@ export function globalConflict(
  *
  * Paper ref: Definición 3.6 (estrategia de fusión por nivel de conflicto), §3.4.2.
  *
- * Los umbrales κ₁ y κ₂ son los del paper y NO cambian. Lo que cambia es la
- * magnitud con que se comparan:
- *
- *     K_decision = máx(K_máx por pares, K_global)
+ * Los umbrales κ₁ = 0,3 y κ₂ = 0,7 son los del paper y NO cambian: ajustarlos a
+ * la vista de una medición sería exactamente el error que la campaña prohíbe.
+ * Lo que esta función parametriza es la MAGNITUD que se compara con ellos, que
+ * es donde estaba el defecto de diseño de `docs/ERRATA.md` §9:
  *
  * - K_decision ≤ κ₁: "low" → Dempster
  * - κ₁ < K_decision ≤ κ₂: "moderate" → Media cautelosa
  * - K_decision > κ₂: "high" → Envolvente conservativa
  *
- * Por (P1) del JSDoc de {@link globalConflict}, K_global ≥ K_máx siempre, de
- * modo que el máximo es K_global salvo redondeo; se conserva la forma con
- * máximo para que la decisión nunca pueda ser MENOS conservadora que la del
- * paper, ni siquiera por un error numérico.
+ * `config.rule` elige cómo se construye K_decision a partir de (K_máx, K_global,
+ * n) y si además actúa la guardia de degeneración. Las cuatro reglas y su
+ * justificación están en {@link ./conflict-rules}; la seleccionada por el
+ * experimento pre-registrado `exp:conflict-rule` es el default de
+ * {@link DEFAULT_FUSION_CONFIG}.
  *
- * La decisión resultante es independiente del orden de las fuentes: K_máx es un
- * máximo sobre pares no ordenados y K_global se define sobre el producto
- * conjunto.
+ * La decisión es independiente del orden de las fuentes bajo CUALQUIER regla:
+ * las tres entradas lo son —K_máx es un máximo sobre pares no ordenados,
+ * K_global se define sobre el producto conjunto y n es un cardinal— y una regla
+ * no recibe nada más.
  *
- * Ambos valores se devuelven por separado para trazabilidad: `maxConflict` es
- * exactamente el K_máx de la Definición 3.5 del paper, y `globalConflict` la
- * extensión.
+ * Los tres valores se devuelven por separado para trazabilidad: `maxConflict` es
+ * exactamente el K_máx de la Definición 3.5 del paper, `globalConflict` la
+ * extensión n-aria, y `decision` la traza completa de la regla aplicada.
  */
 export function assessConflict(
   bpas: BPA[],
@@ -203,9 +223,10 @@ export function assessConflict(
   matrix: number[][];
   maxConflict: number;
   globalConflict: number;
+  decision: ConflictDecision;
   decisionConflict: number;
-  level: 'low' | 'moderate' | 'high';
-  method: 'dempster' | 'cautious' | 'envelope';
+  level: ConflictDecision['level'];
+  method: ConflictDecision['method'];
 } {
   const matrix = conflictMatrix(bpas);
   const n = bpas.length;
@@ -218,21 +239,23 @@ export function assessConflict(
   }
 
   const kGlobal = globalConflict(bpas, config);
-  const decisionConflict = Math.max(maxConflict, kGlobal);
 
-  let level: 'low' | 'moderate' | 'high';
-  let method: 'dempster' | 'cautious' | 'envelope';
+  const decision = ruleOf(config).decide({
+    maxConflict,
+    globalConflict: kGlobal,
+    sourceCount: n,
+    kappa1: config.kappa1,
+    kappa2: config.kappa2,
+    kappaDegeneracy: config.kappaDegeneracy,
+  });
 
-  if (decisionConflict <= config.kappa1) {
-    level = 'low';
-    method = 'dempster';
-  } else if (decisionConflict <= config.kappa2) {
-    level = 'moderate';
-    method = 'cautious';
-  } else {
-    level = 'high';
-    method = 'envelope';
-  }
-
-  return { matrix, maxConflict, globalConflict: kGlobal, decisionConflict, level, method };
+  return {
+    matrix,
+    maxConflict,
+    globalConflict: kGlobal,
+    decision,
+    decisionConflict: decision.decisionConflict,
+    level: decision.level,
+    method: decision.method,
+  };
 }
