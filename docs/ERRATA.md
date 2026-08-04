@@ -337,6 +337,31 @@ de él es inválido sin que nada lo señale. Además el umbral 0,01 es exactamen
 el tipo de "filtro semántico" que el propio módulo prohíbe en un comentario
 destacado unas líneas más arriba, a propósito del umbral 1e-10 de la Ec. (10).
 
+**Ampliación del hallazgo** (encontrada al corregirlo, no en el registro
+original):
+
+1. **El corte no era siempre 120 mm/h; con frecuencia era mucho más ceñido.**
+   El filtro `Pl > 0,01` se aplicaba ANTES de elegir la hipótesis de referencia.
+   Cuando la cola *torrencial* tenía plausibilidad no nula pero pequeña —el caso
+   normal, porque la masa sobre Θ interseca a todas las hipótesis y produce
+   Pl ≈ 1e-3 en la cola—, el filtro la descartaba y el bound caía al `upper`
+   finito de la última hipótesis superviviente. Dos sensores concordando en
+   9 mm/h daban así un intervalo credal cortado en **30 mm/h**, no en 120. El
+   truncamiento era, por tanto, más agresivo cuanto más concordante la
+   evidencia. Fijado como test de regresión en
+   `__tests__/core/dempster-shafer/frame.test.ts`.
+2. **La cola abierta se asumía en un segundo punto del código, no registrado.**
+   `createBPAFromGaussian` comprobaba `upper === Infinity` para dar
+   `P(X < ∞) = 1` a la hipótesis de cola. Cerrar el marco sin tocar ese punto
+   habría hecho que la masa gaussiana por encima del `domainBound` dejara de
+   pertenecer a la cola y se repartiera proporcionalmente entre TODAS las
+   hipótesis vía la renormalización final — inflando en silencio la creencia en
+   las hipótesis centrales. Corregido: las hipótesis extremas absorben las colas
+   fuera del dominio del marco, que es la lectura condicionada a H0.
+3. **El marco de viento tenía el mismo defecto.** `WIND_FRAME` cierra con
+   *huracán* [120, ∞): el registro original solo mencionaba precipitación. Ambos
+   marcos declaran ahora su bound.
+
 ### Corrección propuesta
 
 Son **dos** cambios, y ninguno de los dos es opcional: el primero sin el
