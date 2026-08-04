@@ -35,7 +35,7 @@
 import { buildCredalSet } from '@/core/dempster-shafer/credal-set';
 import { createBPAFromGaussian } from '@/core/dempster-shafer/bpa';
 import { fuse } from '@/core/dempster-shafer/combination';
-import { DEFAULT_FUSION_CONFIG, FusionConfig } from '@/core/dempster-shafer/types';
+import { BPA, DEFAULT_FUSION_CONFIG, FusionConfig } from '@/core/dempster-shafer/types';
 import { ConflictRuleId, FusionMethod } from '@/core/dempster-shafer/conflict-rules';
 import { toCredalIntervalSet } from '@/core/credal-propagation/credal-interval-set';
 import { PRECIPITATION_FRAME } from '@/lib/constants';
@@ -132,10 +132,50 @@ export function auraEstimate(
   world: World,
   fusionConfig: FusionConfig = DEFAULT_FUSION_CONFIG
 ): AuraResult {
-  const bpas = SOURCES.map((c, i) =>
+  return auraFromValues(world.values, SOURCES, fusionConfig);
+}
+
+/**
+ * Caracterización mínima que necesitan los tres estimadores: la σ de la
+ * precipitación, la δ y un identificador.
+ *
+ * Existe para que el hindcast sobre datos reales
+ * (`scripts/experiments/hindcast.ts`) use LAS MISMAS TRES FÓRMULAS que la
+ * campaña de mundos sintéticos, con su propia caracterización a priori
+ * (`src/data/sources/hindcast-characterization.ts`) en lugar de la de la demo.
+ * Reimplementarlas allí habría dejado dos versiones del mismo baseline que
+ * pueden divergir sin que nada falle, y entonces «AURA frente a la media
+ * ponderada» significaría cosas distintas en cada experimento.
+ *
+ * `SourceCharacterization` y `HindcastSourceCharacterization` la satisfacen las
+ * dos estructuralmente; no hace falta que hereden de ella.
+ */
+export interface EstimatorSource {
+  sourceId: string;
+  /** σ de la precipitación (mm/h). */
+  precipitationStddev: number;
+  /** δ_i — Def. 3.4 / Ec. (4). */
+  failureRate: number;
+}
+
+/** {@link auraEstimate} sobre valores sueltos y una caracterización cualquiera. */
+export function auraFromValues(
+  values: readonly number[],
+  sources: readonly EstimatorSource[],
+  fusionConfig: FusionConfig = DEFAULT_FUSION_CONFIG
+): AuraResult {
+  if (values.length !== sources.length) {
+    throw new Error(
+      `auraFromValues: ${values.length} valores para ${sources.length} fuentes. ` +
+        `Cada valor debe venir con su σ y su δ, o la BPA se construiría con la ` +
+        `caracterización de otra fuente.`
+    );
+  }
+
+  const bpas = sources.map((c, i) =>
     createBPAFromGaussian(
       PRECIPITATION_FRAME,
-      world.values[i],
+      values[i],
       c.precipitationStddev,
       c.failureRate,
       c.sourceId,
@@ -145,7 +185,7 @@ export function auraEstimate(
 
   const fusion = fuse(
     bpas,
-    SOURCES.map((c) => c.failureRate),
+    sources.map((c) => c.failureRate),
     fusionConfig
   );
 
@@ -190,13 +230,21 @@ export function auraEstimate(
  * estrecho justo cuando debería ensancharse.
  */
 export function weightedMeanEstimate(world: World): MethodInterval {
-  const raw = SOURCES.map((c) => 1 - c.failureRate);
+  return weightedMeanInterval(world.values, SOURCES);
+}
+
+/** {@link weightedMeanEstimate} sobre valores sueltos y una caracterización cualquiera. */
+export function weightedMeanInterval(
+  values: readonly number[],
+  sources: readonly EstimatorSource[]
+): MethodInterval {
+  const raw = sources.map((c) => 1 - c.failureRate);
   const sum = raw.reduce((s, w) => s + w, 0);
   const w = raw.map((x) => x / sum);
 
-  const mean = w.reduce((s, wi, i) => s + wi * world.values[i], 0);
+  const mean = w.reduce((s, wi, i) => s + wi * values[i], 0);
   const variance = w.reduce(
-    (s, wi, i) => s + wi * wi * SOURCES[i].precipitationStddev ** 2,
+    (s, wi, i) => s + wi * wi * sources[i].precipitationStddev ** 2,
     0
   );
   const half = Z_95 * Math.sqrt(variance);
@@ -223,10 +271,18 @@ export function weightedMeanEstimate(world: World): MethodInterval {
  * caso extremo de la tesis: máxima informatividad nominal, mínima robustez.
  */
 export function kalmanEstimate(world: World): MethodInterval {
-  const precisions = SOURCES.map((c) => 1 / c.precipitationStddev ** 2);
+  return kalmanInterval(world.values, SOURCES);
+}
+
+/** {@link kalmanEstimate} sobre valores sueltos y una caracterización cualquiera. */
+export function kalmanInterval(
+  values: readonly number[],
+  sources: readonly EstimatorSource[]
+): MethodInterval {
+  const precisions = sources.map((c) => 1 / c.precipitationStddev ** 2);
   const total = precisions.reduce((s, p) => s + p, 0);
 
-  const mean = precisions.reduce((s, p, i) => s + (p / total) * world.values[i], 0);
+  const mean = precisions.reduce((s, p, i) => s + (p / total) * values[i], 0);
   const half = Z_95 / Math.sqrt(total);
 
   return interval(mean - half, mean + half);
@@ -261,3 +317,33 @@ export function evaluate(
 
 /** `true` si `x` cae en el intervalo cerrado. */
 export const contains = (i: MethodInterval, x: number): boolean => x >= i.lower && x <= i.upper;
+
+/**
+ * Resumen puntual de una BPA: la esperanza pignística sobre los centros de las
+ * hipótesis del marco.
+ *
+ *     BetP-mean(m) = Σ_A m(A) · media_{θ_j ∈ A} (centro de θ_j)
+ *
+ * ⚠ ES UN RESUMEN PARA ORDENAR, NO UNA MAGNITUD CERTIFICADA, y no aparece en
+ * ningún teorema del paper. Una BPA no tiene un valor: tiene un conjunto credal,
+ * y colapsarlo a un número tira exactamente la información que este sistema
+ * existe para conservar. Vive aquí, junto a los estimadores, y NO en el núcleo,
+ * para que no pueda confundirse con una salida del pipeline.
+ *
+ * Su único uso en el repositorio es elegir las cinco «horas clave» de cada
+ * evento del hindcast. Para eso es adecuado y estable: el término de Θ (la masa
+ * δ) aporta la media de los centros del marco, que es la MISMA constante en
+ * todas las horas y por tanto no altera el orden.
+ */
+export function pignisticMean(bpa: BPA): number {
+  let total = 0;
+  for (const fe of bpa.focalElements) {
+    let centres = 0;
+    for (const j of fe.indices) {
+      const h = bpa.frame.hypotheses[j];
+      centres += (h.lower + h.upper) / 2;
+    }
+    total += fe.mass * (centres / fe.indices.length);
+  }
+  return total;
+}
