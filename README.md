@@ -702,7 +702,8 @@ provocaron, todos corregidos o documentados en el código:
 
 ## Cómo citar
 
-Metadatos en [`CITATION.cff`](CITATION.cff) (versión 2.0.0).
+Metadatos en [`CITATION.cff`](CITATION.cff) (versión 2.0.0-rc1). El registro de
+cambios por iteración está en [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Licencia
 
