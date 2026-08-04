@@ -37,7 +37,7 @@
  *
  *   precipitación de las 3 fuentes (mm/h)
  *     → BPAs con la σ y la δ DECLARADAS A PRIORI (Def. 3.4)
- *     → conflicto K_máx / K_global y regla C1 (Def. 3.5-3.6)
+ *     → conflicto: K_máx / K_global crudos, medida por pares y regla C1 (Def. 3.5-3.6)
  *     → fusión (Dempster / cautelosa / envolvente)
  *     → conjunto credal intervalar (§8) y banda de evidencia al 95 %
  *     → propagación por el DAG de la demo, con esa precipitación SOSTENIDA
@@ -102,7 +102,13 @@ import {
   pignisticMean,
   weightedMeanInterval,
 } from './lib/methods';
-import { fusionConfigFor, nameFor, profileOf, ruleOverrideOf } from './lib/profile';
+import {
+  fusionConfigFor,
+  measureOverrideOf,
+  nameFor,
+  profileOf,
+  ruleOverrideOf,
+} from './lib/profile';
 import { ExperimentContext, ExperimentOutput, main } from './runner';
 
 /** Horas del pico de E1 que ve el perfil `verify`. */
@@ -121,6 +127,14 @@ interface HourResult {
   fusedPignistic: number;
   maxConflict: number;
   globalConflict: number;
+  /** máx_{i≠j} de la MEDIDA vigente — lo que C1 comparó con κ₁ y κ₂. */
+  measureConflict: number;
+  /**
+   * máx_{i≠j} K_floor_ij — el suelo estructural que la medida descuenta, o
+   * `null` si la medida no lo define. Con D2 es `null`: la distancia de
+   * Jousselme no resta un suelo, elimina el auto-conflicto por construcción.
+   */
+  maxFloor: number | null;
   decisionConflict: number;
   degeneracyGuard: boolean;
   method: string;
@@ -139,6 +153,20 @@ interface HourResult {
 }
 
 const width = (i: { lower: number; upper: number }): number => i.upper - i.lower;
+
+/**
+ * Máximo fuera de la diagonal de una matriz simétrica, o `null` si no la hay.
+ * Fuera de la diagonal porque la diagonal de `floorMatrix` es el auto-conflicto
+ * de cada fuente consigo misma, que no interviene en ninguna decisión.
+ */
+function maxOffDiagonal(matrix: number[][] | null): number | null {
+  if (matrix === null) return null;
+  let best = 0;
+  for (let i = 0; i < matrix.length; i++) {
+    for (let j = i + 1; j < matrix.length; j++) best = Math.max(best, matrix[i][j]);
+  }
+  return best;
+}
 
 function evaluateHour(hour: HourRecord, fusionConfig = fusionConfigFor(undefined)): HourResult {
   const sources: DemoSource[] = HINDCAST_SOURCES.map((c, i) => ({
@@ -162,6 +190,8 @@ function evaluateHour(hour: HourRecord, fusionConfig = fusionConfigFor(undefined
     fusedPignistic: pignisticMean(r.fusion.fused),
     maxConflict: r.fusion.maxConflict,
     globalConflict: r.fusion.globalConflict,
+    measureConflict: r.fusion.measureConflict,
+    maxFloor: maxOffDiagonal(r.fusion.floorMatrix),
     decisionConflict: r.fusion.decisionConflict,
     degeneracyGuard: r.fusion.degeneracyGuard,
     method: r.fusion.method,
@@ -191,7 +221,7 @@ const FLOOR_PROBE_VALUES = [0, 0.5, 1, 2, 5, 10, 20, 40] as const;
  * tres— con las σ y δ declaradas a priori. Todo el conflicto que quede ahí no
  * puede ser desacuerdo: es un residuo de que las tres BPAs reparten esa misma
  * medición de forma distinta sobre las hipótesis del marco, porque sus σ son
- * distintas (1,8 / 5,0 / 10,0 mm/h). La fuente fina concentra casi toda la masa
+ * distintas (5,0 / 1,8 / 10,0 mm/h, en el orden canónico de las fuentes). La fuente fina concentra casi toda la masa
  * en una hipótesis y la gruesa la extiende sobre tres; el solape entre ellas es
  * incompleto, y K_ij > 0 aunque midan lo mismo.
  *
@@ -199,6 +229,12 @@ const FLOOR_PROBE_VALUES = [0, 0.5, 1, 2, 5, 10, 20, 40] as const;
  * hindcast —«las fuentes se contradicen» frente a «la discretización y la
  * heterogeneidad de σ producen conflicto por sí solas»— y por eso se computa y
  * se publica junto al perfil observado en lugar de dejarlo a la interpretación.
+ *
+ * Se computa con el K CRUDO y con la MEDIDA vigente, en columnas separadas: el
+ * primero es el suelo que motivó la corrección de `docs/ERRATA.md` §9 Capa 3, y
+ * el segundo es lo que queda de él después. Comparar los dos es el objeto de la
+ * Fase C, que es DESCRIPCIÓN y no validación —los resultados del hindcast ya
+ * eran conocidos cuando se eligió la medida—.
  *
  * Generaliza el «hallazgo colateral» del README de experimentos (los fixtures
  * son más concordantes que el ruido real): allí el efecto se atribuía a la
@@ -214,9 +250,15 @@ function structuralConflictFloor(fusionConfig = fusionConfigFor(undefined)) {
     );
     return {
       valueMmH: v,
+      /** K_máx CRUDO — el suelo tal como lo veía la medida D0. */
       maxConflict: r.maxConflict,
+      /** El mismo suelo visto por la MEDIDA vigente. Es la columna nueva. */
+      measureConflict: r.measureConflict,
+      /** máx K_floor descontado, o `null` si la medida no define suelo. */
+      maxFloor: r.maxFloor,
       globalConflict: r.globalConflict,
       method: r.fusionMethod,
+      reachesDempster: r.fusionMethod === 'dempster',
     };
   });
 }
@@ -282,6 +324,7 @@ function analyze(
 
   const floor = structuralConflictFloor(fusionConfig);
   const floorAtZero = floor.find((f) => f.valueMmH === 0)!.maxConflict;
+  const measureFloorAtZero = floor.find((f) => f.valueMmH === 0)!.measureConflict;
 
   return {
     hours: rows.length,
@@ -354,6 +397,7 @@ function analyze(
     conflictProfile: {
       maxConflict: quantiles(rows.map((r) => r.maxConflict)),
       globalConflict: quantiles(rows.map((r) => r.globalConflict)),
+      measureConflict: quantiles(rows.map((r) => r.measureConflict)),
       decisionConflict: quantiles(rows.map((r) => r.decisionConflict)),
       degeneracyGuardHours: rows.filter((r) => r.degeneracyGuard).length,
       hoursWithAnyPrecipitation: rows.filter((r) => r.precipitation.some((v) => v > 0)).length,
@@ -366,13 +410,23 @@ function analyze(
       minObservedMaxConflictAboveFloor:
         quantiles(rows.map((r) => r.maxConflict)).min - floorAtZero,
       floorAtZeroPrecipitation: floorAtZero,
+      /**
+       * El MISMO suelo visto por la medida vigente, y el mínimo observado en el
+       * evento medido con ella. Es la comparación que la iteración del suelo
+       * pide: cuánto del conflicto mínimo sobrevive a la corrección de escala.
+       */
+      measureFloorAtZeroPrecipitation: measureFloorAtZero,
+      minObservedMeasureConflictAboveFloor:
+        quantiles(rows.map((r) => r.measureConflict)).min - measureFloorAtZero,
+      measure: fusionConfig.measure,
       kappa1: fusionConfig.kappa1,
       floorExceedsKappa1: floorAtZero > fusionConfig.kappa1,
+      measureFloorExceedsKappa1: measureFloorAtZero > fusionConfig.kappa1,
       structuralFloorNote:
         'K_máx y K_global con las TRES FUENTES MIDIENDO EXACTAMENTE LO MISMO. Es el conflicto ' +
         'que el sistema ve con acuerdo perfecto, y por tanto un SUELO que ningún dato puede ' +
         'bajar: procede de que las tres BPAs reparten la misma medición de forma distinta ' +
-        'sobre las hipótesis del marco, porque sus σ declaradas son 1,8 / 5,0 / 10,0 mm/h. ' +
+        'sobre las hipótesis del marco, porque sus σ declaradas son 5,0 / 1,8 / 10,0 mm/h. ' +
         'Compárese con `maxConflict.min` observado: si coinciden, el mínimo del evento no ' +
         'mide desacuerdo entre reanálisis, mide discretización. `floorExceedsKappa1` es la ' +
         'consecuencia dura: si el suelo ya supera κ₁, la regla de Dempster es INALCANZABLE ' +
@@ -418,6 +472,8 @@ const CSV_HEADER = [
   'fused_pignistic',
   'K_max',
   'K_global',
+  'K_measure',
+  'K_floor',
   'K_decision',
   'guard',
   'method',
@@ -447,6 +503,8 @@ function csvRow(r: HourResult, index: number): (string | number)[] {
     r.fusedPignistic,
     r.maxConflict,
     r.globalConflict,
+    r.measureConflict,
+    r.maxFloor ?? '',
     r.decisionConflict,
     r.degeneracyGuard ? 1 : 0,
     r.method,
@@ -473,7 +531,7 @@ const keyHourRecord = (r: HourResult) =>
   Object.fromEntries(CSV_HEADER.map((k, i) => [k, csvRow(r, -1)[i]]).filter(([k]) => k !== 'hour_index'));
 
 async function run(ctx: ExperimentContext): Promise<ExperimentOutput> {
-  const fusionConfig = fusionConfigFor(ruleOverride);
+  const fusionConfig = fusionConfigFor(ruleOverride, measureOverride);
   const series = await loadEventSeries(event);
 
   const peakHours = ctx.flags.number('peak-hours', VERIFY_PEAK_HOURS);
@@ -556,6 +614,7 @@ async function run(ctx: ExperimentContext): Promise<ExperimentOutput> {
       profile,
       peakHours: profile === 'verify' ? peakHours : null,
       conflictRule: fusionConfig.rule,
+      conflictMeasure: fusionConfig.measure,
       kappa1: fusionConfig.kappa1,
       kappa2: fusionConfig.kappa2,
       kappaDegeneracy: fusionConfig.kappaDegeneracy,
@@ -598,6 +657,21 @@ async function run(ctx: ExperimentContext): Promise<ExperimentOutput> {
         'evitado X» o «AURA habría predicho X»: no hay ground truth (los tres productos son ' +
         'mallas de reanálisis, no el valor en el punto), el DAG es el de juguete de la demo ' +
         '(Ec. 34) y las tres fuentes no son independientes (H3).',
+
+      /**
+       * La declaración que exige la corrección del suelo estructural. Va en el
+       * resultado y no solo en el README porque un `results.json` que se cite
+       * suelto tiene que poder decir por sí mismo qué NO es.
+       */
+      selectionDisclosure:
+        'ESTA EJECUCIÓN ES DESCRIPCIÓN, NO VALIDACIÓN CIEGA. Los resultados del hindcast bajo la ' +
+        'medida D0 YA ERAN CONOCIDOS —ejecutados, commiteados y descritos en docs/ERRATA.md §9— ' +
+        'ANTES de que se eligiera la medida de conflicto con que se vuelve a ejecutar aquí. La ' +
+        'selección de la medida se hizo EXCLUSIVAMENTE sobre mundos sintéticos con ground truth ' +
+        '(`npm run exp:conflict-floor`, semilla 20261007), y el bloque que usa las σ del ' +
+        'hindcast usa esas σ sobre mundos sintéticos NUEVOS, no sobre estos datos. Ninguna cifra ' +
+        'de esta salida puede presentarse como confirmación independiente de la medida elegida.',
+
       caveat: event.caveat,
 
       event: {
@@ -698,10 +772,11 @@ function eventFromArgv(argv: readonly string[] = process.argv.slice(2)): Hindcas
 
 const profile = profileOf();
 const ruleOverride = ruleOverrideOf();
+const measureOverride = measureOverrideOf();
 const event = eventFromArgv();
 
 main({
-  name: nameFor(`hindcast-${event.id.split('-')[0]}`, profile, ruleOverride),
+  name: nameFor(`hindcast-${event.id.split('-')[0]}`, profile, ruleOverride, measureOverride),
   description:
     `Hindcast ILUSTRATIVO del pipeline completo, hora a hora, sobre ${event.label}. ` +
     `Tres reanálisis públicos sin API key, regla de conflicto del sistema, DAG de la demo y ` +

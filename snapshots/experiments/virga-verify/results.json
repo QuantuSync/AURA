@@ -4,7 +4,7 @@
       "allWorlds": {
         "attenuatedCoverage": 0.985,
         "both": 196,
-        "meanWidth": 300.1,
+        "meanWidth": 290.25,
         "neither": 0,
         "neitherFraction": 0,
         "neitherWilsonLower": 0,
@@ -57,7 +57,7 @@
         "0.3-0.4": {
           "attenuatedCoverage": 1,
           "both": 20,
-          "meanWidth": 326.75,
+          "meanWidth": 302,
           "neither": 0,
           "neitherFraction": 0,
           "neitherWilsonLower": 0,
@@ -70,7 +70,7 @@
         "0.4-0.5": {
           "attenuatedCoverage": 1,
           "both": 25,
-          "meanWidth": 366.730769231,
+          "meanWidth": 348.076923077,
           "neither": 0,
           "neitherFraction": 0,
           "neitherWilsonLower": 1.38777878078e-17,
@@ -83,7 +83,7 @@
         "0.5-0.6": {
           "attenuatedCoverage": 1,
           "both": 17,
-          "meanWidth": 296.764705882,
+          "meanWidth": 267.941176471,
           "neither": 0,
           "neitherFraction": 0,
           "neitherWilsonLower": 0,
@@ -109,7 +109,7 @@
         "0.7-0.8": {
           "attenuatedCoverage": 1,
           "both": 19,
-          "meanWidth": 215,
+          "meanWidth": 240.789473684,
           "neither": 0,
           "neitherFraction": 0,
           "neitherWilsonLower": 0,
@@ -122,7 +122,7 @@
         "0.8-0.9": {
           "attenuatedCoverage": 1,
           "both": 17,
-          "meanWidth": 212.058823529,
+          "meanWidth": 182.941176471,
           "neither": 0,
           "neitherFraction": 0,
           "neitherWilsonLower": 0,
@@ -135,7 +135,7 @@
         "0.9-1.0": {
           "attenuatedCoverage": 1,
           "both": 23,
-          "meanWidth": 223.695652174,
+          "meanWidth": 202.173913043,
           "neither": 0,
           "neitherFraction": 0,
           "neitherWilsonLower": 0,
@@ -150,7 +150,7 @@
       "withoutSourceFailure": {
         "attenuatedCoverage": 0.994152046784,
         "both": 169,
-        "meanWidth": 266.900584795,
+        "meanWidth": 255.380116959,
         "neither": 0,
         "neitherFraction": 0,
         "neitherWilsonLower": 0,
@@ -663,19 +663,19 @@
         "envelope": 9
       },
       "0.3-0.4": {
-        "cautious": 3,
-        "dempster": 7,
+        "cautious": 2,
+        "dempster": 8,
         "envelope": 10
       },
       "0.4-0.5": {
-        "cautious": 7,
-        "dempster": 7,
+        "cautious": 6,
+        "dempster": 8,
         "envelope": 12
       },
       "0.5-0.6": {
         "cautious": 4,
-        "dempster": 7,
-        "envelope": 6
+        "dempster": 8,
+        "envelope": 5
       },
       "0.6-0.7": {
         "cautious": 4,
@@ -683,37 +683,37 @@
         "envelope": 7
       },
       "0.7-0.8": {
-        "cautious": 3,
-        "dempster": 11,
-        "envelope": 5
-      },
-      "0.8-0.9": {
-        "cautious": 2,
+        "cautious": 4,
         "dempster": 10,
         "envelope": 5
       },
+      "0.8-0.9": {
+        "cautious": 1,
+        "dempster": 11,
+        "envelope": 5
+      },
       "0.9-1.0": {
-        "cautious": 7,
-        "dempster": 14,
+        "cautious": 6,
+        "dempster": 15,
         "envelope": 2
       }
     },
     "counts": {
-      "cautious": 37,
-      "dempster": 84,
-      "envelope": 79
+      "cautious": 34,
+      "dempster": 88,
+      "envelope": 78
     },
     "decisionConflict": {
-      "max": 0.9215,
-      "median": 0.498147808609,
-      "min": 0,
-      "p25": 0.151035495523,
-      "p75": 0.888865831413
+      "max": 0.960114569402,
+      "median": 0.467231223762,
+      "min": 0.0419146826719,
+      "p25": 0.118979053158,
+      "p75": 0.860404013909
     },
     "shares": {
-      "cautious": 0.185,
-      "dempster": 0.42,
-      "envelope": 0.395
+      "cautious": 0.17,
+      "dempster": 0.44,
+      "envelope": 0.39
     }
   },
   "metric": "fracción de mundos en que el intervalo no contiene NI P* NI γ·P* (el fallo que §3.4, Ejemplo 3.1 atribuye a la media)",

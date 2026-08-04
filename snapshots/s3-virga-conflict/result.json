@@ -328,7 +328,7 @@
         0
       ]
     ],
-    "decisionConflict": 0.915884772475,
+    "decisionConflict": 0.884723372296,
     "degeneracyGuard": true,
     "envelope": [
       {
@@ -352,6 +352,7 @@
         "upper": 0.08
       }
     ],
+    "floorMatrix": null,
     "fused": {
       "focalElements": [
         {
@@ -385,6 +386,25 @@
     },
     "globalConflict": 0.951199997033,
     "maxConflict": 0.915884772475,
+    "measure": "D2",
+    "measureConflict": 0.884723372296,
+    "measureMatrix": [
+      [
+        0,
+        0.884723372296,
+        0.883778165469
+      ],
+      [
+        0.884723372296,
+        0,
+        0.0555500630794
+      ],
+      [
+        0.883778165469,
+        0.0555500630794,
+        0
+      ]
+    ],
     "method": "envelope",
     "normalizedConflict": null,
     "rule": "C1",

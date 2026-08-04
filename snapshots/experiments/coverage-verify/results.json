@@ -29,7 +29,7 @@
         },
         "ligera": {
           "coverage": 1,
-          "meanWidth": 373.785714286,
+          "meanWidth": 331.714285714,
           "medianWidth": 500,
           "successes": 70,
           "total": 70,
@@ -38,7 +38,7 @@
         },
         "moderada": {
           "coverage": 1,
-          "meanWidth": 333.28125,
+          "meanWidth": 319.0625,
           "medianWidth": 500,
           "successes": 32,
           "total": 32,
@@ -47,7 +47,7 @@
         },
         "seco": {
           "coverage": 1,
-          "meanWidth": 132.5,
+          "meanWidth": 125,
           "medianWidth": 5,
           "successes": 66,
           "total": 66,
@@ -58,8 +58,8 @@
       "byCondition": {
         "clean": {
           "coverage": 1,
-          "meanWidth": 222.622377622,
-          "medianWidth": 30,
+          "meanWidth": 198.846153846,
+          "medianWidth": 15,
           "successes": 143,
           "total": 143,
           "wilsonLower": 0.97383847629,
@@ -76,7 +76,7 @@
         },
         "virga": {
           "coverage": 1,
-          "meanWidth": 288.214285714,
+          "meanWidth": 270.535714286,
           "medianWidth": 500,
           "successes": 28,
           "total": 28,
@@ -86,8 +86,8 @@
       },
       "global": {
         "coverage": 1,
-        "meanWidth": 271.425,
-        "medianWidth": 500,
+        "meanWidth": 251.95,
+        "medianWidth": 37.5,
         "successes": 200,
         "total": 200,
         "wilsonLower": 0.981153994082,
@@ -367,9 +367,9 @@
   },
   "fusionByCondition": {
     "clean": {
-      "cautious": 55,
-      "dempster": 83,
-      "envelope": 5
+      "cautious": 47,
+      "dempster": 90,
+      "envelope": 6
     },
     "delta-failure": {
       "cautious": 0,
@@ -378,13 +378,13 @@
     },
     "virga": {
       "cautious": 5,
-      "dempster": 12,
-      "envelope": 11
+      "dempster": 13,
+      "envelope": 10
     }
   },
   "fusionMethods": {
-    "cautious": 60,
-    "dempster": 97,
+    "cautious": 52,
+    "dempster": 105,
     "envelope": 43
   },
   "soundness": {

@@ -10,6 +10,7 @@
       0.03
     ],
     "biasScale": 1,
+    "conflictMeasure": "D2",
     "conflictRule": "C1",
     "defaultBandWeights": [
       0.3,

@@ -80,9 +80,27 @@ export type FusionMethod = 'dempster' | 'cautious' | 'envelope';
  * detalle de los elementos focales.
  */
 export interface ConflictDecisionInput {
-  /** K_máx = máx_{i≠j} K_ij — Definición 3.5, literal del paper. */
+  /**
+   * K_máx = máx_{i≠j} K_ij — Definición 3.5, literal del paper. SIEMPRE el K
+   * CRUDO de la Ecuación (6), decida lo que decida `FusionConfig.measure`.
+   */
   maxConflict: number;
-  /** K_global — extensión n-aria; ver `globalConflict` en ./conflict.ts. */
+  /**
+   * máx_{i≠j} de la MEDIDA por pares vigente — ver `./conflict-measures.ts`.
+   * Con la medida D0 es bit a bit igual a {@link maxConflict}.
+   *
+   * Solo C1 lo consulta. C0, C2 y C3 están congeladas sobre `maxConflict` y
+   * `globalConflict` crudos: existen para reproducir números publicados antes
+   * de que la medida fuese un eje de configuración, y una regla congelada que
+   * cambiara de significado al cambiar la medida dejaría de reproducir nada.
+   */
+  measureConflict: number;
+  /**
+   * K_global CRUDO — extensión n-aria; ver `globalConflict` en ./conflict.ts.
+   * La medida NO lo toca: la guardia de degeneración de C1 y C3 depende de la
+   * explosión 1/(1−K) del K crudo, y reescalarlo la desactivaría justo donde
+   * hace falta.
+   */
   globalConflict: number;
   /** n — número de fuentes. */
   sourceCount: number;
@@ -214,6 +232,10 @@ function decisionOf(
  * rama Dempster exige K_global ≤ κ₁— pero paga la sobre-conservación
  * estructural que mide `docs/ERRATA.md` §9: κ₁/κ₂ aplicados a una magnitud que
  * crece con n y con la granularidad del marco.
+ *
+ * CONGELADA SOBRE EL K CRUDO: no consulta `FusionConfig.measure`. Su única
+ * función es reproducir números publicados, y para eso tiene que decidir hoy
+ * exactamente lo que decidía entonces.
  */
 export const RULE_C0: ConflictDecisionRule = {
   id: 'C0',
@@ -227,13 +249,21 @@ export const RULE_C0: ConflictDecisionRule = {
 /**
  * C1 — guardia de degeneración.
  *
- *     K_decision = K_máx por pares            contra κ₁ y κ₂
- *     si K_global ≥ κ_deg → envolvente        (guardia, independiente)
+ *     K_decision = máx_{i≠j} d(m_i, m_j)      contra κ₁ y κ₂
+ *     si K_global CRUDO ≥ κ_deg → envolvente  (guardia, independiente)
  *
  * Devuelve cada magnitud a su función: κ₁/κ₂ vuelven a comparar el conflicto
  * por pares para el que fueron elegidos (Definición 3.5), y K_global deja de
  * gobernar la informatividad para hacer SOLO lo que motivó su introducción —
  * impedir que la reducción secuencial degenere.
+ *
+ * ES LA ÚNICA REGLA QUE CONSULTA `FusionConfig.measure`. `d` es la medida por
+ * pares vigente (`./conflict-measures.ts`): con D0 es el K_máx literal de la
+ * Definición 3.5 y esta regla es exactamente la que seleccionó el experimento
+ * de `docs/ERRATA.md` §9; con D1 o D2 es una medida que descuenta el suelo de
+ * discretización, que es lo que corrige `exp:conflict-floor`. La guardia opera
+ * sobre el K_global crudo en los tres casos, y por eso el contraejemplo del
+ * ciclo sigue yendo a envolvente bajo cualquier medida.
  *
  * SOUNDNESS. La rama Dempster exige K_global < κ_deg < 1, que es la hipótesis
  * exacta de (P2): ningún paso intermedio alcanza conflicto total, en ningún
@@ -247,10 +277,10 @@ export const RULE_C0: ConflictDecisionRule = {
  */
 export const RULE_C1: ConflictDecisionRule = {
   id: 'C1',
-  label: 'C1 · K_máx contra κ₁/κ₂ + guardia K_global ≥ κ_deg',
+  label: 'C1 · máx de la medida por pares contra κ₁/κ₂ + guardia K_global crudo ≥ κ_deg',
   decide(input) {
     const guard = input.globalConflict >= input.kappaDegeneracy;
-    return decisionOf('C1', input.maxConflict, null, guard, input);
+    return decisionOf('C1', input.measureConflict, null, guard, input);
   },
 };
 
@@ -276,6 +306,8 @@ export const RULE_C1: ConflictDecisionRule = {
  * 0,832 < 1. La hipótesis de (P2) se cumple por construcción, sin necesidad de
  * guardia, y el factor de normalización de cada paso está acotado por
  * (1−κ₁)^{−(n−1)} — 2,04 con las tres fuentes de la demo (§7.2).
+ *
+ * CONGELADA SOBRE EL K CRUDO, como C0 y C3: no consulta `FusionConfig.measure`.
  */
 export const RULE_C2: ConflictDecisionRule = {
   id: 'C2',
@@ -304,6 +336,8 @@ export const RULE_C2: ConflictDecisionRule = {
  * cautelosa mientras C3 fuerza la envolvente.
  *
  * Está testeado en `__tests__/core/dempster-shafer/conflict-rules.test.ts`.
+ *
+ * CONGELADA SOBRE EL K CRUDO, como C0 y C2: no consulta `FusionConfig.measure`.
  */
 export const RULE_C3: ConflictDecisionRule = {
   id: 'C3',

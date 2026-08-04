@@ -77,15 +77,28 @@ const CYCLE: BPA[] = [
 
 const configFor = (rule: ConflictRuleId) => ({ ...DEFAULT_FUSION_CONFIG, rule });
 
-const inputOf = (over: Partial<ConflictDecisionInput> = {}): ConflictDecisionInput => ({
-  maxConflict: 0,
-  globalConflict: 0,
-  sourceCount: 3,
-  kappa1: DEFAULT_FUSION_CONFIG.kappa1,
-  kappa2: DEFAULT_FUSION_CONFIG.kappa2,
-  kappaDegeneracy: DEFAULT_FUSION_CONFIG.kappaDegeneracy,
-  ...over,
-});
+/**
+ * Entrada de regla con la MEDIDA D0 salvo que se diga otra cosa.
+ *
+ * `measureConflict` cae por defecto en `maxConflict`, que es exactamente lo que
+ * la medida D0 produce (identidad). Todo lo que este fichero afirma sobre las
+ * cuatro reglas se afirma por tanto en el régimen D0, que es donde tienen
+ * sentido las cotas que documentan; lo que las medidas D1 y D2 cambian se
+ * comprueba en `./conflict-measures.test.ts`, que es su sitio.
+ */
+const inputOf = (over: Partial<ConflictDecisionInput> = {}): ConflictDecisionInput => {
+  const maxConflict = over.maxConflict ?? 0;
+  return {
+    maxConflict,
+    measureConflict: maxConflict,
+    globalConflict: 0,
+    sourceCount: 3,
+    kappa1: DEFAULT_FUSION_CONFIG.kappa1,
+    kappa2: DEFAULT_FUSION_CONFIG.kappa2,
+    kappaDegeneracy: DEFAULT_FUSION_CONFIG.kappaDegeneracy,
+    ...over,
+  };
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Requisito innegociable (a)
@@ -120,10 +133,15 @@ describe('requisito (a) · el contraejemplo del ciclo bajo las cuatro reglas', (
   });
 
   it('en el ciclo, C1 y C3 llegan a la envolvente por vías distintas', () => {
-    // C1 decide con K_máx = 0,75 > κ₂ y ADEMÁS dispara la guardia; C0/C2 llegan
-    // por la comparación con κ₂ sin guardia. Que el resultado coincida no
-    // significa que el mecanismo sea el mismo, y la traza lo distingue.
-    const c1 = assessConflict(CYCLE, configFor('C1')).decision;
+    // C1 decide con la medida y ADEMÁS dispara la guardia; C0/C2 llegan por la
+    // comparación con κ₂ sin guardia. Que el resultado coincida no significa
+    // que el mecanismo sea el mismo, y la traza lo distingue.
+    //
+    // Con la medida D0 el número que C1 compara es el K_máx = 0,75; con la
+    // medida del sistema (D2) es d_J = 0,5, POR DEBAJO de κ₂, y entonces la
+    // guardia es la única vía. Ese caso se verifica en
+    // `./conflict-measures.test.ts`; aquí se aísla el eje de la regla.
+    const c1 = assessConflict(CYCLE, { ...configFor('C1'), measure: 'D0' }).decision;
     expect(c1.decisionConflict).toBeCloseTo(0.75, 12);
     expect(c1.degeneracyGuard).toBe(true);
 

@@ -17,22 +17,22 @@
       "byMethod": {
         "aura-banda-95": {
           "all": {
-            "coverage": 1,
-            "meanWidth": 256.675,
-            "medianWidth": 440,
-            "successes": 200,
+            "coverage": 0.995,
+            "meanWidth": 229.875,
+            "medianWidth": 30,
+            "successes": 199,
             "total": 200,
-            "wilsonLower": 0.981153994082,
-            "wilsonUpper": 1
+            "wilsonLower": 0.97222560013,
+            "wilsonUpper": 0.999116854011
           },
           "intact": {
-            "coverage": 1,
-            "meanWidth": 256.675,
-            "medianWidth": 440,
-            "successes": 200,
+            "coverage": 0.995,
+            "meanWidth": 229.875,
+            "medianWidth": 30,
+            "successes": 199,
             "total": 200,
-            "wilsonLower": 0.981153994082,
-            "wilsonUpper": 1
+            "wilsonLower": 0.97222560013,
+            "wilsonUpper": 0.999116854011
           },
           "violated": {
             "coverage": 0,
@@ -138,22 +138,22 @@
       "byMethod": {
         "aura-banda-95": {
           "all": {
-            "coverage": 0.99,
-            "meanWidth": 273.475,
-            "medianWidth": 470,
-            "successes": 198,
+            "coverage": 0.985,
+            "meanWidth": 256.675,
+            "medianWidth": 440,
+            "successes": 197,
             "total": 200,
-            "wilsonLower": 0.964277514804,
-            "wilsonUpper": 0.997253399396
+            "wilsonLower": 0.956833519444,
+            "wilsonUpper": 0.994885854816
           },
           "intact": {
-            "coverage": 1,
-            "meanWidth": 269.464285714,
-            "medianWidth": 470,
-            "successes": 196,
+            "coverage": 0.994897959184,
+            "meanWidth": 252.321428571,
+            "medianWidth": 37.5,
+            "successes": 195,
             "total": 196,
-            "wilsonLower": 0.980776775206,
-            "wilsonUpper": 1
+            "wilsonLower": 0.971670029688,
+            "wilsonUpper": 0.99909881924
           },
           "violated": {
             "coverage": 0.5,
@@ -259,22 +259,22 @@
       "byMethod": {
         "aura-banda-95": {
           "all": {
-            "coverage": 0.96,
-            "meanWidth": 281.675,
+            "coverage": 0.955,
+            "meanWidth": 262.075,
             "medianWidth": 440,
-            "successes": 192,
+            "successes": 191,
             "total": 200,
-            "wilsonLower": 0.923067061706,
-            "wilsonUpper": 0.979594612849
+            "wilsonLower": 0.916702406339,
+            "wilsonUpper": 0.976147728275
           },
           "intact": {
-            "coverage": 1,
-            "meanWidth": 266.567567568,
-            "medianWidth": 440,
-            "successes": 185,
+            "coverage": 0.994594594595,
+            "meanWidth": 245.378378378,
+            "medianWidth": 30,
+            "successes": 184,
             "total": 185,
-            "wilsonLower": 0.979657024723,
-            "wilsonUpper": 1
+            "wilsonLower": 0.970020938308,
+            "wilsonUpper": 0.999045199661
           },
           "violated": {
             "coverage": 0.466666666667,
@@ -380,22 +380,22 @@
       "byMethod": {
         "aura-banda-95": {
           "all": {
-            "coverage": 0.89,
-            "meanWidth": 299.975,
+            "coverage": 0.88,
+            "meanWidth": 266.075,
             "medianWidth": 440,
-            "successes": 178,
+            "successes": 176,
             "total": 200,
-            "wilsonLower": 0.839072016991,
-            "wilsonUpper": 0.926228098393
+            "wilsonLower": 0.827656385741,
+            "wilsonUpper": 0.918020649761
           },
           "intact": {
-            "coverage": 1,
-            "meanWidth": 277.672413793,
-            "medianWidth": 500,
-            "successes": 174,
+            "coverage": 0.988505747126,
+            "meanWidth": 238.706896552,
+            "medianWidth": 30,
+            "successes": 172,
             "total": 174,
-            "wilsonLower": 0.978398754847,
-            "wilsonUpper": 1
+            "wilsonLower": 0.959064582488,
+            "wilsonUpper": 0.99684224696
           },
           "violated": {
             "coverage": 0.153846153846,
@@ -501,22 +501,22 @@
       "byMethod": {
         "aura-banda-95": {
           "all": {
-            "coverage": 0.915,
-            "meanWidth": 290.6,
+            "coverage": 0.905,
+            "meanWidth": 258.95,
             "medianWidth": 440,
-            "successes": 183,
+            "successes": 181,
             "total": 200,
-            "wilsonLower": 0.868103114558,
-            "wilsonUpper": 0.94625470053
+            "wilsonLower": 0.856397348856,
+            "wilsonUpper": 0.93833738635
           },
           "intact": {
-            "coverage": 1,
-            "meanWidth": 255.329341317,
-            "medianWidth": 440,
-            "successes": 167,
+            "coverage": 0.988023952096,
+            "meanWidth": 217.425149701,
+            "medianWidth": 30,
+            "successes": 165,
             "total": 167,
-            "wilsonLower": 0.977513673485,
-            "wilsonUpper": 1
+            "wilsonLower": 0.957390535317,
+            "wilsonUpper": 0.996709637007
           },
           "violated": {
             "coverage": 0.484848484848,
@@ -623,7 +623,7 @@
         "aura-banda-95": {
           "all": {
             "coverage": 0.82,
-            "meanWidth": 297.375,
+            "meanWidth": 280.5,
             "medianWidth": 440,
             "successes": 164,
             "total": 200,
@@ -632,7 +632,7 @@
           },
           "intact": {
             "coverage": 0.993377483444,
-            "meanWidth": 246.324503311,
+            "meanWidth": 223.973509934,
             "medianWidth": 30,
             "successes": 150,
             "total": 151,
@@ -744,7 +744,7 @@
         "aura-banda-95": {
           "all": {
             "coverage": 0.78,
-            "meanWidth": 347.35,
+            "meanWidth": 315.35,
             "medianWidth": 440,
             "successes": 156,
             "total": 200,
@@ -753,8 +753,8 @@
           },
           "intact": {
             "coverage": 1,
-            "meanWidth": 292.313432836,
-            "medianWidth": 500,
+            "meanWidth": 244.552238806,
+            "medianWidth": 30,
             "successes": 134,
             "total": 134,
             "wilsonLower": 0.972130329306,
@@ -865,7 +865,7 @@
         "aura-banda-95": {
           "all": {
             "coverage": 0.775,
-            "meanWidth": 341.2,
+            "meanWidth": 326.575,
             "medianWidth": 440,
             "successes": 155,
             "total": 200,
@@ -874,8 +874,8 @@
           },
           "intact": {
             "coverage": 0.992753623188,
-            "meanWidth": 289.420289855,
-            "medianWidth": 500,
+            "meanWidth": 268.224637681,
+            "medianWidth": 470,
             "successes": 137,
             "total": 138,
             "wilsonLower": 0.960096309236,
@@ -986,7 +986,7 @@
         "aura-banda-95": {
           "all": {
             "coverage": 0.765,
-            "meanWidth": 326.325,
+            "meanWidth": 314.25,
             "medianWidth": 440,
             "successes": 153,
             "total": 200,
@@ -995,8 +995,8 @@
           },
           "intact": {
             "coverage": 0.992307692308,
-            "meanWidth": 255.423076923,
-            "medianWidth": 235,
+            "meanWidth": 236.846153846,
+            "medianWidth": 30,
             "successes": 129,
             "total": 130,
             "wilsonLower": 0.957713516367,
@@ -1107,7 +1107,7 @@
         "aura-banda-95": {
           "all": {
             "coverage": 0.695,
-            "meanWidth": 340.9,
+            "meanWidth": 326.075,
             "medianWidth": 440,
             "successes": 139,
             "total": 200,
@@ -1116,7 +1116,7 @@
           },
           "intact": {
             "coverage": 1,
-            "meanWidth": 242.037037037,
+            "meanWidth": 214.583333333,
             "medianWidth": 30,
             "successes": 108,
             "total": 108,
@@ -1228,7 +1228,7 @@
         "aura-banda-95": {
           "all": {
             "coverage": 0.68,
-            "meanWidth": 340.475,
+            "meanWidth": 333.125,
             "medianWidth": 440,
             "successes": 136,
             "total": 200,
@@ -1237,8 +1237,8 @@
           },
           "intact": {
             "coverage": 1,
-            "meanWidth": 236.933962264,
-            "medianWidth": 30,
+            "meanWidth": 223.066037736,
+            "medianWidth": 15,
             "successes": 106,
             "total": 106,
             "wilsonLower": 0.965026001078,

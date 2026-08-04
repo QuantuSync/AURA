@@ -37,6 +37,7 @@ import { createBPAFromGaussian } from '@/core/dempster-shafer/bpa';
 import { fuse } from '@/core/dempster-shafer/combination';
 import { BPA, DEFAULT_FUSION_CONFIG, FusionConfig } from '@/core/dempster-shafer/types';
 import { ConflictRuleId, FusionMethod } from '@/core/dempster-shafer/conflict-rules';
+import { ConflictMeasureId } from '@/core/dempster-shafer/conflict-measures';
 import { toCredalIntervalSet } from '@/core/credal-propagation/credal-interval-set';
 import { PRECIPITATION_FRAME } from '@/lib/constants';
 
@@ -55,6 +56,21 @@ const interval = (lower: number, upper: number): MethodInterval => ({
   upper,
   width: upper - lower,
 });
+
+/**
+ * Máximo fuera de la diagonal de una matriz simétrica, o `null` si no hay
+ * matriz. Fuera de la diagonal porque la diagonal de `floorMatrix` es el
+ * auto-conflicto de cada fuente consigo misma, que no interviene en ninguna
+ * decisión: κ₁ y κ₂ se comparan con un máximo sobre PARES i ≠ j.
+ */
+function maxOffDiagonal(matrix: number[][] | null): number | null {
+  if (matrix === null) return null;
+  let best = 0;
+  for (let i = 0; i < matrix.length; i++) {
+    for (let j = i + 1; j < matrix.length; j++) best = Math.max(best, matrix[i][j]);
+  }
+  return best;
+}
 
 /** Identificadores estables de los métodos. Son claves de resultados y de CSV. */
 export const METHOD_IDS = [
@@ -93,6 +109,16 @@ export interface AuraResult {
   fusionMethod: FusionMethod;
   /** Regla de decisión aplicada (`FusionConfig.rule`). */
   rule: ConflictRuleId;
+  /** Medida por pares aplicada (`FusionConfig.measure`). */
+  measure: ConflictMeasureId;
+  /** máx_{i≠j} de la medida — lo que C1 comparó con κ₁ y κ₂. */
+  measureConflict: number;
+  /**
+   * Suelo estructural MÁXIMO sobre los pares (máx_{i≠j} K_floor_ij), o `null`
+   * si la medida no lo define. Es lo que permite reportar cuánto conflicto se
+   * descontó sin arrastrar la matriz entera por cada mundo de la campaña.
+   */
+  maxFloor: number | null;
   /** La magnitud que la regla comparó con κ₁ y κ₂. */
   decisionConflict: number;
   /** K_máx por pares — Def. 3.5, literal del paper. */
@@ -197,6 +223,9 @@ export function auraFromValues(
     band: interval(band.lower, band.upper),
     fusionMethod: fusion.method,
     rule: fusion.rule,
+    measure: fusion.measure,
+    measureConflict: fusion.measureConflict,
+    maxFloor: maxOffDiagonal(fusion.floorMatrix),
     decisionConflict: fusion.decisionConflict,
     maxConflict: fusion.maxConflict,
     globalConflict: fusion.globalConflict,

@@ -11,6 +11,7 @@
 // aquí, y `import type` se borra en la emisión, de modo que el ciclo existe en
 // el grafo de tipos y no en el de módulos.
 import type { ConflictRuleId, FusionMethod } from './conflict-rules';
+import type { ConflictMeasureId } from './conflict-measures';
 
 /** Un intervalo [lower, upper) representando una hipótesis — Definición 3.1 */
 export interface Hypothesis {
@@ -92,11 +93,38 @@ export interface FocalElement {
   mass: number;         // Masa asignada, en [0, 1]
 }
 
+/**
+ * De qué medición salió una BPA construida por la Definición 3.4.
+ *
+ * NO es parte de la Definición 3.2: una BPA es una asignación de masa y nada
+ * más, y todo el pipeline sigue funcionando sin este campo. Existe porque la
+ * medida D1 de `./conflict-measures.ts` necesita poder RECONSTRUIR las dos BPAs
+ * de un par sobre un valor común para separar la componente de discretización
+ * del conflicto, y ese valor común no es recuperable de las masas.
+ *
+ * Lo pone `createBPAFromGaussian` y nadie más: una BPA fusionada, una envolvente
+ * sintética o una BPA escrita a mano NO lo tienen, y las medidas que dependen de
+ * él degradan explícitamente a la medida cruda (ver `structuralFloor`).
+ */
+export interface GaussianProvenance {
+  /** Valor medido (media de la gaussiana), en las unidades del marco. */
+  value: number;
+  /** σ de la medición. */
+  stddev: number;
+  /** δ_i — Def. 3.4 / Ec. (4). */
+  failureRate: number;
+}
+
 export interface BPA {
   frame: FrameOfDiscernment;
   focalElements: FocalElement[];
   sourceId: string;     // Identificador de la fuente
   timestamp: number;    // Unix timestamp de la medición
+  /**
+   * Procedencia gaussiana, si la BPA salió de la Definición 3.4. Opcional por
+   * diseño: ver {@link GaussianProvenance}.
+   */
+  provenance?: GaussianProvenance;
 }
 
 /**
@@ -153,6 +181,26 @@ export interface FusionResult {
    * diga por sí mismo bajo qué regla se produjo.
    */
   rule: ConflictRuleId;
+  /**
+   * Identificador de la MEDIDA por pares con que se puntuó el desacuerdo
+   * (`FusionConfig.measure`). Junto con `rule` determina por completo cómo se
+   * llegó a `method`, y por eso viaja en el resultado: ver
+   * `./conflict-measures.ts` y `docs/ERRATA.md` §9.
+   */
+  measure: ConflictMeasureId;
+  /**
+   * máx_{i≠j} de la medida — la magnitud POR PARES que la regla C1 compara con
+   * κ₁ y κ₂. Con la medida D0 coincide bit a bit con {@link maxConflict}.
+   */
+  measureConflict: number;
+  /** Matriz simétrica n×n de la medida, con diagonal 0. */
+  measureMatrix: number[][];
+  /**
+   * Matriz de suelos K_floor por par (diagonal = auto-conflicto), o `null` si la
+   * medida no define suelo (D0, D2) o si las BPAs no llevan procedencia
+   * gaussiana de la que reconstruirlo.
+   */
+  floorMatrix: number[][] | null;
   /**
    * La magnitud que la regla comparó con κ₁ y κ₂ — el «conflicto» de la
    * Definición 3.6. Cada regla lo define distinto; ver `./conflict-rules.ts`.
@@ -239,6 +287,22 @@ export interface FusionConfig {
    */
   rule: ConflictRuleId;
   /**
+   * Medida por pares con que se puntúa el desacuerdo de cada par ANTES de
+   * compararlo con κ₁ y κ₂. EXTENSIÓN al paper: la Definición 3.5 fija una sola
+   * medida (el K de la Ec. 6) y no contempla que su escala dependa de la
+   * heterogeneidad de las σ declaradas.
+   *
+   * Es un eje ORTOGONAL a {@link rule}: la regla decide qué se hace con la
+   * magnitud, la medida decide cuál es la magnitud. Solo C1 —la regla del
+   * sistema— consulta la medida; C0, C2 y C3 están congeladas sobre el K crudo
+   * porque existen para reproducir números publicados antes de esta corrección
+   * (ver `./conflict-rules.ts` y `docs/ERRATA.md` §9).
+   *
+   * La guardia de degeneración NO se ve afectada por este campo: opera siempre
+   * sobre el K_global CRUDO.
+   */
+  measure: ConflictMeasureId;
+  /**
    * κ_deg — umbral de la guardia de degeneración de las reglas C1 y C3: si
    * K_global ≥ κ_deg se fuerza la envolvente, decida lo que decida la
    * comparación con κ₁/κ₂.
@@ -264,13 +328,22 @@ export interface FusionConfig {
 }
 
 /**
- * Configuración del sistema.
+ * Configuración del sistema. Los dos ejes de la Definición 3.6 extendida son
+ * resultado de sendos experimentos PRE-REGISTRADOS, no de una preferencia.
  *
- * `rule: 'C1'` es el resultado del experimento pre-registrado
- * `npm run exp:conflict-rule` (semilla 20260311, `docs/ERRATA.md` §9): los
- * cuatro candidatos pasaron el requisito innegociable y los pasos 1-2 del
- * criterio, C1/C2/C3 empataron exactamente en los pasos 3 y 4 —eligen la misma
- * estrategia en los 15.000 mundos— y decidió el paso 5, simplicidad.
+ * `rule: 'C1'` — `npm run exp:conflict-rule` (semilla 20260311,
+ * `docs/ERRATA.md` §9): los cuatro candidatos pasaron el requisito innegociable
+ * y los pasos 1-2 del criterio, C1/C2/C3 empataron exactamente en los pasos 3 y
+ * 4 —eligen la misma estrategia en los 15.000 mundos— y decidió el paso 5,
+ * simplicidad.
+ *
+ * `measure: 'D2'` — `npm run exp:conflict-floor` (semilla 20261007,
+ * `docs/ERRATA.md` §9): las tres medidas pasaron el requisito innegociable;
+ * **D1 quedó DESCALIFICADA en el paso 2** (cobertura de banda-95 del 99,48 %,
+ * por debajo del piso pre-registrado del 99,5 %) pese a ser la que más suelo
+ * descuenta, y D2 —la distancia de Jousselme— ganó el paso 4 en solitario. La
+ * selección se hizo SOLO sobre mundos sintéticos: los resultados del hindcast
+ * ya eran conocidos y no participan en ella.
  *
  * κ₁ y κ₂ siguen siendo los del paper y no se han movido.
  */
@@ -278,6 +351,7 @@ export const DEFAULT_FUSION_CONFIG: FusionConfig = {
   kappa1: 0.3,
   kappa2: 0.7,
   rule: 'C1',
+  measure: 'D2',
   kappaDegeneracy: 0.95,
   maxSourcesForGlobalConflict: 6,
 };

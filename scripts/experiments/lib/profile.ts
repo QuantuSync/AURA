@@ -32,6 +32,10 @@ import {
   CONFLICT_RULE_IDS,
   ConflictRuleId,
 } from '@/core/dempster-shafer/conflict-rules';
+import {
+  CONFLICT_MEASURE_IDS,
+  ConflictMeasureId,
+} from '@/core/dempster-shafer/conflict-measures';
 import { DEFAULT_FUSION_CONFIG, FusionConfig } from '@/core/dempster-shafer/types';
 
 export type Profile = 'full' | 'verify';
@@ -104,21 +108,86 @@ export function ruleOverrideOf(
   );
 }
 
-/** Configuración de fusión efectiva para un override de regla. */
-export function fusionConfigFor(rule: ConflictRuleId | undefined): FusionConfig {
-  return rule === undefined ? DEFAULT_FUSION_CONFIG : { ...DEFAULT_FUSION_CONFIG, rule };
+/**
+ * Lee `--measure` de `argv`, con la MISMA lógica pre-`parseFlags` que
+ * {@link ruleOverrideOf} y por el mismo motivo.
+ *
+ * Existe para poder reproducir con un flag los números publicados bajo una
+ * medida de conflicto anterior —en particular los de D0, el K crudo previo a la
+ * corrección del suelo de `docs/ERRATA.md` §9— sin tocar el default del
+ * sistema.
+ *
+ * @throws si el identificador no es una de las medidas conocidas.
+ */
+export function measureOverrideOf(
+  argv: readonly string[] = process.argv.slice(2)
+): ConflictMeasureId | undefined {
+  let value: string | undefined;
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === '--measure') {
+      value = argv[i + 1];
+    } else if (arg.startsWith('--measure=')) {
+      value = arg.slice('--measure='.length);
+    }
+  }
+
+  if (value === undefined) return undefined;
+  if ((CONFLICT_MEASURE_IDS as readonly string[]).includes(value)) {
+    return value as ConflictMeasureId;
+  }
+
+  throw new Error(
+    `--measure debe ser una de {${CONFLICT_MEASURE_IDS.join(', ')}}; recibido '${value}'. ` +
+      `La medida determina la estrategia de fusión y el directorio de salida.`
+  );
 }
 
 /**
- * Nombre del experimento: `coverage`, `coverage-verify`, `coverage-c0`…
+ * Configuración de fusión efectiva para unos overrides de regla y medida.
  *
- * La regla solo entra en el nombre cuando NO es la del sistema, por el mismo
- * motivo que el perfil: `snapshots:check` compara `out/` entero, y una
- * ejecución de referencia con otra regla no debe pisar el directorio cuya
- * salida está versionada.
+ * ⚠ `--rule C0` IMPLICA la medida D0 salvo que se pida otra explícitamente. C0,
+ * C2 y C3 están congeladas sobre el K crudo y no consultan la medida
+ * (`conflict-rules.ts`); dejar la medida del sistema en una reproducción de C0
+ * anunciaría en `config.json` una medida que esa regla no usó, que es
+ * exactamente la clase de traza engañosa que estos experimentos existen para
+ * no producir.
  */
-export function nameFor(base: string, profile: Profile, rule?: ConflictRuleId): string {
-  const withRule =
-    rule === undefined || rule === DEFAULT_FUSION_CONFIG.rule ? base : `${base}-${rule.toLowerCase()}`;
-  return profile === 'verify' ? `${withRule}-verify` : withRule;
+export function fusionConfigFor(
+  rule: ConflictRuleId | undefined,
+  measure: ConflictMeasureId | undefined = undefined
+): FusionConfig {
+  const effectiveMeasure =
+    measure ?? (rule !== undefined && rule !== 'C1' ? 'D0' : DEFAULT_FUSION_CONFIG.measure);
+  return {
+    ...DEFAULT_FUSION_CONFIG,
+    ...(rule === undefined ? {} : { rule }),
+    measure: effectiveMeasure,
+  };
+}
+
+/**
+ * Nombre del experimento: `coverage`, `coverage-verify`, `coverage-c0`,
+ * `coverage-d0`…
+ *
+ * La regla y la medida solo entran en el nombre cuando NO son las del sistema,
+ * por el mismo motivo que el perfil: `snapshots:check` compara `out/` entero, y
+ * una ejecución de referencia con otra configuración no debe pisar el
+ * directorio cuya salida está versionada.
+ */
+export function nameFor(
+  base: string,
+  profile: Profile,
+  rule?: ConflictRuleId,
+  measure?: ConflictMeasureId
+): string {
+  let name = base;
+  if (rule !== undefined && rule !== DEFAULT_FUSION_CONFIG.rule) {
+    name = `${name}-${rule.toLowerCase()}`;
+  }
+  if (measure !== undefined && measure !== DEFAULT_FUSION_CONFIG.measure) {
+    name = `${name}-${measure.toLowerCase()}`;
+  }
+  return profile === 'verify' ? `${name}-verify` : name;
 }

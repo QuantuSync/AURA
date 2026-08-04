@@ -20,7 +20,8 @@ import { describe, expect, it } from 'vitest';
 
 import { makeRng } from '@/lib/prng';
 import { PRECIPITATION_FRAME } from '@/lib/constants';
-import { CONFLICT_RULE_IDS } from '@/core/dempster-shafer/conflict-rules';
+import { CONFLICT_RULE_IDS, ConflictRuleId } from '@/core/dempster-shafer/conflict-rules';
+import { ConflictMeasureId } from '@/core/dempster-shafer/conflict-measures';
 import { DEFAULT_FUSION_CONFIG } from '@/core/dempster-shafer/types';
 
 import {
@@ -111,11 +112,27 @@ describe('mundo sintético', () => {
  * pieza.
  */
 describe('soundness del nivel existencial (Lema 6.1)', () => {
-  for (const rule of CONFLICT_RULE_IDS) {
-    const fusionConfig = { ...DEFAULT_FUSION_CONFIG, rule };
+  /**
+   * Las combinaciones (regla, medida) que se barren.
+   *
+   * · las CUATRO reglas con la medida D0 — requisito (c) de `docs/ERRATA.md` §9,
+   *   sin tocar;
+   * · la regla del sistema (C1) con las medidas D1 y D2 — requisito (c) del
+   *   experimento `exp:conflict-floor`. Solo con C1 porque es la única regla que
+   *   consulta la medida: C0, C2 y C3 están congeladas sobre el K crudo y
+   *   añadirlas repetiría 6 barridos idénticos a los de arriba.
+   */
+  const SWEEPS: { rule: ConflictRuleId; measure: ConflictMeasureId }[] = [
+    ...CONFLICT_RULE_IDS.map((rule) => ({ rule, measure: 'D0' as ConflictMeasureId })),
+    { rule: 'C1', measure: 'D1' },
+    { rule: 'C1', measure: 'D2' },
+  ];
+
+  for (const { rule, measure } of SWEEPS) {
+    const fusionConfig = { ...DEFAULT_FUSION_CONFIG, rule, measure };
 
     for (const [label, config] of Object.entries(CONFIGS)) {
-      it(`contiene P* en todos los mundos — regla ${rule}, ${label}`, () => {
+      it(`contiene P* en todos los mundos — regla ${rule} · medida ${measure}, ${label}`, () => {
         const rng = makeRng(SEED);
         const misses: { truth: number; interval: unknown; values: number[] }[] = [];
 
@@ -131,19 +148,20 @@ describe('soundness del nivel existencial (Lema 6.1)', () => {
         // 1→2, no reejecutar con otra semilla.
         expect(
           misses,
-          `regla ${rule} · testigos de violación de la Ec. (10): ${JSON.stringify(misses.slice(0, 3))}`
+          `regla ${rule} · medida ${measure} · testigos de violación de la Ec. (10): ` +
+            JSON.stringify(misses.slice(0, 3))
         ).toHaveLength(0);
       });
     }
   }
 
-  it('la banda de evidencia nunca excede al nivel existencial, bajo ninguna regla', () => {
+  it('la banda de evidencia nunca excede al nivel existencial, bajo ninguna regla ni medida', () => {
     // La banda es el nivel informativo y no lleva garantía, pero sí lleva esta
-    // relación estructural: es un subconjunto del hull credal. Si una regla la
-    // rompiera, los números de informatividad del experimento dejarían de ser
-    // comparables entre reglas.
-    for (const rule of CONFLICT_RULE_IDS) {
-      const fusionConfig = { ...DEFAULT_FUSION_CONFIG, rule };
+    // relación estructural: es un subconjunto del hull credal. Si una regla o
+    // una medida la rompiera, los números de informatividad del experimento
+    // dejarían de ser comparables entre candidatos.
+    for (const { rule, measure } of SWEEPS) {
+      const fusionConfig = { ...DEFAULT_FUSION_CONFIG, rule, measure };
       const rng = makeRng(SEED);
       for (let i = 0; i < 500; i++) {
         const w = sampleWorld(rng, DEFAULT_WORLD_CONFIG);
@@ -155,6 +173,7 @@ describe('soundness del nivel existencial (Lema 6.1)', () => {
           ev.intervals['aura-existencial'].upper
         );
         expect(ev.aura.rule).toBe(rule);
+        expect(ev.aura.measure).toBe(measure);
       }
     }
   });

@@ -33,8 +33,23 @@ import { BPA, DEFAULT_FUSION_CONFIG } from '@/core/dempster-shafer/types';
 import { fcParams } from './_config';
 import { multiSourceArb } from './_generators';
 
-/** Configuración del sistema con la regla `rule` y todo lo demás sin tocar. */
-const configFor = (rule: ConflictRuleId) => ({ ...DEFAULT_FUSION_CONFIG, rule });
+/**
+ * Configuración del sistema con la regla `rule`, la MEDIDA D0 y todo lo demás
+ * sin tocar.
+ *
+ * La medida se fija a D0 —el K crudo de la Ecuación (6)— porque este fichero
+ * habla de las REGLAS y de las cotas que documentan, y esas cotas se enuncian
+ * sobre el K crudo: «ninguna regla es menos conservadora que el K_máx del
+ * paper» es cierto con D0 y deliberadamente FALSO con D1, que existe justo para
+ * descontar el suelo de discretización (ver `docs/ERRATA.md` §9). Mezclar los
+ * dos ejes aquí haría que un fallo no distinguiese cuál de los dos se rompió.
+ *
+ * Lo que las medidas D1 y D2 cambian —y lo que NO cambian, en particular la
+ * guardia sobre el K_global crudo— se verifica en
+ * `./conflict-measures.property.test.ts`.
+ */
+const configFor = (rule: ConflictRuleId) =>
+  ({ ...DEFAULT_FUSION_CONFIG, rule, measure: 'D0' }) as const;
 
 /**
  * Implementación de referencia: enumera EXPLÍCITAMENTE el producto conjunto,

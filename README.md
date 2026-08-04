@@ -135,18 +135,28 @@ out/
         └── credal-mass.svg        masa por hipótesis, antes y después de la fusión
 ```
 
-Columnas de `summary.csv`: `scenario`, `K_max`, `K_global`, `rule`,
-`K_decision`, `guard`, `method`, `credal_lower`, `credal_upper`,
+Columnas de `summary.csv`: `scenario`, `K_max`, `K_global`, `rule`, `measure`,
+`K_measure`, `K_decision`, `guard`, `method`, `credal_lower`, `credal_upper`,
 `reachable_lower`, `reachable_upper`, `status`, `belLower`, `plUpper`,
-`decision`. Las tres del medio son la traza de la regla de conflicto: sin ellas,
-`K_max` y `K_global` no explican por sí solos por qué se eligió `method`.
+`decision`. Las cinco del medio son la traza de la decisión de conflicto: sin
+ellas, `K_max` y `K_global` no explican por sí solos por qué se eligió `method`.
 
-### Estrategia de fusión (Def. 3.6) — qué magnitud decide
+### Estrategia de fusión (Def. 3.6) — qué magnitud decide, y en qué escala
 
 El paper elige entre regla de Dempster, media ponderada cautelosa y envolvente
-conservativa comparando **un** número con κ₁ = 0,3 y κ₂ = 0,7. Cuál es ese
-número no es obvio con n > 2 fuentes, y el repositorio ha pasado por dos
-respuestas:
+conservativa comparando **un** número con κ₁ = 0,3 y κ₂ = 0,7. Ese número tiene
+**dos** grados de libertad que la Definición 3.6 no distingue, y cada uno se ha
+resuelto con su propio experimento pre-registrado:
+
+| eje | pregunta | dónde vive | seleccionado por |
+|---|---|---|---|
+| **regla** | qué se hace con la magnitud, y qué protege de la degeneración | `conflict-rules.ts` | `exp:conflict-rule` → **C1** |
+| **medida** | con qué se puntúa el desacuerdo de un par | `conflict-measures.ts` | `exp:conflict-floor` → **D2** |
+
+#### El eje de la regla
+
+Cuál es el número que se compara no es obvio con n > 2 fuentes, y el repositorio
+ha pasado por dos respuestas:
 
 - **K_máx por pares** (Def. 3.5, literal del paper) **no acota** el conflicto de
   la reducción secuencial `(((m₁⊕m₂)⊕m₃)⊕…)`: hay un contraejemplo con todos los
@@ -156,36 +166,75 @@ respuestas:
   con la granularidad del marco aunque no exista desacuerdo físico. Ver
   [`docs/ERRATA.md`](docs/ERRATA.md) §9.
 
-La regla vigente separa las dos funciones que aquello mezclaba:
+La regla vigente (**C1**) separa las dos funciones que aquello mezclaba:
 
 ```
-K_decision = K_máx por pares          →  comparada con κ₁ y κ₂   (informatividad)
-K_global ≥ κ_deg = 0,95               →  fuerza envolvente        (protección)
+K_decision = máx_{i≠j} d(m_i, m_j)    →  comparada con κ₁ y κ₂   (informatividad)
+K_global CRUDO ≥ κ_deg = 0,95         →  fuerza envolvente        (protección)
 ```
 
-es decir, κ₁/κ₂ vuelven a comparar el conflicto por pares para el que fueron
-elegidos, y K_global hace **solo** aquello que motivó su introducción: impedir
-que la reducción degenere. Es sound por construcción — la rama Dempster exige
-K_global < 0,95 < 1, y la propiedad (P2′) de [`docs/ERRATA.md`](docs/ERRATA.md)
-§2 acota entonces el conflicto de **todo** paso intermedio por ese mismo valor.
+es decir, κ₁/κ₂ vuelven a comparar un conflicto **por pares**, para cuya escala
+fueron elegidos, y K_global hace **solo** aquello que motivó su introducción:
+impedir que la reducción degenere. Es sound por construcción — la rama Dempster
+exige K_global < 0,95 < 1, y la propiedad (P2′) de
+[`docs/ERRATA.md`](docs/ERRATA.md) §2 acota entonces el conflicto de **todo**
+paso intermedio por ese mismo valor.
 
-Las cuatro reglas candidatas conviven tras `FusionConfig.rule`
-(`src/core/dempster-shafer/conflict-rules.ts`) y la vigente se eligió con un
-**experimento pre-registrado** —candidatos, requisito innegociable y criterio de
-selección fijados antes de ver ningún resultado, y con una semilla distinta de
-la canónica:
+#### El eje de la medida
+
+`d` es la **medida por pares**, y no tiene por qué ser el K de la Ecuación (6).
+El hindcast sobre datos reales midió por qué importa: tres BPAs gaussianas
+construidas sobre la **misma medición exacta**, con σ de 5,0 / 1,8 / 10,0 mm/h,
+dan K_máx = **0,3651 > κ₁**. Es un **suelo de discretización** —la fuente fina
+concentra la masa en una hipótesis, la gruesa la extiende sobre tres— y como
+supera κ₁ dejaba la rama de Dempster **inalcanzable** en todo el régimen de
+intensidades bajas y medias.
+
+La medida vigente es la **distancia de Jousselme** `d_J` sobre la matriz de
+Jaccard del marco, que anula el auto-conflicto por construcción (`d_J(m, m) = 0`).
+Solo gobierna la comparación con κ₁/κ₂: la guardia sigue mirando el K_global
+**crudo**, porque la explosión `1/(1−K)` que (P2)/(P2′) previenen es propiedad
+del K crudo. El contraejemplo del ciclo va a envolvente **por la guardia** bajo
+las tres medidas — con `d_J = 0,5 ≤ κ₂`, ahí la guardia es la única vía.
+
+#### Cómo se eligieron
+
+Las cuatro reglas conviven tras `FusionConfig.rule` y las tres medidas tras
+`FusionConfig.measure`. Ninguna de las dos elecciones es una opinión: cada una
+salió de un **experimento pre-registrado** —candidatos, requisito innegociable y
+criterio fijados antes de ver ningún resultado, con semilla distinta de la
+canónica— y el criterio se aplica mecánicamente desde un módulo probado aparte.
 
 ```bash
-npm run exp:conflict-rule   # Fase A: los 4 candidatos sobre los mismos mundos
-npm run exp:all             # Fase B: los números publicables, regla vigente
-npm run exp:all:c0          # los mismos, con la regla anterior, para comparar
+npm run exp:conflict-rule    # Fase A del eje regla   (4 candidatos, semilla 20260311)
+npm run exp:conflict-floor   # Fase A del eje medida  (3 candidatas, semilla 20261007)
+npm run exp:all              # Fase B: los números publicables
+npm run exp:all:c0           # los mismos, con la regla anterior
+npm run exp:all:d0           # los mismos, con la medida anterior (K crudo)
 ```
 
-Efecto medido (10.000 mundos, semilla 20260804): en mundos limpios y
-concordantes la envolvente cae del **15,6 % al 4,6 %** y la anchura media de la
-banda de evidencia baja un 9,4 %, con la cobertura existencial intacta en el
-100 % y la de la banda de evidencia en 99,91 % (era 99,97 %). El desglose
-completo, con lo que se paga por ello, en [`docs/ERRATA.md`](docs/ERRATA.md) §9.
+> ⚠ **La selección de la medida NO usó el hindcast.** Sus resultados ya eran
+> conocidos cuando se diseñó el experimento, de modo que la selección se hizo
+> **solo** sobre mundos sintéticos con ground truth, y el hindcast se re-ejecutó
+> después como **descripción**, no como validación ciega. Consta así en
+> [`docs/ERRATA.md`](docs/ERRATA.md) §9, en el `results.json` del hindcast y en
+> [`scripts/experiments/README.md`](scripts/experiments/README.md).
+
+**Resultado de la Fase A del eje medida** (semilla 20261007, criterio
+lexicográfico de siete pasos): las tres candidatas pasaron el requisito
+innegociable; **D1 —restar el suelo— quedó descalificada en el paso 2**, con una
+cobertura de banda-95 del 99,48 % frente al piso pre-registrado del 99,5 %, pese
+a ser la que más suelo elimina (100 % de los mundos concordantes llegan a
+Dempster). **D2 ganó el paso 4 en solitario.** El criterio no se relajó.
+
+**Efecto medido** (10.000 mundos, semilla 20260804, D2 frente a D0): en mundos
+limpios y concordantes la rama de Dempster sube del **58,8 % al 65,9 %** y la
+envolvente pasa del 4,6 % al 5,5 %; la anchura media de la banda de evidencia
+baja de 276,51 a **250,18 mm/h** (−9,5 %). Se paga con cobertura de banda: del
+99,91 % al **99,72 %**, aún muy por encima del 95 % nominal y del piso del
+99,5 %. La cobertura **existencial sigue en 100,00 %** en las tres campañas: la
+soundness no se toca. El desglose completo, con lo que se paga, en
+[`docs/ERRATA.md`](docs/ERRATA.md) §9.
 
 ### Determinismo
 
@@ -280,11 +329,12 @@ de ejecutar nada**. Detalle completo en
 | | **E1 · DANA Valencia** | **E2 · Filomena Madrid** |
 |---|---|---|
 | horas evaluadas / excluidas por huecos | 96 / **0** | 168 / **0** |
-| K_máx mediana · p95 · máx | 0,371 · 0,707 · 0,941 | 0,365 · 0,421 · 0,441 |
-| fusión Dempster / cautelosa / envolvente | 0 % / 93,8 % / 6,3 % | 0 % / 100 % / 0 % |
-| plUpper máximo | 0,963 | 0,0505 |
-| horas critical / warning / safe | 19 / 77 / 0 | 2 / 166 / 0 |
-| anchura banda 95 %, mín-media-máx | 15 · 47,3 · 500 mm/h | 15 · 15,2 · 30 mm/h |
+| K_máx CRUDO mediana · p95 · máx | 0,371 · 0,707 · 0,941 | 0,365 · 0,421 · 0,441 |
+| d_J (medida vigente) mediana · p95 · máx | 0,276 · 0,681 · 0,830 | 0,273 · 0,285 · 0,308 |
+| fusión Dempster / cautelosa / envolvente | **76,0 % / 21,9 % / 2,1 %** | **99,4 % / 0,6 % / 0 %** |
+| *(con la medida anterior D0)* | *0 % / 93,8 % / 6,3 %* | *0 % / 100 % / 0 %* |
+| plUpper máximo | 0,963 | 0,0492 |
+| horas critical / warning / safe | 19 / 77 / 0 | **0 / 168 / 0** *(eran 2 / 166 / 0)* |
 
 **Lo que se ve.** Los dos baselines tienen anchura **constante** en las 264 horas
 —14,80 y 6,55 mm/h— porque depende solo de σ y δ, nunca de la evidencia; en la
@@ -295,18 +345,31 @@ temperatura**, de modo que en E2 dice exactamente lo mismo con −12 °C que con
 18 °C — que es, literalmente, el modo de fallo «hielo bloqueando drenes» que §6.3
 del paper cita al motivar H2.
 
-**Y un hallazgo que los mundos sintéticos no habían mostrado.** Dempster **no se
-aplica ni una vez** en las 264 horas. Con tres fuentes midiendo *exactamente lo
-mismo* y σ = 1,8 / 5,0 / 10,0 mm/h, K_máx ya vale **0,365** — por encima de
-κ₁ = 0,3. Es un **suelo estructural** que no procede de ningún desacuerdo, sino
-de que BPAs con σ muy distintas reparten la misma medición de forma distinta
-sobre las hipótesis del marco. El mínimo observado en los dos eventos coincide
-con ese suelo (a 2·10⁻⁴ en E1, exactamente en E2): **el conflicto mínimo del
-hindcast no mide desacuerdo entre reanálisis, mide discretización.** Las σ no se
-han tocado — retocarlas a la vista del resultado es justo lo que la declaración a
-priori existe para impedir. Consecuencia registrada como limitación: **κ₁ y κ₂
-están declarados para un marco y una heterogeneidad de σ dados**, y no son
-transportables sin más a fuentes de resolución muy dispar.
+**Y el hallazgo que los mundos sintéticos no habían mostrado — y su corrección.**
+Con la medida anterior (K crudo), Dempster **no se aplicaba ni una vez** en las
+264 horas. Con tres fuentes midiendo *exactamente lo mismo* y σ = 5,0 / 1,8 /
+10,0 mm/h, K_máx ya vale **0,365** — por encima de κ₁ = 0,3. Es un **suelo
+estructural** que no procede de ningún desacuerdo, sino de que BPAs con σ muy
+distintas reparten la misma medición de forma distinta sobre las hipótesis del
+marco. El mínimo observado en los dos eventos coincide con ese suelo (a 2·10⁻⁴ en
+E1, exactamente en E2): **el conflicto mínimo del hindcast no medía desacuerdo
+entre reanálisis, medía discretización.** Las σ no se han tocado — retocarlas a
+la vista del resultado es justo lo que la declaración a priori existe para
+impedir; lo que se corrigió fue la **medida**, con el experimento pre-registrado
+`exp:conflict-floor` y **sin usar estos datos** (ver arriba).
+
+Con `d_J` el suelo con acuerdo perfecto baja a **0,273 < κ₁** y la rama de
+Dempster vuelve a ser alcanzable: 76,0 % de las horas de E1 y 99,4 % de las de
+E2. Los **19 bloques critical de E1 no se mueven** —los mismos cuatro tramos,
+hora por hora— y su lluvia media sigue siendo 4,09 mm/h frente a 0,37 en el
+resto: la escalada de E1 seguía a la lluvia ya antes, y lo sigue haciendo. Lo que
+sí cambia es E2: sus **dos horas critical desaparecen** (08-ene 20:00 y 21:00 Z),
+porque allí la escalada la producía el conflicto y no la precipitación —1,4 / 2,1
+/ 1,58 mm/h, tres fuentes de acuerdo— y con el suelo descontado esas horas pasan
+a Dempster y su plUpper cae de 5,04·10⁻² a 1,06·10⁻⁴. **La limitación de fondo
+sigue declarada**: κ₁ y κ₂ están fijados para un marco dado, y lo que la
+corrección compra es que la medida deje de depender de la heterogeneidad de σ,
+no que los umbrales sean universales.
 
 **Atribución de los datos.** Series de Open-Meteo (`archive-api.open-meteo.com`,
 modelos `era5` y `ecmwf_ifs`, sobre archivo ERA5/IFS de Copernicus/ECMWF), bajo
@@ -330,7 +393,8 @@ con su sección real:
 | `dempster-shafer/frame.ts` | Def. 3.1 *(marco de soporte acotado, extensión)* | §3.2 |
 | `dempster-shafer/bpa.ts` | Def. 3.3 y Ec. (1)-(2); Def. 3.4 y Ec. (3)-(4) | §3.2–3.3 |
 | `dempster-shafer/conflict.ts` | Def. 3.5 y Ec. (6); Def. 3.6 *(+ K_global, extensión)* | §3.4 |
-| `dempster-shafer/conflict-rules.ts` | Def. 3.6 *(qué magnitud se compara con κ₁/κ₂; extensión, ERRATA §9)* | §3.4.2 |
+| `dempster-shafer/conflict-rules.ts` | Def. 3.6 *(qué se hace con la magnitud; extensión, ERRATA §9)* | §3.4.2 |
+| `dempster-shafer/conflict-measures.ts` | Def. 3.5 *(con qué se puntúa un par: K crudo, exceso sobre el suelo, distancia de Jousselme; extensión, ERRATA §9)* | §3.4.1 |
 | `dempster-shafer/combination.ts` | Ec. (5)-(6) Dempster; Ec. (7) cautelosa; Def. 3.7 y Ec. (8)-(9) | §3.4 |
 | `dempster-shafer/credal-set.ts` | Def. 3.8; Prop. 3.1, 3.2; Def. 3.9 y Ec. (10) | §3.4–3.6 |
 | `credal-propagation/credal-interval-set.ts` | Def. 3.9 y Ec. (10) *(→ Def. 3.9′ y Ec. (10′), extensión)* | §3.6 |
@@ -537,9 +601,26 @@ provocaron, todos corregidos o documentados en el código:
    *Corregido con un experimento pre-registrado* (`npm run exp:conflict-rule`,
    semilla 20260311, distinta de la canónica): cuatro candidatos tras una
    interfaz común, requisito innegociable y criterio lexicográfico fijados antes
-   de ver ningún resultado. Se seleccionó **C1** — κ₁/κ₂ contra el K_máx del
-   paper, y K_global reducido a guardia de degeneración. La envolvente en mundos
+   de ver ningún resultado. Se seleccionó **C1** — κ₁/κ₂ contra el conflicto por
+   pares, y K_global reducido a guardia de degeneración. La envolvente en mundos
    limpios cae al 4,6 % con la cobertura existencial intacta. Ver
+   [`docs/ERRATA.md`](docs/ERRATA.md) §9.
+7. **Corregido el (6), quedaba el problema de ESCALA: el K por pares tiene un
+   suelo que no depende del desacuerdo.** El hindcast sobre datos reales lo hizo
+   visible: tres BPAs gaussianas sobre la **misma medición exacta**, con σ de
+   5,0 / 1,8 / 10,0 mm/h, dan K_máx = **0,3651 > κ₁**, porque la fuente fina
+   concentra la masa en una hipótesis y la gruesa la extiende sobre tres. Con el
+   suelo por encima de κ₁, la rama de Dempster era **inalcanzable** en todo el
+   régimen de intensidades bajas y medias: 0 de 264 horas. Tampoco era un fallo
+   de soundness, pero sí un punto de operación inservible. *Corregido con un
+   segundo experimento pre-registrado* (`npm run exp:conflict-floor`, semilla
+   20261007): tres medidas por pares tras una interfaz común y criterio
+   lexicográfico de siete pasos, aplicado sin excepción — **D1, restar el suelo,
+   quedó descalificada en el paso 2** por cobertura de banda del 99,48 % frente
+   al piso del 99,5 %, y se seleccionó **D2**, la distancia de Jousselme.
+   Dempster vuelve a ser alcanzable (76 % de E1, 99 % de E2) con la cobertura
+   existencial intacta. La selección se hizo **solo sobre mundos sintéticos**:
+   los resultados del hindcast ya eran conocidos y no participaron en ella. Ver
    [`docs/ERRATA.md`](docs/ERRATA.md) §9.
 
 ### Límites conocidos de la garantía formal
@@ -558,6 +639,17 @@ provocaron, todos corregidos o documentados en el código:
   peor factor observado en 15.000 mundos fue 1,443. Con n ≥ 4 fuentes o marcos
   mucho más finos, la regla C2 —disponible en `FusionConfig.rule`— tiene una
   cota estructuralmente mejor (2,04 con n = 3). Ver [`docs/ERRATA.md`](docs/ERRATA.md) §9.
+- **La medida vigente (D2) no está acotada por el K crudo, en ninguna dirección.**
+  `d_J` puede ser mayor o menor que K_ij: en el escenario s4 del harness K_máx =
+  3,2·10⁻⁹ y d_J = 0,045, y en el barrido `smoke` un escenario de 200 **escala**
+  de media cautelosa a envolvente (`d_J` = 0,7014 > κ₂ frente a K = 0,6866). La
+  corrección del suelo NO es «ser menos conservador en todas partes»; es medir
+  otra cosa. Por eso la guardia de degeneración se dejó sobre el K_global crudo
+  y no sobre la medida. Ver [`docs/ERRATA.md`](docs/ERRATA.md) §9.
+- **κ₁ y κ₂ siguen sin ser transportables por sí solos.** D2 elimina la
+  dependencia de la heterogeneidad de σ que medía el hindcast, pero los umbrales
+  siguen declarados para un marco de discernimiento concreto. Un despliegue con
+  otro marco debe volver a justificarlos, no heredarlos.
 - El bound de error de modelo ε_i de la Ec. (24) es ahora un campo obligatorio
   de `StructuralEquation` y la propagación aplica `⊕ [−ε_i, ε_i]` por
   construcción. Lo que **no** puede verificar el código es que cada ε_i esté

@@ -99,10 +99,11 @@ function run(ctx: ExperimentContext): ExperimentOutput {
     config: {
       samples,
       maxTruePrecipitation: MAX_TRUE_PRECIPITATION,
-      // El reparto de estrategias de este barrido depende de la regla de
-      // conflicto vigente (ver docs/ERRATA.md §9): sin ella, `fusionMethods`
-      // no dice bajo qué sistema se contó.
+      // El reparto de estrategias de este barrido depende de la regla Y de la
+      // medida de conflicto vigentes (ver docs/ERRATA.md §9): sin las dos,
+      // `fusionMethods` no dice bajo qué sistema se contó.
       conflictRule: DEFAULT_FUSION_CONFIG.rule,
+      conflictMeasure: DEFAULT_FUSION_CONFIG.measure,
     },
     results: {
       samples,

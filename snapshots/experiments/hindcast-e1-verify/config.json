@@ -25,6 +25,7 @@
         "temperatureStddev": 2.2360679775
       }
     ],
+    "conflictMeasure": "D2",
     "conflictRule": "C1",
     "dag": {
       "drainageCapacity": {

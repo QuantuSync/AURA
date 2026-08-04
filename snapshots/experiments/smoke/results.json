@@ -1,8 +1,8 @@
 {
   "boundsViolations": 0,
   "decisions": {
-    "critical": 184,
-    "warning": 16
+    "critical": 181,
+    "warning": 19
   },
   "distinctReachableIntervals": [
     "[-12, 992]"
@@ -11,15 +11,15 @@
     "unsafe-possible"
   ],
   "fusionMethods": {
-    "cautious": 65,
-    "dempster": 126,
-    "envelope": 9
+    "cautious": 52,
+    "dempster": 138,
+    "envelope": 10
   },
   "plUpper": {
     "max": 1,
     "median": 0.999999999928,
     "min": 0.000127132820496,
-    "p25": 0.72084890845,
+    "p25": 0.75545948582,
     "p75": 1
   },
   "samples": 200,

@@ -90,7 +90,11 @@ export function createBPAFromGaussian(
     }
   }
 
-  return { frame, focalElements, sourceId, timestamp };
+  // La procedencia viaja con la BPA: es lo único de lo que la medida D1 puede
+  // reconstruir «qué habría dado esta fuente si hubiera medido otro valor», y
+  // sin ella el suelo de discretización no es separable del desacuerdo. No
+  // interviene en ninguna masa ni en ninguna definición del paper.
+  return { frame, focalElements, sourceId, timestamp, provenance: { value, stddev, failureRate } };
 }
 
 /**

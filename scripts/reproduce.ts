@@ -128,6 +128,8 @@ const SUMMARY_HEADER = [
   'K_max',
   'K_global',
   'rule',
+  'measure',
+  'K_measure',
   'K_decision',
   'guard',
   'method',
@@ -146,9 +148,14 @@ function summaryRow(scenario: string, r: DemoPipelineResult): (string | number)[
     scenario,
     r.fusion.maxConflict,
     r.fusion.globalConflict,
-    // La regla y su K_decision viajan en la fila: sin ellos, K_máx y K_global
-    // no explican por sí solos por qué se eligió `method` (ver ERRATA §9).
+    // La regla, la medida y su K_decision viajan en la fila: sin los tres,
+    // K_máx y K_global no explican por sí solos por qué se eligió `method`
+    // (ver ERRATA §9). `K_measure` es el máximo por pares de la medida; con la
+    // regla C1 coincide con `K_decision`, y se dan los dos porque otra regla
+    // podría separarlos.
     r.fusion.rule,
+    r.fusion.measure,
+    r.fusion.measureConflict,
     r.fusion.decisionConflict,
     r.fusion.degeneracyGuard ? 1 : 0,
     r.fusion.method,
@@ -212,10 +219,16 @@ async function runScenario(scenario: string) {
       maxConflict: result.fusion.maxConflict,
       globalConflict: result.fusion.globalConflict,
       rule: result.fusion.rule,
+      measure: result.fusion.measure,
+      measureConflict: result.fusion.measureConflict,
       decisionConflict: result.fusion.decisionConflict,
       normalizedConflict: result.fusion.normalizedConflict,
       degeneracyGuard: result.fusion.degeneracyGuard,
       conflictMatrix: result.fusion.conflictMatrix,
+      // La matriz de la medida vive junto a la del K crudo, no en su lugar: la
+      // primera explica la decisión y la segunda es la Definición 3.5 literal.
+      measureMatrix: result.fusion.measureMatrix,
+      floorMatrix: result.fusion.floorMatrix,
       sourceWeights: result.fusion.sourceWeights,
       sequentialConflicts: result.fusion.sequentialConflicts,
       envelope: result.fusion.envelope?.bounds,

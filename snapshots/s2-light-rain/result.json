@@ -337,8 +337,9 @@
         0
       ]
     ],
-    "decisionConflict": 0.157631649442,
+    "decisionConflict": 0.153404924668,
     "degeneracyGuard": false,
+    "floorMatrix": null,
     "fused": {
       "focalElements": [
         {
@@ -390,6 +391,25 @@
     },
     "globalConflict": 0.184412329213,
     "maxConflict": 0.157631649442,
+    "measure": "D2",
+    "measureConflict": 0.153404924668,
+    "measureMatrix": [
+      [
+        0,
+        0.0169485337295,
+        0.141797436794
+      ],
+      [
+        0.0169485337295,
+        0,
+        0.153404924668
+      ],
+      [
+        0.141797436794,
+        0.153404924668,
+        0
+      ]
+    ],
     "method": "dempster",
     "normalizedConflict": null,
     "rule": "C1",

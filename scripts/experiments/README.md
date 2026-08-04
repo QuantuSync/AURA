@@ -83,9 +83,10 @@ campaña completa dejaría allí un resultado que no coincide con el snapshot
 reducido y `verify` fallaría sin que nada estuviera roto. Ver
 `scripts/experiments/lib/profile.ts`.
 
-`--rule` sigue exactamente la misma convención por el mismo motivo: una
-ejecución con una regla de conflicto que no es la del sistema escribe en
-`out/experiments/<nombre>-c0/` y no puede pisar el directorio versionado.
+`--rule` y `--measure` siguen exactamente la misma convención por el mismo
+motivo: una ejecución con una regla o una medida de conflicto que no son las del
+sistema escribe en `out/experiments/<nombre>-c0/` o `<nombre>-d0/` y no puede
+pisar el directorio versionado.
 
 ## Cuándo entra en `npm run verify`
 
@@ -102,7 +103,7 @@ el README o en `docs/`, citando semilla y flags.
 
 # La campaña de cobertura
 
-Cuatro experimentos sobre un **mundo sintético con ground truth conocido**, que
+Cinco experimentos sobre un **mundo sintético con ground truth conocido**, que
 es lo que permite medir cobertura: la verdad se sortea primero y las mediciones
 se derivan de ella, de modo que «el intervalo contiene P*» tiene respuesta
 exacta.
@@ -112,16 +113,19 @@ npm run exp:all           # los tres primeros, semilla canónica 20260804  (~3 s
 npm run exp:coverage      # experimento 1, N = 10.000
 npm run exp:h1            # experimento 2, 11 puntos × N = 2.000
 npm run exp:virga         # experimento 3, N = 5.000
-npm run exp:conflict-rule # experimento 4, semilla PROPIA 20260311 (pre-registrado)
-npm run exp:verify        # los tres primeros reducidos a N = 200 (los que ve `verify`)
-npm run exp:all:c0        # los tres primeros con la regla de conflicto anterior
+npm run exp:conflict-rule  # experimento 4, semilla PROPIA 20260311 (pre-registrado)
+npm run exp:conflict-floor # experimento 5, semilla PROPIA 20261007 (pre-registrado)
+npm run exp:verify         # los tres primeros reducidos a N = 200 (los que ve `verify`)
+npm run exp:all:c0         # los tres primeros con la REGLA de conflicto anterior
+npm run exp:all:d0         # los tres primeros con la MEDIDA de conflicto anterior
 ```
 
-Los tres primeros usan la **regla de conflicto del sistema**; `--rule` la
-sustituye y escribe en su propio directorio (`out/experiments/coverage-c0/`…),
-que es como se regeneran los números publicados antes de `docs/ERRATA.md` §9.
-El cuarto es el experimento pre-registrado que eligió esa regla, y corre con una
-semilla distinta a propósito.
+Los tres primeros usan la **regla y la medida de conflicto del sistema**;
+`--rule` y `--measure` las sustituyen y escriben en su propio directorio
+(`out/experiments/coverage-c0/`, `coverage-d0/`…), que es como se regeneran los
+números publicados antes de cada capa de `docs/ERRATA.md` §9. Los experimentos 4
+y 5 son los pre-registrados que eligieron esa regla y esa medida, y corren con
+semillas distintas a propósito.
 
 ## El mundo (`lib/world.ts`)
 
@@ -168,10 +172,11 @@ lo que se mide, no un hombre de paja.
 
 `coverage.ts` · N = 10.000 · semilla 20260804 · figuras f1, f2.
 
-> **Los números de esta sección son los de la regla de conflicto C1**, la
-> seleccionada por el experimento pre-registrado de `docs/ERRATA.md` §9. Los
-> publicados antes de esa corrección salían de la regla C0 y se regeneran con
-> `npm run exp:all:c0`; la comparación completa entre las dos está en §9.
+> **Los números de esta sección son los de la regla C1 con la medida D2**, las
+> seleccionadas por los dos experimentos pre-registrados de `docs/ERRATA.md` §9
+> (experimentos 4 y 5 de este fichero). Los publicados bajo la regla anterior se
+> regeneran con `npm run exp:all:c0` y los publicados bajo la medida anterior
+> con `npm run exp:all:d0`; las comparaciones completas están en §9.
 
 | método | condición | n | cobertura | IC Wilson 95 % | anchura media | mediana |
 |---|---|---:|---:|---|---:|---:|
@@ -179,10 +184,10 @@ lo que se mide, no un hombre de paja.
 | | sin fallo | 7.258 | 100,00 % | [99,95 · 100,00] | 500,00 | 500,00 |
 | | fallo δ | 1.495 | 100,00 % | [99,74 · 100,00] | 500,00 | 500,00 |
 | | virga | 1.247 | 100,00 % | [99,69 · 100,00] | 500,00 | 500,00 |
-| `aura-banda-95` | global | 10.000 | **99,91 %** | [99,83 · 99,95] | 276,51 | 500,00 |
-| | sin fallo | 7.258 | 99,92 % | [99,82 · 99,96] | 224,77 | 30,00 |
-| | fallo δ | 1.495 | 99,87 % | [99,51 · 99,96] | 492,01 | 500,00 |
-| | virga | 1.247 | 99,92 % | [99,55 · 99,99] | 319,29 | 500,00 |
+| `aura-banda-95` | global | 10.000 | **99,72 %** | [99,60 · 99,81] | 250,18 | 30,00 |
+| | sin fallo | 7.258 | 99,75 % | [99,61 · 99,84] | 191,25 | 15,00 |
+| | fallo δ | 1.495 | 99,87 % | [99,51 · 99,96] | 492,02 | 500,00 |
+| | virga | 1.247 | 99,36 % | [98,74 · 99,67] | 303,22 | 500,00 |
 | `media-ponderada` | global | 10.000 | **76,20 %** | [75,36 · 77,02] | 4,60 | 4,60 |
 | | sin fallo | 7.258 | 94,81 % | [94,27 · 95,29] | 4,60 | 4,60 |
 | | fallo δ | 1.495 | **2,01 %** | [1,41 · 2,85] | 4,60 | 4,60 |
@@ -193,9 +198,9 @@ lo que se mide, no un hombre de paja.
 | | virga | 1.247 | 57,18 % | [54,41 · 59,90] | 4,24 | 4,24 |
 
 Por tramo de intensidad (cobertura), los baselines caen de 82 % en *seco* a
-69 % en *extrema*; AURA se mantiene en 100 % en los cinco tramos (banda:
-99,74 % en *ligera*, el único tramo con fallos). Tabla completa en
-`results.csv`.
+69 % en *extrema*; el nivel existencial de AURA se mantiene en 100 % en los cinco
+tramos, y la banda solo baja en los dos intermedios (99,37 % en *ligera* y
+99,71 % en *moderada*). Tabla completa en `results.csv`.
 
 **Lo que dicen estos números.**
 
@@ -210,9 +215,11 @@ Por tramo de intensidad (cobertura), los baselines caen de 82 % en *seco* a
 - El nivel existencial de AURA cubre el 100 % de los 10.000 mundos y mide
   siempre 500 mm/h: el marco entero. **Ese es su contenido informativo, y es
   poco**. La cifra que hay que citar junto a la cobertura es la anchura.
-- La banda de evidencia al 95 % da 99,91 % de cobertura con 277 mm/h de anchura
-  media pero **30 mm/h de mediana en mundos limpios**: la media está dominada
-  por la cola de mundos en que la fusión escala a envolvente (ver abajo).
+- La banda de evidencia al 95 % da 99,72 % de cobertura con 250 mm/h de anchura
+  media pero **15 mm/h de mediana en mundos limpios**: la media está dominada
+  por la cola de mundos en que la fusión escala a envolvente (ver abajo). Esa
+  mediana se ha reducido a la mitad con la medida D2 —era 30 mm/h con D0—, que
+  es el efecto directo de descontar el suelo de discretización.
 
 ## Experimento 2 — degradación bajo violación de H1
 
@@ -224,16 +231,16 @@ punto:
 
 | violación | `aura-existencial` | `aura-banda-95` | `media-ponderada` | `kalman-estatico` |
 |---:|---:|---:|---:|---:|
-| 0 % | 100,00 % | 99,95 % | 80,35 % | 80,35 % |
-| 25 % | 100,00 % | 83,95 % | 61,55 % | 61,80 % |
-| 50 % | 100,00 % | 67,70 % | 39,80 % | 39,90 % |
+| 0 % | 100,00 % | 99,75 % | 80,35 % | 80,35 % |
+| 25 % | 100,00 % | 84,00 % | 61,55 % | 61,80 % |
+| 50 % | 100,00 % | 67,60 % | 39,80 % | 39,90 % |
 
 Desglosado por si el mundo estaba violado o no (al 50 %):
 
 | método | mundos violados | mundos intactos |
 |---|---:|---:|
 | `aura-existencial` | 100,00 % | 100,00 % |
-| `aura-banda-95` | 37,17 % | 99,79 % |
+| `aura-banda-95` | 37,27 % | 99,49 % |
 | `media-ponderada` | 0,00 % | 81,64 % |
 | `kalman-estatico` | 0,10 % | 81,74 % |
 
@@ -249,7 +256,7 @@ favor de AURA.**
   la violación de H1 **porque es vacuo**, no porque la resista. Es la
   formulación empírica más nítida de la tesis de `docs/ERRATA.md` §8.
 - La estructura predicha sí aparece, pero en el nivel informativo: la banda de
-  evidencia mantiene **99,7-100 % en los mundos intactos en los once puntos** y
+  evidencia mantiene **99,5-100 % en los mundos intactos en los once puntos** y
   cae a ~34 % dentro de los violados. Degrada exactamente donde la hipótesis se
   rompe y en ningún otro sitio.
 - *«los baselines degradan también fuera de los mundos violados»*: **no en
@@ -271,7 +278,7 @@ verdades y elegir una decidiría el resultado antes de medirlo.
 | método | ni P\* ni γ·P\* (todos) | IC Wilson | ni P\* ni γ·P\* (sin fallo δ) | cob. P\* | cob. γ·P\* | anchura |
 |---|---:|---|---:|---:|---:|---:|
 | `aura-existencial` | **0,00 %** | [0,00 · 0,08] | 0,00 % | 100,0 % | 100,0 % | 500,00 |
-| `aura-banda-95` | **0,04 %** | [0,02 · 0,15] | 0,02 % | 99,7 % | 99,3 % | 343,19 |
+| `aura-banda-95` | **0,06 %** | [0,02 · 0,18] | 0,05 % | 99,6 % | 99,2 % | 330,60 |
 | `media-ponderada` | **43,12 %** | [41,75 · 44,50] | 33,71 % | 49,9 % | 44,4 % | 4,60 |
 | `kalman-estatico` | **41,58 %** | [40,22 · 42,95] | 32,04 % | 49,2 % | 46,0 % | 4,24 |
 
@@ -291,9 +298,8 @@ fusión de AURA lo sigue:
 | 0,8-0,9 | 490 | 24,3 % | 23,9 % | 46 % / 32 % / 22 % |
 | 0,9-1,0 | 476 | 19,7 % | 18,3 % | 47 % / 32 % / 21 % |
 
-Reparto global de estrategias (Def. 3.6 con la regla C1): **dempster 32,68 % ·
-cautelosa 23,22 % · envolvente 44,10 %**. K_decision tiene mediana 0,596 y
-cuartiles 0,200 / 0,892.
+Reparto global de estrategias (Def. 3.6 con la regla C1 y la medida D2):
+**dempster 35,24 % · cautelosa 20,16 % · envolvente 44,60 %**.
 
 ## Experimento 4 — qué magnitud decide la Definición 3.6
 
@@ -324,22 +330,72 @@ ejecución y probado aparte de las cifras que consume.
 Ninguno fue descalificado; C1, C2 y C3 eligen la misma estrategia en los 15.000
 mundos y decide el paso 5 del criterio (simplicidad). El razonamiento completo,
 las identidades que lo sostienen y lo que se paga por la corrección están en
-[`docs/ERRATA.md`](../../docs/ERRATA.md) §9.
+[`docs/ERRATA.md`](../../docs/ERRATA.md) §9, Capa 1.
+
+---
+
+## Experimento 5 — con qué se puntúa el desacuerdo de un par
+
+`conflict-floor.ts` · N = 10.000 + 5.000 virga + 5.000 «σ del hindcast» ·
+**semilla 20261007**.
+
+El segundo experimento **pre-registrado**, y el que corrigió el suelo estructural
+que el hindcast midió (ver más abajo). El experimento 4 decidió *qué magnitud* se
+compara con κ₁/κ₂; éste decide *con qué se puntúa un par*, que es un eje
+ortogonal.
+
+```bash
+npm run exp:conflict-floor
+```
+
+> ### ⚠ Aviso de honestidad: esto NO se validó con el hindcast
+>
+> **Los resultados del hindcast ya eran conocidos** cuando se diseñó este
+> experimento — están ejecutados, commiteados y descritos en este mismo fichero,
+> y es de ahí de donde sale el problema. Elegir la medida mirándolos sería
+> retro-ajuste. Por eso:
+>
+> - la selección se hizo **exclusivamente sobre mundos sintéticos con ground
+>   truth**;
+> - el bloque «σ del hindcast» usa **solo las σ y δ declaradas a priori** (5,0 /
+>   1,8 / 10,0 mm/h, δ = 0,02) sobre mundos sintéticos **nuevos**, generados con
+>   la semilla de este experimento — no lee ni un byte de `fixtures/hindcast/`;
+> - el hindcast se re-ejecutó **después y solo como descripción**. No es una
+>   validación ciega, y así consta en su `results.json`.
+
+Corre las tres candidatas —D0 (el K crudo, la medida anterior), D1 (exceso
+normalizado sobre el suelo) y D2 (distancia de Jousselme), definidas en
+`src/core/dempster-shafer/conflict-measures.ts`— sobre **los mismos** 20.000
+mundos, con la regla C1 fija en las tres, y aplica el criterio de siete pasos de
+`lib/floor-selection.ts`.
+
+| candidata | requisito | banda-95 | virga ni-ni | σ-hindcast → Dempster | limpios → Dempster | anchura |
+|---|---|---:|---:|---:|---:|---:|
+| D0 | ✅ | 99,870 % | 0,000 % | 9,90 % | 58,97 % | 280,66 mm/h |
+| D1 | ✅ | **99,480 %** ❌ paso 2 | 0,080 % | *(100,00 %)* | *(81,00 %)* | *(197,49)* |
+| **D2** *(seleccionada)* | ✅ | 99,720 % | 0,000 % | **59,66 %** | 65,98 % | 254,32 mm/h |
+
+**D1 quedó descalificada en el paso 2** —cobertura de banda-95 por debajo del
+piso pre-registrado del 99,5 %— pese a ser la que mejor resuelve el problema
+declarado: anula el suelo de forma exacta y lleva el 100 % de los mundos
+concordantes a Dempster. El criterio **no se relajó**, y D2 ganó el paso 4 en
+solitario. Detalle completo, lo que se paga y las propiedades demostradas de cada
+medida en [`docs/ERRATA.md`](../../docs/ERRATA.md) §9, Capa 3.
 
 ---
 
 ## Hallazgo colateral, y su corrección: los fixtures son más concordantes que el ruido real
 
 Reparto de estrategias de fusión en el experimento 1 (`results.json`,
-`fusionByCondition`), con la regla vigente C1 y con la anterior C0
-(`npm run exp:all:c0`):
+`fusionByCondition`), en las tres configuraciones por las que ha pasado el
+sistema (`npm run exp:all:c0` y `npm run exp:all:d0` regeneran las dos primeras):
 
-| condición | n | C0 (D / C / E) | **C1 (D / C / E)** |
-|---|---:|---|---|
-| global | 10.000 | 44,1 / 24,9 / 31,0 % | **47,9 / 30,1 / 22,0 %** |
-| **sin fallo ni virga** | 7.258 | 54,1 / 30,3 / **15,6 %** | **58,8 / 36,6 / 4,6 %** |
-| fallo δ | 1.495 | 3,9 / 1,1 / 95,1 % | 3,9 / 1,7 / 94,4 % |
-| virga | 1.247 | 34,2 / 21,8 / 43,9 % | 37,4 / 26,2 / 36,4 % |
+| condición | n | C0+D0 *(original)* | C1+D0 *(tras el exp. 4)* | **C1+D2 *(vigente)*** |
+|---|---:|---|---|---|
+| global | 10.000 | 44,1 / 24,9 / 31,0 % | 47,9 / 30,1 / 22,0 % | **53,5 / 23,6 / 22,9 %** |
+| **sin fallo ni virga** | 7.258 | 54,1 / 30,3 / **15,6 %** | 58,8 / 36,6 / 4,6 % | **65,9 / 28,4 / 5,8 %** |
+| fallo δ | 1.495 | 3,9 / 1,1 / 95,1 % | 3,9 / 1,7 / 94,4 % | 3,9 / 1,5 / 94,6 % |
+| virga | 1.247 | 34,2 / 21,8 / 43,9 % | 37,4 / 26,2 / 36,4 % | 40,7 / 22,5 / 36,8 % |
 
 **El hallazgo original.** Con C0, en casi la mitad de los mundos donde no pasa
 nada —ni fallo de fuente ni conflicto físico— el sistema ya no aplicaba la regla
@@ -356,18 +412,24 @@ dejen de solaparse. K_global crece muy deprisa con la dispersión porque es
 tres fuentes concentren masa a la vez, el conflicto n-ario es alto **aunque no
 haya ningún desacuerdo físico**.
 
-**Qué se hizo con él.** La segunda mitad de ese diagnóstico —que K_global no
-distingue conflicto de dispersión de discretización— es lo que corrigió el
-experimento 4: la regla C1 devuelve κ₁/κ₂ a la escala del par para la que fueron
-elegidos y deja a K_global haciendo solo de guardia de degeneración. La
-envolvente en mundos limpios cae del 15,6 % al **4,6 %** y la mediana de la
-banda en esos mundos sigue en 30 mm/h con la media bajando de 248 a 225 mm/h.
+**Qué se hizo con él, en dos pasos.** La segunda mitad de ese diagnóstico —que la
+magnitud comparada no distingue conflicto de dispersión de discretización— se
+corrigió por partes:
+
+- el **experimento 4** atacó la *aridad*: la regla C1 devuelve κ₁/κ₂ a la escala
+  del par para la que fueron elegidos y deja a K_global haciendo solo de guardia.
+  La envolvente en mundos limpios cae del 15,6 % al 4,6 %;
+- el **experimento 5** atacó la *escala del propio par*: la medida D2 descuenta
+  el suelo que la heterogeneidad de σ produce sin desacuerdo alguno. Dempster en
+  mundos limpios sube del 58,8 % al **65,9 %**, y la mediana de la banda en esos
+  mundos baja de 30 a **15 mm/h** (media: de 225 a 191).
 
 **Lo que NO cambia.** La primera mitad sigue en pie: los cuatro fixtures son más
 concordantes que el ruido instrumental declarado de las propias fuentes, y no
-deben leerse como el caso medio. Con C1 el sistema todavía abandona la regla de
-Dempster en el 41 % de los mundos limpios (36,6 % cautelosa + 4,6 % envolvente),
-frente a la impresión de «tres de cuatro a Dempster» que dan los fixtures.
+deben leerse como el caso medio. Con la configuración vigente el sistema todavía
+abandona la regla de Dempster en el **34 %** de los mundos limpios (28,4 %
+cautelosa + 5,8 % envolvente), frente a la impresión de «tres de cuatro a
+Dempster» que dan los fixtures. La brecha se ha estrechado; no ha desaparecido.
 
 ---
 
@@ -466,12 +528,14 @@ REPORTA, no se retoca.** Se ha reportado; ver el hallazgo de abajo.
 | punto | 39,42 N · −0,72 E | 40,472 N · −3,683 E |
 | horas excluidas por huecos | **0** | **0** |
 | pico de las fuentes (media) | 7,49 mm/h @ 29T17:00Z | 1,80 mm/h @ 08T22:00Z |
-| K_máx mediana / p95 / máx | 0,371 / 0,707 / **0,941** | 0,365 / 0,421 / **0,441** |
+| K_máx **crudo** mediana / p95 / máx | 0,371 / 0,707 / **0,941** | 0,365 / 0,421 / **0,441** |
+| d_J (medida vigente) mediana / p95 / máx | 0,276 / 0,681 / **0,830** | 0,273 / 0,285 / **0,308** |
 | K_global mediana / máx | 0,423 / 0,983 | 0,412 / 0,543 |
-| fusión D / C / E | 0 % / 93,8 % / **6,3 %** | 0 % / **100 %** / 0 % |
+| fusión D / C / E *(medida vigente D2)* | **76,0 % / 21,9 % / 2,1 %** | **99,4 % / 0,6 % / 0 %** |
+| *(con la medida anterior D0)* | *0 % / 93,8 % / 6,3 %* | *0 % / 100 % / 0 %* |
 | guardia κ_deg | 1 h | 0 h |
-| plUpper máximo | **0,963** | **0,0505** |
-| horas critical / warning / safe | 19 / 77 / 0 | 2 / 166 / 0 |
+| plUpper máximo | **0,963** | **0,0492** *(era 0,0505)* |
+| horas critical / warning / safe | 19 / 77 / 0 | **0 / 168 / 0** *(eran 2 / 166 / 0)* |
 | anchura banda 95 % (mín/media/máx) | 15 / 47,3 / 500 mm/h | 15 / 15,2 / 30 mm/h |
 | T < 0 °C en las tres fuentes | 0 h | **90 h (53,6 %)**, mín −12,03 °C |
 
@@ -482,17 +546,18 @@ REPORTA, no se retoca.** Se ha reportado; ver el hallazgo de abajo.
 fuentes. Ese «41 h antes» es una **cota inferior y un artefacto del recorte
 temporal**, no una medida: el cruce pudo ocurrir antes de que empezara la ventana
 capturada. `results.json` lo marca con `firstCriticalAtWindowStart: true`
-precisamente para que no se lea como anticipación. Las 19 horas `critical` no son
-contiguas: caen en tres bloques —28T00-04, 29T07-14 y 29T16-22 con dos huecos
-dentro— siguiendo al conflicto, no a la lluvia. En el pico, plUpper = 0,963, el
-máximo del evento.
+precisamente para que no se lea como anticipación. Las 19 horas `critical` caen
+en **cuatro bloques** —28T00-04 (5 h), 29T07-14 (8 h), 29T16-17 (2 h) y 29T19-22
+(4 h)—, **los mismos con las dos medidas de conflicto**, y siguen a la lluvia: su
+precipitación media es 4,09 mm/h frente a 0,37 mm/h en las 77 horas restantes. En
+el pico, plUpper = 0,963, el máximo del evento.
 
-**El método durante el pico.** En la ventana de ±6 h alrededor del pico, la
-**envolvente sube al 38,5 %** frente al 6,3 % del evento completo; el resto es
-media cautelosa. Dempster **nunca** se aplica (ver el hallazgo). La hora del pico
-es el caso extremo: ERA5 2,9 · IFS 18,2 · POWER 1,35 mm/h, K_máx = 0,941,
-K_global = 0,983 → **la guardia de degeneración se dispara** y fuerza la
-envolvente. Es la única hora de los dos eventos en que lo hace.
+**El método durante el pico.** La hora del pico es el caso extremo: ERA5 2,9 ·
+IFS 18,2 · POWER 1,35 mm/h, K_máx = 0,941, d_J = 0,830, K_global = 0,983 → **la
+guardia de degeneración se dispara** y fuerza la envolvente. Es la única hora de
+los dos eventos en que lo hace. Con la medida corregida, Dempster se aplica en el
+76 % de las horas del evento —con D0 no se aplicaba nunca, ver el hallazgo— y la
+envolvente queda en 2 horas de 96, las dos de mayor desacuerdo real.
 
 **Los baselines.** No señalan nada distinto de su intervalo fijo, y eso es
 literal: su anchura toma **un solo valor distinto** en las 96 horas —14,80 mm/h
@@ -514,10 +579,10 @@ AURA, en la misma hora, es [0, 500]: no resume, declara que no puede resumir.
 > E2 describe lo que el pipeline diría si aquello hubiera sido lluvia.**
 
 Con eso dicho, lo que el pipeline **dice** es informativo por lo que revela del
-sistema. Escala a `critical` en exactamente **2 horas** (08T20:00Z y 08T21:00Z),
-con plUpper máximo de 0,0505 — apenas un 1 % por encima del umbral. Frente a las
-19 horas y el plUpper de 0,963 de E1, el contraste está bien graduado: menos
-lluvia, menos conflicto, menos escalado.
+sistema. Con la medida vigente **no escala a `critical` en ninguna hora**: el
+plUpper máximo es 0,0492, justo por debajo de p_crít = 0,05. Frente a las 19
+horas y el plUpper de 0,963 de E1, el contraste está bien graduado: menos lluvia,
+menos conflicto, menos escalado.
 
 **Y el pipeline no puede saber lo del hielo.** La temperatura se captura, se
 reporta y **no entra en el DAG**: la Ec. (34) solo consume precipitación. El
@@ -529,11 +594,22 @@ ECUACIÓN, no su residuo. E2 es la ilustración empírica de esa frase. Un siste
 desplegado necesitaría, o un DAG con nodo de fase, o una guardia que se niegue a
 emitir certificado fuera del régimen declarado.
 
-Un detalle que conviene mirar: las dos horas `critical` de E2 **no son** las dos
-de mayor precipitación. La de mayor precipitación (08T22:00Z, plUpper = 0,0494)
-es `warning`, y lo son 20:00 y 21:00. La causa es que plUpper depende de la
+**Y un detalle que la corrección de la medida convirtió en hallazgo.** Con la
+medida anterior (D0), E2 escalaba a `critical` en exactamente 2 horas —08T20:00Z
+y 08T21:00Z— que **no eran** las dos de mayor precipitación: la de mayor
+precipitación (08T22:00Z) era `warning`. La causa es que plUpper depende de la
 ESTRUCTURA de la banda —de cuántos elementos focales tocan la región insegura— y
-no de un valor puntual: con la banda en [0, 30] toca, con la banda en [0, 15] no.
+no de un valor puntual.
+
+Con la medida vigente esas dos horas **dejan de ser críticas**, y se ve por qué:
+las tres fuentes medían 1,4 / 2,1 / 1,58 mm/h —**acuerdo**— y el conflicto de
+0,436 que las escalaba era suelo de discretización, no desacuerdo. Bajo D0 el
+método era la media cautelosa y la banda se abría a [0, 30] mm/h, tocando la
+región insegura; bajo D2 van a Dempster, la banda se cierra a [0, 5] y plUpper
+cae de 5,04·10⁻² a **1,06·10⁻⁴**, tres órdenes de magnitud. **Las dos horas
+`critical` de E2 eran un artefacto del suelo.** Es la consecuencia operativa más
+clara de la corrección, y se reporta como descripción: el hindcast ya era
+conocido cuando se eligió la medida.
 
 ### E1 frente a E2 — el perfil de conflicto
 
@@ -560,31 +636,47 @@ promedian distinto.
 
 ---
 
-## Hallazgo: hay un **suelo estructural de conflicto** que hace inalcanzable la regla de Dempster
+## Hallazgo: hay un **suelo estructural de conflicto** que hacía inalcanzable la regla de Dempster
 
-**Dempster no se aplica ni una sola vez en las 264 horas de los dos eventos.** No
-es un bug: es una consecuencia medible de la caracterización declarada, y el
-experimento la computa en vez de dejarla a la interpretación
-(`analysis.conflictProfile.structuralFloor`).
+> **Estado: corregido**, con el experimento pre-registrado 5
+> (`exp:conflict-floor`) y **sin usar estos datos** en la selección. Lo que sigue
+> describe el hallazgo tal como se midió con la medida anterior (D0, el K crudo);
+> al final está lo que cambia con la medida vigente.
+
+**Con la medida D0, Dempster no se aplicaba ni una sola vez en las 264 horas de
+los dos eventos.** No era un bug: es una consecuencia medible de la
+caracterización declarada, y el experimento la computa en vez de dejarla a la
+interpretación (`analysis.conflictProfile.structuralFloor`).
 
 Fusionando tres mediciones **idénticas** —acuerdo perfecto, dispersión cero— con
 las σ declaradas:
 
-| las tres fuentes miden | K_máx | K_global | método |
-|---:|---:|---:|---|
-| 0 mm/h | **0,365** | 0,411 | cautelosa |
-| 1 mm/h | 0,411 | 0,480 | cautelosa |
-| 5 mm/h | 0,561 | 0,779 | cautelosa |
-| 10 mm/h | **0,619** | 0,727 | cautelosa |
-| 20 mm/h | 0,501 | 0,554 | cautelosa |
-| 40 mm/h | **0,189** | 0,196 | **dempster** |
+| las tres fuentes miden | K_máx (D0) | K_global | método con D0 | **d_J (D2)** | **método con D2** |
+|---:|---:|---:|---|---:|---|
+| 0 mm/h | **0,365** | 0,411 | cautelosa | **0,273** | **dempster** |
+| 1 mm/h | 0,411 | 0,480 | cautelosa | 0,293 | **dempster** |
+| 5 mm/h | 0,561 | 0,779 | cautelosa | 0,153 | **dempster** |
+| 10 mm/h | **0,619** | 0,727 | cautelosa | **0,513** | cautelosa |
+| 20 mm/h | 0,501 | 0,554 | cautelosa | 0,381 | cautelosa |
+| 40 mm/h | **0,189** | 0,196 | **dempster** | 0,165 | **dempster** |
+
+La columna D2 no es monótona, y conviene no leerla como si lo fuera: d_J depende
+de **cómo** se reparte la masa entre las hipótesis del marco, no solo de cuánto
+solapa. A 5 mm/h las tres BPAs caen a caballo del corte *nula*/*ligera* de forma
+parecida y la distancia es baja; a 10 mm/h la fuente fina se concentra en
+*ligera* mientras la gruesa se reparte entre tres hipótesis, y sube. El suelo con
+acuerdo perfecto **deja de superar κ₁** en el régimen bajo, que es lo que hacía
+inalcanzable a Dempster; no desaparece en todo el rango.
 
 El K_máx **mínimo observado** en E1 es 0,3653 y en E2 es 0,3651; el suelo con
 lluvia nula es 0,3651. La diferencia en E1 es de 2·10⁻⁴ y en E2 es **exactamente
-cero**. Es decir: el conflicto mínimo de los dos eventos **no mide desacuerdo
-entre reanálisis, mide discretización**.
+cero**. Es decir: el conflicto mínimo de los dos eventos **no medía desacuerdo
+entre reanálisis, medía discretización**. Con la medida vigente el mínimo de E1
+baja a 0,1297 y el de E2 a 0,2510, los dos por debajo del suelo de referencia de
+0,2727: d_J no está acotada inferiormente por él, porque no es un residuo que se
+reste sino otra forma de medir la distancia entre las dos BPAs.
 
-**De dónde sale.** Tres fuentes que miden lo mismo con σ = 1,8 / 5,0 / 10,0 mm/h
+**De dónde sale.** Tres fuentes que miden lo mismo con σ = 5,0 / 1,8 / 10,0 mm/h
 reparten esa misma medición de forma muy distinta sobre las cinco hipótesis del
 marco: la fina concentra casi toda la masa en una, la gruesa la extiende sobre
 tres. El solape es incompleto y K_ij > 0 aunque no haya ningún desacuerdo físico.
@@ -604,13 +696,38 @@ son más concordantes que el ruido real— atribuía el conflicto alto a la
 por la sola heterogeneidad de las σ. Son dos mecanismos distintos con el mismo
 efecto, y el segundo es más incómodo: no depende del dato en absoluto.
 
-**Qué abre.** La Def. 3.6 compara un conflicto con umbrales fijos, y la entrada 9
-de `docs/ERRATA.md` ya corrigió *qué magnitud* se compara. Esto es la pregunta
-siguiente y no está resuelta: **κ₁ y κ₂ están declarados para un marco y una
-heterogeneidad de σ dados**, y no son transportables a un despliegue con fuentes
-de resolución muy dispar sin volver a mirarlos. Un candidato natural —restar el
-suelo, o normalizar K por él— no se propone aquí porque no se ha estudiado su
-soundness; queda registrado como lo que es, una limitación medida.
+**Qué abrió, y cómo se cerró.** La Def. 3.6 compara un conflicto con umbrales
+fijos, y la Capa 1 de `docs/ERRATA.md` §9 ya había corregido *qué magnitud* se
+compara. Ésta era la pregunta siguiente, y la resolvió el **experimento 5**
+(`exp:conflict-floor`, semilla 20261007) con tres medidas por pares tras una
+interfaz común y un criterio de siete pasos fijado antes de medir. Se seleccionó
+la **distancia de Jousselme** (D2); D1 —restar el suelo—, que anula el suelo de
+forma exacta, quedó **descalificada** en el paso 2 por cobertura de banda.
+
+Con D2, sobre estos mismos eventos y **como descripción, no como validación**:
+
+| | E1 · DANA | E2 · Filomena |
+|---|---|---|
+| Dempster / cautelosa / envolvente, D0 (antes) | 0 % / 93,8 % / 6,3 % | 0 % / 100 % / 0 % |
+| **con D2 (ahora)** | **76,0 % / 21,9 % / 2,1 %** | **99,4 % / 0,6 % / 0 %** |
+| suelo con acuerdo perfecto a 0 mm/h | 0,3651 **> κ₁** | → **0,2727 < κ₁** |
+| horas critical | 19, **mismos 4 bloques** | 2 → **0** |
+
+Las 19 horas critical de E1 no se mueven —ni una: los mismos cuatro tramos, hora
+por hora— y su lluvia media sigue siendo 4,09 mm/h frente a 0,37 en el resto. Las
+**dos horas critical de E2 desaparecen**, y eran un artefacto del suelo: las tres
+fuentes medían 1,4 / 2,1 / 1,58 mm/h —acuerdo— y el conflicto de 0,436 abría la
+banda a [0, 30] mm/h; con D2 van a Dempster, la banda se cierra a [0, 5] y
+plUpper cae de 5,04·10⁻² a 1,06·10⁻⁴.
+
+**Lo que sigue abierto y declarado:** κ₁ y κ₂ están fijados para un **marco de
+discernimiento** concreto. D2 elimina la dependencia de la heterogeneidad de σ,
+no la del marco.
+
+**Qué NO se ha hecho, ni antes ni ahora.** Las σ no se han tocado. Bajar σ_P de
+POWER hasta que Dempster reapareciera habría sido el retro-ajuste que la
+declaración a priori existe para impedir; lo que se cambió fue la **medida**, y
+se eligió sin mirar estos datos.
 
 ---
 

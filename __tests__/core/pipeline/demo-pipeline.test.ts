@@ -84,13 +84,22 @@ describe('lluvia ligera concordante — números fijados', () => {
 
   it('la fusión es por Dempster con conflicto bajo', () => {
     expect(r.fusion.method).toBe('dempster');
-    // K_decision de la regla vigente (C1) es el K_máx por pares de la Def. 3.5;
-    // K_global se sigue reportando aparte y vale 0,184412. Ver ERRATA §9.
+    // K_decision de la regla vigente (C1) es el máximo por pares de la MEDIDA
+    // vigente (D2, distancia de Jousselme) y vale 0,153405. El K_máx crudo de
+    // la Def. 3.5 (0,157632) y el K_global (0,184412) se siguen reportando
+    // aparte y NO se han movido: la medida cambia con qué se decide, no qué se
+    // observa. Ver ERRATA §9.
     expect(r.fusion.rule).toBe('C1');
-    expect(r.fusion.decisionConflict).toBeCloseTo(0.157632, 5);
+    expect(r.fusion.measure).toBe('D2');
+    expect(r.fusion.decisionConflict).toBeCloseTo(0.153405, 5);
+    expect(r.fusion.measureConflict).toBeCloseTo(0.153405, 5);
     expect(r.fusion.maxConflict).toBeCloseTo(0.157632, 5);
     expect(r.fusion.globalConflict).toBeCloseTo(0.184412, 5);
     expect(r.fusion.degeneracyGuard).toBe(false);
+    // Escenario concordante: los tres números están muy por debajo de κ₁ y la
+    // rama elegida es la misma que con la medida anterior. La corrección del
+    // suelo no cambia este caso, y conviene que conste.
+    expect(r.fusion.method).toBe('dempster');
   });
 
   it('la BPA fusionada tiene 4 elementos focales y ~99,9 % de masa sobre *ligera*', () => {

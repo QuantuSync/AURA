@@ -2,6 +2,7 @@
   "description": "Barrido de intensidad verdadera en [0, 60) mm/h sobre el pipeline de la demo: el nivel existencial se mantiene constante mientras Pl(E) y la decisión operativa varían.",
   "experiment": "smoke",
   "parameters": {
+    "conflictMeasure": "D2",
     "conflictRule": "C1",
     "maxTruePrecipitation": 60,
     "samples": 200

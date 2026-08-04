@@ -40,7 +40,13 @@
 
 import { degradationFigure, DegradationSeries } from './lib/figures';
 import { contains, evaluate, METHOD_IDS, METHOD_LABELS } from './lib/methods';
-import { fusionConfigFor, nameFor, profileOf, ruleOverrideOf } from './lib/profile';
+import {
+  fusionConfigFor,
+  measureOverrideOf,
+  nameFor,
+  profileOf,
+  ruleOverrideOf,
+} from './lib/profile';
 import { StratumSummary, StratumTable } from './lib/stats';
 import { DEFAULT_BAND_WEIGHTS, parseBandWeights, sampleWorld } from './lib/world';
 import { ExperimentContext, ExperimentOutput, main } from './runner';
@@ -53,7 +59,7 @@ function run(ctx: ExperimentContext): ExperimentOutput {
   // Regla de conflicto efectiva. Sin `--rule` es la del sistema; con ella
   // se reproducen los números de una regla anterior (ver ERRATA §9) en un
   // directorio de salida propio.
-  const fusionConfig = fusionConfigFor(ruleOverride);
+  const fusionConfig = fusionConfigFor(ruleOverride, measureOverride);
   const worldsPerPoint = ctx.flags.number('worlds', 2000);
   if (!Number.isInteger(worldsPerPoint) || worldsPerPoint <= 0) {
     throw new Error(`--worlds debe ser un entero positivo; recibido ${worldsPerPoint}.`);
@@ -155,6 +161,7 @@ function run(ctx: ExperimentContext): ExperimentOutput {
       // La regla de decisión de la Def. 3.6 con que se produjeron estos
       // números. Sin ella, `results.json` no dice bajo qué sistema se midió.
       conflictRule: fusionConfig.rule,
+      conflictMeasure: fusionConfig.measure,
       kappa1: fusionConfig.kappa1,
       kappa2: fusionConfig.kappa2,
       kappaDegeneracy: fusionConfig.kappaDegeneracy,
@@ -197,9 +204,10 @@ function run(ctx: ExperimentContext): ExperimentOutput {
 
 const profile = profileOf();
 const ruleOverride = ruleOverrideOf();
+const measureOverride = measureOverrideOf();
 
 main({
-  name: nameFor('h1-violation', profile, ruleOverride),
+  name: nameFor('h1-violation', profile, ruleOverride, measureOverride),
   description:
     'Cobertura de cada método frente a la fracción de mundos en que todas las fuentes fallan ' +
     'simultáneamente (violación directa de H1 del Teorema 6.1), de 0 % a 50 %.',

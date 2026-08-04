@@ -776,7 +776,12 @@ depende de las mismas H0–H3 y de ninguna hipótesis más.
 
 ---
 
-## 9 · Definición 3.6 — κ₁ y κ₂ están declarados para K_máx y se reutilizaban para K_global
+## 9 · Capa 1 — Definición 3.6: κ₁ y κ₂ están declarados para K_máx y se reutilizaban para K_global
+
+> Esta entrada tiene **tres capas**. Ésta corrige **qué magnitud** se compara con
+> κ₁/κ₂ (→ regla **C1**); la Capa 2 documenta el **suelo estructural** que el
+> hindcast midió, y la Capa 3 corrige **con qué se puntúa un par** (→ medida
+> **D2**). Las tres juntas son candidatas a sección propia en la v3.
 
 **Clase:** ERRATA DE DISEÑO *(reclasificada: la iteración anterior la registró
 como SALVEDAD, «se reporta, no se corrige»)*
@@ -1050,14 +1055,34 @@ continuo, y sin violaciones de bounds (0 antes y después).
 lleva el criterio, la traza de la selección y las métricas de los cuatro
 candidatos.
 
-### Addendum — lo que el hindcast añade, y que esta entrada NO resuelve
+---
 
-Esta entrada corrigió **qué magnitud** se compara con κ₁ y κ₂. El hindcast sobre
-datos reales (`npm run exp:hindcast`) deja ver que hay una segunda pregunta
-debajo, que sigue abierta: **con qué escala fueron elegidos κ₁ y κ₂**.
+## 9 · Capa 2 — el suelo estructural: κ₁ y κ₂ aplicados a una medida que no es cero con acuerdo perfecto
+
+> **Cómo leer esta entrada.** Tiene **tres capas**, y son tres cosas distintas
+> que conviene no fundir:
+>
+> 1. **la regla** (arriba): qué magnitud se compara con κ₁/κ₂ y qué protege de la
+>    degeneración → seleccionada **C1** por `exp:conflict-rule`;
+> 2. **el suelo medido en el hindcast** (esta sección): el diagnóstico, que se
+>    registró primero como limitación medida porque no había experimento que lo
+>    resolviera;
+> 3. **la medida corregida** (la sección siguiente): con qué se puntúa un par →
+>    seleccionada **D2** por `exp:conflict-floor`, y **con selección solo
+>    sintética**, porque los resultados del hindcast ya eran conocidos.
+>
+> Es candidata a **sección propia en la v3**: las tres capas juntas son la
+> historia completa de por qué la Definición 3.6 necesita dos parámetros donde el
+> paper escribe uno.
+
+### El diagnóstico
+
+Lo anterior corrigió **qué magnitud** se compara con κ₁ y κ₂. El hindcast sobre
+datos reales (`npm run exp:hindcast`) dejó ver que había una segunda pregunta
+debajo: **con qué escala fueron elegidos κ₁ y κ₂**.
 
 Al fusionar tres mediciones **idénticas** —acuerdo perfecto, dispersión cero— con
-las σ del hindcast (1,8 / 5,0 / 10,0 mm/h, declaradas a priori a partir del lado
+las σ del hindcast (5,0 / 1,8 / 10,0 mm/h, declaradas a priori a partir del lado
 de celda de cada producto), el conflicto por pares **no es cero**:
 
 | las tres fuentes miden | K_máx | método elegido |
@@ -1075,17 +1100,367 @@ Dempster es inalcanzable** en todo el régimen de intensidades bajas y medias: e
 las 264 horas de los dos eventos no se aplica ni una sola vez, y el K_máx mínimo
 observado coincide con el suelo (a 2·10⁻⁴ en E1, exactamente en E2).
 
-**Consecuencia, registrada como limitación medida y no como corrección:** κ₁ y κ₂
-están declarados para un marco y una heterogeneidad de σ **dados**, y no son
-transportables sin más a un despliegue con fuentes de resolución muy dispar.
+**Cómo quedó registrado entonces:** como limitación medida y no como corrección.
 Ninguna de las cuatro reglas C0-C3 aborda esto, porque las cuatro comparan una
-magnitud con umbrales fijos y el problema está en el par (magnitud, umbral). Un
-candidato natural —restar el suelo, o normalizar K por él— **no se propone aquí**
-porque no se ha estudiado su soundness; hacerlo exige un experimento
-pre-registrado propio, como el que resolvió esta entrada.
+magnitud con umbrales fijos y el problema está en el par (magnitud, umbral). El
+candidato natural —restar el suelo, o normalizar K por él— **no se propuso**
+porque no se había estudiado su soundness; hacerlo exigía un experimento
+pre-registrado propio. Es el que se describe a continuación.
 
 Detalle completo, tablas y por qué las σ **no** se retocaron a la vista del
 resultado, en [`scripts/experiments/README.md`](../scripts/experiments/README.md).
+
+---
+
+## 9 · Capa 3 — corrección de la MEDIDA, con selección solo sintética
+
+**Clase:** ERRATA DE DISEÑO *(continuación directa de las dos capas anteriores)*
+**Ubicación:** §3.4.1, Definición 3.5 y Ecuación (6), en combinación con la
+Definición 3.6.
+
+### ⚠ Advertencia de honestidad que rige todo el diseño
+
+**Los resultados del hindcast YA ERAN CONOCIDOS** cuando se diseñó este
+experimento: `npm run exp:hindcast` estaba ejecutado, commiteado y descrito en
+las secciones anteriores, y es de ahí de donde sale el problema. Elegir la medida
+mirando esos resultados sería retro-ajuste con pasos extra. En consecuencia, y
+sin excepción:
+
+- **la selección se hizo EXCLUSIVAMENTE sobre mundos sintéticos con ground
+  truth**, donde «acertar» tiene una respuesta que no depende de nadie;
+- el bloque «σ del hindcast» de la Fase A usa las σ y δ declaradas a priori
+  (5,0 / 1,8 / 10,0 mm/h, δ = 0,02) sobre **mundos sintéticos nuevos**, no sobre
+  los datos reales;
+- **el hindcast se re-ejecutó DESPUÉS y solo como descripción. NO es una
+  validación ciega**, y así consta literalmente en su `results.json`
+  (`results.selectionDisclosure`), en el README de experimentos y aquí.
+
+La semilla de la Fase A (**20261007**) es nueva y distinta de la canónica 20260804
+con que se publican los números de la Fase B.
+
+### Las tres candidatas
+
+Fijadas en `src/core/dempster-shafer/conflict-measures.ts` tras la interfaz común
+`PairwiseConflictMeasure`. **La regla es C1 en las tres** y κ₁/κ₂ no se mueven:
+lo único que cambia es CON QUÉ se puntúa el desacuerdo de un par.
+
+| | d(m_i, m_j) | suelo con acuerdo perfecto (σ del hindcast, 0 mm/h) |
+|---|---|---:|
+| **D0** *(la vigente)* | K_ij crudo, Ec. (6) | 0,3651 **> κ₁** |
+| **D1** | máx(0, (K_ij − K_floor_ij)/(1 − K_floor_ij)) | **0 exacto** |
+| **D2** | distancia de Jousselme d_J sobre la matriz de Jaccard | 0,2727 < κ₁ |
+
+con **K_floor_ij** = conflicto entre las BPAs de i y j construidas ambas sobre
+x̂_ij, la media de las dos mediciones **ponderada por precisión** (w ∝ 1/σ²). Es
+«el conflicto que existiría sin desacuerdo alguno».
+
+**Separación estructural**, que rige a las tres y no es negociable: la medida
+gobierna **solo** la comparación con κ₁/κ₂. La **guardia de degeneración**
+(κ_deg = 0,95) sigue operando sobre el **K_global CRUDO**, porque la explosión
+1/(1−K) que (P2)/(P2′) previenen es propiedad del K crudo y una medida que reste
+un suelo puede acercarse a 0 con K_global ≈ 1. Consecuencia comprobada: el
+contraejemplo del ciclo va a envolvente **por la guardia** bajo las tres — y bajo
+D2 esa es la **única** vía, porque d_J le asigna 0,5 ≤ κ₂.
+
+**Propiedades demostradas y testeadas** (`__tests__/core/dempster-shafer/conflict-measures.test.ts`
+y `__tests__/properties/conflict-measures.property.test.ts`):
+
+- **D1 (i)** mediciones idénticas ⇒ K_excess = **0 exactamente** (no 1e-16: x̂ se
+  devuelve tal cual cuando x_i = x_j, y las BPAs del suelo son bit a bit las
+  originales);
+  **(ii)** K_excess ∈ [0, 1];
+  **(iii)** K_excess ≤ K siempre —porque K_floor·(K−1) ≤ 0—, y con σ iguales y
+  mediciones muy separadas vuelve al K crudo (Δ = 80 mm/h: 0,9604 frente a
+  0,9604). El caso K_floor = 1 devuelve 0 y está testeado aparte, porque es
+  inalcanzable con BPAs de la Def. 3.4 sobre un marco que cubra el dominio.
+- **D2** d_J(m, m) = 0 exactamente, simetría exacta, rango [0, 1] y desigualdad
+  triangular (viene de una forma cuadrática semidefinida positiva).
+- **Sin procedencia gaussiana no hay suelo**: una BPA fusionada, una envolvente
+  sintética o una escrita a mano no tienen (valor, σ) que reconstruir, y D1
+  degrada **exactamente** a D0. Es la dirección conservadora.
+
+Punteros de literatura anotados en el JSDoc como conceptos a formalizar en la
+fase de paper, sin atribuir enunciados literales: **distancia de Jousselme**,
+**auto-conflicto de Martin/Osswald** y la **crítica de Liu al K escalar**. El
+suelo que aquí se mide es pariente del auto-conflicto pero no es el mismo objeto:
+no es K(m, m) sino K(m_i(x̂), m_j(x̂)) con **σ distintas**; el auto-conflicto es
+su caso particular σ_i = σ_j.
+
+### Requisito innegociable y criterio
+
+**Requisito**, verificado ANTES de comparar nada:
+
+- (a) el ciclo va a envolvente **por la guardia** bajo las tres;
+- (b) la rama Dempster no se ejecuta nunca con la medida de decisión > κ₂ ni con
+  **K_global crudo** ≥ κ_deg (`__tests__/properties/conflict-measures.property.test.ts`,
+  entradas generadas × todas las permutaciones);
+- (c) campaña world-soundness completa (`__tests__/experiments/world-soundness.test.ts`,
+  ahora 3 medidas × 3 configuraciones × 2.000 mundos, además de las 4 reglas);
+- (d) cobertura existencial 100 % en la calibración.
+
+**Criterio**, lexicográfico y aplicado mecánicamente por
+`scripts/experiments/lib/floor-selection.ts` (probado aparte de las cifras que
+consume, en `__tests__/experiments/conflict-floor-selection.test.ts`):
+
+1. pasa el requisito innegociable;
+2. cobertura de banda-95 ≥ **99,5 %** global;
+3. métrica virga «ni P\* ni γ·P\*» ≤ **0,10 %**;
+4. bloque «σ del hindcast» sintético: mayor fracción que alcanza Dempster;
+5. empate a < 1 punto en 4 → mayor fracción de limpios → Dempster en la
+   configuración estándar;
+6. empate también en 5 → menor anchura media de banda-95;
+7. empate total → el más simple, orden D1 > D2.
+
+### Fase A — calibración y selección
+
+`npm run exp:conflict-floor` · semilla **20261007** · 10.000 mundos estándar +
+5.000 solo-virga + 5.000 con las σ del hindcast y dispersión ≤ 0,5 mm/h, los
+**mismos** para las tres candidatas.
+
+| candidata | 1. requisito | 2. banda-95 | 3. virga ni-ni | 4. σ-hindcast → Dempster | 5. limpios → Dempster | 6. anchura |
+|---|---|---:|---:|---:|---:|---:|
+| D0 | ✅ | 99,870 % | 0,000 % | 9,90 % | 58,97 % | 280,66 |
+| D1 | ✅ | **99,480 %** ❌ | 0,080 % | *(100,00 %)* | *(81,00 %)* | *(197,49)* |
+| **D2** | ✅ | 99,720 % | 0,000 % | **59,66 %** ⟵ decide | 65,98 % | 254,32 |
+
+**D1 queda DESCALIFICADA en el paso 2** y **D2 gana el paso 4 en solitario**.
+
+Esto es exactamente para lo que sirve el pre-registro, y conviene decirlo sin
+adornos: **D1 era la candidata natural y la que mejor resuelve el problema
+declarado** —anula el suelo de forma exacta y lleva el 100 % de los mundos
+concordantes a Dempster—, pero paga la informatividad con cobertura: su banda-95
+cae al 99,48 %, por debajo del piso del 99,5 % fijado antes de medir. El criterio
+**no se relajó**. La pérdida se concentra donde era previsible: en mundos limpios
+D1 baja al 99,539 % (D2: 99,749 %; D0: 99,902 %) con una anchura media de 120,03
+frente a 191,87 y 224,96 mm/h — la banda es mucho más estrecha y falla más.
+
+**Acuerdo par a par** sobre los 20.000 mundos: D0~D1 63,6 %, D0~D2 82,3 %,
+D1~D2 78,4 %. Las tres eligen estrategias distintas con frecuencia; aquí no hay
+ninguna equivalencia empírica como la que C1 ≡ C2 tuvo en la capa anterior.
+
+**Margen numérico realmente usado** en la rama Dempster (peor caso, 20.000
+mundos). La cota declarada es κ_deg = 0,95 para las tres, porque es la de la
+guardia y la guardia no cambia:
+
+| | peor K_global observado | peor K^(k) secuencial | peor factor 1/(1−K) |
+|---|---:|---:|---:|
+| D0 | 0,4369 | 0,3064 | 1,442 |
+| D1 | 0,8215 | 0,6893 | 3,219 |
+| **D2** | 0,8024 | 0,6199 | **2,631** |
+
+Es el precio directo de admitir más fusiones de Dempster: se entra en la rama con
+K_global crudo más alto. Sigue muy por debajo del 20 que κ_deg permite, pero es
+1,8× el margen que se usaba antes y queda declarado.
+
+### Fase B — validación con la semilla canónica
+
+`npm run exp:all` · semilla **20260804** · medida D2. La columna D0 se regenera
+con `npm run exp:all:d0` y **reproduce exactamente** los números publicados en la
+capa anterior, lo que confirma que nada más ha cambiado.
+
+**Experimento 1 — reparto de estrategias** (10.000 mundos):
+
+| condición | n | D0 (D / C / E) | **D2 (D / C / E)** |
+|---|---:|---|---|
+| global | 10.000 | 47,93 / 30,06 / 22,01 % | **53,45 / 23,64 / 22,91 %** |
+| **sin fallo ni virga** | 7.258 | 58,82 / 36,55 / 4,63 % | **65,86 / 28,38 / 5,76 %** |
+| fallo δ | 1.495 | 3,88 / 1,74 / 94,38 % | 3,88 / 1,54 / 94,58 % |
+| virga | 1.247 | 37,37 / 26,22 / 36,41 % | 40,66 / 22,53 / 36,81 % |
+
+**Experimento 1 — cobertura y anchura**:
+
+| método · estrato | D0 cobertura | D2 cobertura | D0 anchura | D2 anchura |
+|---|---:|---:|---:|---:|
+| existencial · global | 100,00 % | **100,00 %** | 500,00 | 500,00 |
+| banda-95 · global | 99,91 % | **99,72 %** | 276,51 | **250,18** |
+| banda-95 · sin fallo | 99,92 % | 99,75 % | 224,77 | **191,25** |
+| banda-95 · fallo δ | 99,87 % | 99,87 % | 492,01 | 492,02 |
+| banda-95 · virga | 99,92 % | 99,36 % | 319,29 | **303,22** |
+
+Los dos baselines no se mueven ni un dígito (76,20 % y 76,68 %, anchuras 4,60 y
+4,24 mm/h): no dependen de la medida de conflicto, y sirven de control.
+
+**Experimento 2 — violación de H1** (11 puntos × 2.000 mundos), banda-95:
+
+| violación | D0 todos | D2 todos | D0 violados | D2 violados | D0 intactos | D2 intactos |
+|---:|---:|---:|---:|---:|---:|---:|
+| 0 % | 99,95 % | 99,75 % | — | — | 99,95 % | 99,75 % |
+| 25 % | 83,95 % | 84,00 % | 34,09 % | 34,50 % | 100,00 % | 99,93 % |
+| 50 % | 67,70 % | 67,60 % | 37,17 % | 37,27 % | 99,79 % | 99,49 % |
+
+El nivel existencial se mantiene en **100,00 % en los once puntos** con las dos
+medidas. La estructura del hallazgo —degrada dentro de los mundos violados y solo
+allí— no cambia; la anchura media baja (348,75 frente a 365,00 mm/h al 50 %).
+
+**Experimento 3 — virga** (5.000 mundos solo-virga):
+
+| | D0 | D2 |
+|---|---:|---:|
+| existencial · ni P\* ni γP\* | 0,00 % | 0,00 % |
+| banda-95 · ni P\* ni γP\* (todos) | 0,04 % | **0,06 %** |
+| banda-95 · ni P\* ni γP\* (sin fallo δ) | 0,02 % | 0,05 % |
+| banda-95 · anchura media | 343,19 | **330,60** mm/h |
+| reparto D / C / E | 32,68 / 23,22 / 44,10 % | **35,24 / 20,16 / 44,60 %** |
+
+`media-ponderada` y `kalman-estatico` siguen en 43,12 % y 41,58 %: la afirmación
+del Ejemplo 3.1 queda cuantificada igual que antes.
+
+### Fase C — el hindcast, como DESCRIPCIÓN
+
+`npm run exp:hindcast` con la medida seleccionada, y `npm run exp:hindcast:d0`
+para la comparación.
+
+> ⚠ **Esta fase NO es una validación.** Los resultados bajo D0 ya eran conocidos
+> antes de la selección, y la selección fue **solo sintética**. Ninguna cifra de
+> abajo puede presentarse como confirmación independiente de la medida elegida.
+> Se reporta porque describe qué hace el sistema corregido sobre entrada real, no
+> porque lo valide.
+
+**Reparto de métodos por evento:**
+
+| | E1 · DANA (96 h) | E2 · Filomena (168 h) |
+|---|---|---|
+| D0 (antes) | 0 % / 93,8 % / 6,3 % | 0 % / 100 % / 0 % |
+| **D2 (ahora)** | **76,0 % / 21,9 % / 2,1 %** | **99,4 % / 0,6 % / 0 %** |
+
+Sí: **la rama de Dempster se abre en las horas tranquilas**, que es exactamente
+lo que el suelo impedía. En E2 —un evento de nieve con precipitación líquida
+equivalente baja y tres fuentes muy concordantes— pasa a aplicarse en 167 de 168
+horas.
+
+**Suelo observado vs suelo de la medida nueva:**
+
+| | K crudo (D0) | d_J (D2) |
+|---|---:|---:|
+| suelo con acuerdo perfecto a 0 mm/h | 0,3651 **> κ₁** | 0,2727 **< κ₁** |
+| mínimo observado en E1 | 0,3653 | 0,1297 |
+| mínimo observado en E2 | 0,3651 | 0,2510 |
+| mediana en E2 | 0,3652 | 0,2728 |
+
+El mínimo observado seguía pegado al suelo bajo D0 (a 2·10⁻⁴ en E1, exactamente
+en E2). Bajo D2 el mínimo de E1 cae **por debajo** del suelo de referencia
+(0,1297 < 0,2727): d_J no está acotada inferiormente por el valor con acuerdo
+perfecto y σ heterogéneas, porque no es un residuo que se reste.
+
+**Horas critical y sus bloques:**
+
+| | D0 (antes) | D2 (ahora) |
+|---|---|---|
+| E1 | 19 h en 4 bloques: 28-oct 00-04, 29-oct 07-14, 16-17, 19-22 | **idénticos**: 19 h, los mismos 4 bloques |
+| E2 | 2 h: 08-ene 20:00-21:00 Z | **0 h** |
+
+**¿Siguen ahora a la lluvia más que al conflicto?** En **E1 no cambia nada, y no
+cambia porque ya seguían a la lluvia**: las horas critical tienen lluvia media de
+4,09 mm/h frente a 0,37 en el resto, con las dos medidas, y los cuatro bloques
+son hora por hora los mismos. Lo que cambia dentro de ellos es el método —de
+13 cautelosas + 6 envolventes a 17 + 2—, no el veredicto. En **E2 sí cambia, y en
+la dirección esperada**: las dos horas critical de D0 tenían lluvia 1,74 mm/h
+(frente a 0,22 en el resto) pero un K_decision de 0,4363 con las tres fuentes
+midiendo 1,4 / 2,1 / 1,58 mm/h — es decir, **acuerdo**. La escalada la producía
+el suelo, no la precipitación: bajo D0 el método era la media cautelosa, la banda
+se abría a [0, 30] mm/h y plUpper llegaba a 5,04·10⁻²; bajo D2 esas horas van a
+Dempster, la banda se cierra a [0, 5] mm/h y plUpper cae a 1,06·10⁻⁴, tres
+órdenes de magnitud. **Las dos horas critical de E2 eran un artefacto del suelo.**
+
+**Las 5 horas clave de E1 con la medida nueva** (orden pignístico, el mismo
+criterio de siempre):
+
+| hora (Z) | prec. era5 / ifs / nasa | K crudo | **d_J** | método | plUpper | decisión |
+|---|---|---:|---:|---|---:|---|
+| 2024-10-29 17:00 | 2,90 / 18,20 / 1,35 | 0,9413 | **0,8303** | envolvente | 9,63·10⁻¹ | critical |
+| 2024-10-29 16:00 | 1,30 / 7,90 / 1,37 | 0,7148 | **0,7039** | envolvente | 7,25·10⁻¹ | critical |
+| 2024-10-29 19:00 | 10,40 / 8,80 / 0,76 | 0,7053 | **0,6746** | cautelosa | 1,04·10⁻¹ | critical |
+| 2024-10-29 09:00 | 7,40 / 9,70 / 0,86 | 0,7084 | **0,6836** | cautelosa | 6,72·10⁻² | critical |
+| 2024-10-29 11:00 | 6,30 / 10,10 / 1,63 | 0,6938 | **0,6640** | cautelosa | 6,40·10⁻² | critical |
+
+El sesgo del orden pignístico que la iteración anterior declaró —«ordena por una
+mezcla de intensidad y desacuerdo, porque la envolvente sube la esperanza
+pignística»— **se atenúa**: con D0 las cinco horas seleccionadas eran las cinco
+de envolvente; ahora solo dos lo son, y cuatro de las cinco coinciden con las que
+selecciona `keyHoursBySourceMean`, que ordena por la media cruda de las fuentes y
+es ciega al conflicto.
+
+### Qué se compró y qué se pagó
+
+**Comprado.** La rama de Dempster deja de ser inalcanzable con fuentes de
+resolución dispar: de 0 de 264 horas del hindcast a 240 de 264. En mundos limpios
+sintéticos el Nivel 1 sube del 58,8 % al 65,9 %, y la anchura media de la banda
+de evidencia baja un 9,5 % en global y un 14,9 % en mundos limpios. Las dos horas
+critical de E2 que eran artefacto del suelo desaparecen.
+
+**Pagado, y hay que decirlo:**
+
+1. La cobertura de banda-95 baja de 99,91 % a **99,72 %** en global y de 99,92 %
+   a 99,75 % en mundos limpios. Sigue muy por encima del 95 % nominal y del piso
+   pre-registrado del 99,5 %, pero es una pérdida real. En virga, la métrica «ni
+   P\* ni γ·P\*» sube de 0,04 % a **0,06 %** (3 mundos de 5.000). **La soundness
+   no se toca**: el nivel existencial sigue en 100,00 % en las tres campañas,
+   bajo las tres medidas y en los once puntos del barrido de H1.
+2. **El margen numérico se estrecha**: el peor K_global en la rama Dempster pasa
+   de 0,4369 a 0,8024 y el peor factor 1/(1−K) de 1,442 a **2,631**. Es
+   consecuencia directa de entrar en Dempster con más conflicto crudo. Sigue
+   lejos del 20 que κ_deg autoriza, pero es 1,8× lo que se usaba.
+3. **D2 no es uniformemente menos conservadora que D0, y eso puede sorprender.**
+   d_J no está acotada por K en ninguna dirección: en el escenario s4 del harness
+   K_máx = 3,2·10⁻⁹ y d_J = 0,0447, y en el barrido `smoke` un escenario de 200
+   **escala** de media cautelosa a envolvente (d_J = 0,7014 > κ₂ frente a
+   K = 0,6866 < κ₂). La corrección no es «relajar»; es medir otra cosa.
+4. **La limitación de fondo sigue abierta.** D2 elimina la dependencia de la
+   heterogeneidad de σ, pero κ₁ y κ₂ siguen declarados para un marco de
+   discernimiento concreto. Un despliegue con otro marco debe volver a
+   justificarlos.
+
+### Estado en el código
+
+**Corregido.** `assessConflict` resuelve la medida con `measureOf(config)`
+(`src/core/dempster-shafer/conflict-measures.ts`) y alimenta a la regla con
+`measureConflict`; `DEFAULT_FUSION_CONFIG.measure = 'D2'`. Las tres medidas
+siguen disponibles por configuración (`FusionConfig.measure`) y los experimentos
+aceptan `--measure` para reproducir cualquier número publicado bajo una medida
+anterior (`npm run exp:all:d0`, `npm run exp:hindcast:d0`). `FusionResult` expone
+`measure`, `measureConflict`, `measureMatrix` y `floorMatrix`, y esos campos
+viajan a `out/<escenario>/result.json` y a las columnas `measure` y `K_measure`
+de `summary.csv`.
+
+**Los dos ejes son ortogonales y están separados en el código.** Solo C1 —la
+regla del sistema— consulta la medida; C0, C2 y C3 están **congeladas sobre el K
+crudo**, porque existen para reproducir números publicados y una regla congelada
+que cambiara de significado al cambiar la medida no reproduciría nada.
+`fusionConfigFor` hace que `--rule C0` implique D0 por ese motivo.
+
+**(P1), (P2) y (P2′) intactas.** Son propiedades del K crudo y la guardia no ha
+cambiado; sus property tests siguen verdes, y `global-conflict.property.test.ts`
+fija ahora la medida a D0 explícitamente para que el eje que verifica sea el de
+la regla. La afirmación «ninguna regla es menos conservadora que el K_máx del
+paper» es cierta bajo D0 y **deliberadamente falsa** bajo D1 —que existe para
+descontar el suelo—, y eso queda anotado allí.
+
+**κ₁ y κ₂ no se han movido.** Siguen valiendo 0,3 y 0,7 (`src/lib/constants.ts`).
+
+**Impacto en los cuatro escenarios del harness:** ninguno cambia de método de
+fusión, de veredicto ni de decisión. s2 sigue dando plUpper = 1,559438e-4
+exactamente, y los cuatro conservan su `credal`, su `reachable`, su `belLower` y
+su `plUpper`. Lo único que cambia en `summary.csv` son las columnas nuevas
+(`measure`, `K_measure`) y el valor de `K_decision`, que ahora es d_J: s1
+0,0256 → 0,0545, s2 0,1576 → 0,1534, s3 0,9159 → 0,8847, s4 3,2e-9 → 0,0447.
+**s3 sigue llegando a la envolvente por dos vías independientes**: la guardia
+(K_global = 0,9512 ≥ κ_deg = 0,95) y la comparación con κ₂ (d_J = 0,8847 > 0,7).
+
+**Impacto en el barrido `smoke`** (200 escenarios, semilla 20260804): las
+estrategias pasan de 126/65/9 a **138/52/10** (D/C/E) — 14 escenarios suben de
+cautelosa a Dempster, 2 bajan de Dempster a cautelosa y **1 escala de cautelosa a
+envolvente**. Las decisiones pasan de 184/16 a **181/19** critical/warning: 4
+bajan a warning y 1 sube a critical. Sin violaciones de bounds (0 antes y
+después).
+
+**Impacto en el hindcast de verificación** (24 h del pico de E1, en
+`snapshots/`): el reparto pasa de 0/18/6 a **6/16/2** (D/C/E).
+
+**Verificación.** `npm run exp:conflict-floor` (Fase A, semilla 20261007),
+`npm run exp:all` (Fase B, semilla 20260804) y `npm run exp:hindcast` (Fase C);
+`out/experiments/conflict-floor/results.json` lleva el criterio, la traza de la
+selección paso a paso, la tabla del suelo recomputada por cada candidata y las
+métricas de las tres.
 
 ---
 
@@ -1101,4 +1476,4 @@ resultado, en [`scripts/experiments/README.md`](../scripts/experiments/README.md
 | 6 | Teo. 5.1, jacobiana numérica | SALVEDAD | pendiente | corregido |
 | 7 | Def. 5.2 / Ec. (27), lifting en coma flotante | SALVEDAD | pendiente | corregido |
 | 8 | Def. 3.9 / Ec. (10), "el bound externo es suficiente" | EXTENSIÓN *(→ Def. 3.9′ y Def. 5.5′ en v3)* | pendiente | **implementado** |
-| 9 | Def. 3.6, κ₁/κ₂ declarados para K_máx y usados con K_global | ERRATA DE DISEÑO *(→ regla C1 en v3)* | pendiente | **corregido** *(experimento pre-registrado)* |
+| 9 | Def. 3.5-3.6, la magnitud Y la escala con que se comparan κ₁/κ₂ | ERRATA DE DISEÑO, **tres capas** *(→ sección propia en v3: regla C1 + medida D2)* | pendiente | **corregido** *(dos experimentos pre-registrados)* |

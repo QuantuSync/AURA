@@ -12,30 +12,22 @@
 
 import { BPA, FusionConfig, DEFAULT_FUSION_CONFIG } from './types';
 import { ConflictDecision, ruleOf } from './conflict-rules';
+import {
+  ConflictMeasureId,
+  floorMatrix,
+  measureMatrix,
+  measureOf,
+  pairwiseConflict,
+} from './conflict-measures';
 
 /**
- * Calcula el factor de conflicto K entre dos BPAs.
- *
- * Paper ref: Ecuación (6), §3.4.1 (y entrada K_ij de la Definición 3.5).
- * K = Σ_{B∩C=∅} m1(B) · m2(C)
- *
- * @returns K ∈ [0, 1). K=0 significa acuerdo total, K→1 contradicción total.
+ * `pairwiseConflict` (Ecuación 6, Definición 3.5) se implementa en
+ * `./conflict-measures.ts`, donde es literalmente la medida D0 y la base sobre
+ * la que se construyen D1 y D2. Se reexporta desde aquí porque este es el
+ * módulo que la Definición 3.5 nombra, y ninguna importación existente debe
+ * tener que enterarse de la reorganización.
  */
-export function pairwiseConflict(bpa1: BPA, bpa2: BPA): number {
-  let conflict = 0;
-
-  for (const fe1 of bpa1.focalElements) {
-    for (const fe2 of bpa2.focalElements) {
-      // Comprobar si la intersección es vacía
-      const intersection = fe1.indices.filter((i) => fe2.indices.includes(i));
-      if (intersection.length === 0) {
-        conflict += fe1.mass * fe2.mass;
-      }
-    }
-  }
-
-  return conflict;
-}
+export { pairwiseConflict };
 
 /**
  * Calcula la matriz de conflicto para n fuentes.
@@ -201,11 +193,22 @@ export function globalConflict(
  * - κ₁ < K_decision ≤ κ₂: "moderate" → Media cautelosa
  * - K_decision > κ₂: "high" → Envolvente conservativa
  *
- * `config.rule` elige cómo se construye K_decision a partir de (K_máx, K_global,
- * n) y si además actúa la guardia de degeneración. Las cuatro reglas y su
- * justificación están en {@link ./conflict-rules}; la seleccionada por el
- * experimento pre-registrado `exp:conflict-rule` es el default de
- * {@link DEFAULT_FUSION_CONFIG}.
+ * DOS EJES ORTOGONALES, y conviene no confundirlos:
+ *
+ *  · `config.measure` elige la MEDIDA por pares — con qué se puntúa el
+ *    desacuerdo de cada par (`./conflict-measures.ts`). Corrige el problema de
+ *    ESCALA que midió el hindcast: el K crudo incluye un suelo de
+ *    discretización que no depende del desacuerdo físico.
+ *  · `config.rule` elige la REGLA — qué se hace con esa magnitud y con
+ *    K_global, y si actúa la guardia de degeneración (`./conflict-rules.ts`).
+ *
+ * La guardia opera SIEMPRE sobre el K_global crudo, sea cual sea la medida: es
+ * protección frente a la explosión 1/(1−K) de la Ecuación (5), no
+ * informatividad, y reescalarla la desactivaría justo donde hace falta.
+ *
+ * Los defaults de {@link DEFAULT_FUSION_CONFIG} son los seleccionados por los
+ * dos experimentos pre-registrados: `exp:conflict-rule` para la regla y
+ * `exp:conflict-floor` para la medida.
  *
  * La decisión es independiente del orden de las fuentes bajo CUALQUIER regla:
  * las tres entradas lo son —K_máx es un máximo sobre pares no ordenados,
@@ -223,6 +226,10 @@ export function assessConflict(
   matrix: number[][];
   maxConflict: number;
   globalConflict: number;
+  measure: ConflictMeasureId;
+  measureMatrix: number[][];
+  measureConflict: number;
+  floorMatrix: number[][] | null;
   decision: ConflictDecision;
   decisionConflict: number;
   level: ConflictDecision['level'];
@@ -231,17 +238,30 @@ export function assessConflict(
   const matrix = conflictMatrix(bpas);
   const n = bpas.length;
 
-  let maxConflict = 0;
-  for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) {
-      maxConflict = Math.max(maxConflict, matrix[i][j]);
+  const maxOverPairs = (m: number[][]): number => {
+    let best = 0;
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) best = Math.max(best, m[i][j]);
     }
-  }
+    return best;
+  };
+
+  const maxConflict = maxOverPairs(matrix);
+
+  // La medida por pares. Con D0 `mMatrix` ES `matrix` valor a valor, y el coste
+  // extra es una segunda pasada sobre n²/2 pares ya calculados; se recomputa
+  // igualmente en vez de ramificar sobre el identificador, para que añadir una
+  // medida no obligue a tocar este bloque.
+  const measure = measureOf(config);
+  const mMatrix = measureMatrix(bpas, measure);
+  const measureConflict = maxOverPairs(mMatrix);
+  const floors = floorMatrix(bpas, measure);
 
   const kGlobal = globalConflict(bpas, config);
 
   const decision = ruleOf(config).decide({
     maxConflict,
+    measureConflict,
     globalConflict: kGlobal,
     sourceCount: n,
     kappa1: config.kappa1,
@@ -253,6 +273,10 @@ export function assessConflict(
     matrix,
     maxConflict,
     globalConflict: kGlobal,
+    measure: measure.id,
+    measureMatrix: mMatrix,
+    measureConflict,
+    floorMatrix: floors,
     decision,
     decisionConflict: decision.decisionConflict,
     level: decision.level,

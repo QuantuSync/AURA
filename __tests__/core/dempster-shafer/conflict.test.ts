@@ -99,13 +99,21 @@ describe('assessConflict', () => {
     const bpa3 = createBPAFromGaussian(frame, 24, 5, 0, 's3');
     const result = assessConflict([bpa1, bpa2, bpa3]);
 
-    // (P1) es una propiedad de K_global y vale bajo cualquier regla.
+    // (P1) es una propiedad de K_global y vale bajo cualquier regla y medida:
+    // se enuncia sobre el K CRUDO, que se sigue reportando sin tocar.
     expect(result.globalConflict).toBeGreaterThanOrEqual(result.maxConflict - 1e-12);
-    // La regla vigente (C1) decide con el K_máx por pares del paper y expone
-    // K_global aparte, que es lo que hace auditable la decisión.
+    // La regla vigente (C1) decide con el máximo por pares de la MEDIDA vigente
+    // y expone K_máx y K_global aparte, que es lo que hace auditable la
+    // decisión. Con la medida D0 los tres coincidirían; con D2 no, y ese es el
+    // objeto de la corrección del suelo (ERRATA §9).
     expect(result.decision.rule).toBe(DEFAULT_FUSION_CONFIG.rule);
-    expect(result.decisionConflict).toBeCloseTo(result.maxConflict, 12);
+    expect(result.measure).toBe(DEFAULT_FUSION_CONFIG.measure);
+    expect(result.decisionConflict).toBeCloseTo(result.measureConflict, 12);
     expect(result.decision.degeneracyGuard).toBe(false);
+
+    // Y bajo D0 la decisión vuelve a ser exactamente el K_máx del paper.
+    const d0 = assessConflict([bpa1, bpa2, bpa3], { ...DEFAULT_FUSION_CONFIG, measure: 'D0' });
+    expect(d0.decisionConflict).toBe(d0.maxConflict);
   });
 
   it('cada regla decide con su propia magnitud, sobre las mismas fuentes', () => {
@@ -114,22 +122,47 @@ describe('assessConflict', () => {
       createBPAFromGaussian(frame, 22, 5, 0, 's2'),
       createBPAFromGaussian(frame, 24, 5, 0, 's3'),
     ];
-    const kMax = assessConflict(bpas).maxConflict;
-    const kGlobal = assessConflict(bpas).globalConflict;
+    // El eje de la REGLA se aísla fijando la medida a D0: C0, C2 y C3 están
+    // congeladas sobre el K crudo y solo C1 consulta la medida, de modo que
+    // comparar las cuatro con la medida del sistema mezclaría los dos ejes.
+    const d0 = { ...DEFAULT_FUSION_CONFIG, measure: 'D0' as const };
+    const kMax = assessConflict(bpas, d0).maxConflict;
+    const kGlobal = assessConflict(bpas, d0).globalConflict;
 
-    const c0 = assessConflict(bpas, { ...DEFAULT_FUSION_CONFIG, rule: 'C0' });
+    const c0 = assessConflict(bpas, { ...d0, rule: 'C0' });
     expect(c0.decisionConflict).toBeCloseTo(Math.max(kMax, kGlobal), 12);
 
-    const c1 = assessConflict(bpas, { ...DEFAULT_FUSION_CONFIG, rule: 'C1' });
+    const c1 = assessConflict(bpas, { ...d0, rule: 'C1' });
     expect(c1.decisionConflict).toBeCloseTo(kMax, 12);
     expect(c1.decision.normalizedConflict).toBeNull();
 
-    const c2 = assessConflict(bpas, { ...DEFAULT_FUSION_CONFIG, rule: 'C2' });
+    const c2 = assessConflict(bpas, { ...d0, rule: 'C2' });
     expect(c2.decision.normalizedConflict).toBeCloseTo(1 - Math.sqrt(1 - kGlobal), 12);
     expect(c2.decisionConflict).toBeCloseTo(
       Math.max(kMax, c2.decision.normalizedConflict!),
       12
     );
+  });
+
+  it('el eje de la MEDIDA es ortogonal al de la regla', () => {
+    const bpas = [
+      createBPAFromGaussian(frame, 20, 5, 0, 's1'),
+      createBPAFromGaussian(frame, 22, 5, 0, 's2'),
+      createBPAFromGaussian(frame, 24, 5, 0, 's3'),
+    ];
+    const at = (measure: 'D0' | 'D1' | 'D2') =>
+      assessConflict(bpas, { ...DEFAULT_FUSION_CONFIG, measure });
+
+    // C1 sigue la medida…
+    for (const m of ['D0', 'D1', 'D2'] as const) {
+      expect(at(m).decisionConflict).toBeCloseTo(at(m).measureConflict, 12);
+    }
+    // …y el K crudo, el K_global y por tanto la guardia NO se mueven con ella.
+    for (const m of ['D1', 'D2'] as const) {
+      expect(at(m).maxConflict).toBe(at('D0').maxConflict);
+      expect(at(m).globalConflict).toBe(at('D0').globalConflict);
+      expect(at(m).decision.degeneracyGuard).toBe(at('D0').decision.degeneracyGuard);
+    }
   });
 });
 
