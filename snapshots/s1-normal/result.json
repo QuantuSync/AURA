@@ -319,7 +319,8 @@
         0
       ]
     ],
-    "decisionConflict": 0.0271608265379,
+    "decisionConflict": 0.0255915338782,
+    "degeneracyGuard": false,
     "fused": {
       "focalElements": [
         {
@@ -372,6 +373,8 @@
     "globalConflict": 0.0271608265379,
     "maxConflict": 0.0255915338782,
     "method": "dempster",
+    "normalizedConflict": null,
+    "rule": "C1",
     "sequentialConflicts": [
       0.00611273987223,
       0.0211775394555

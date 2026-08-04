@@ -10,6 +10,7 @@
       0.03
     ],
     "biasScale": 1,
+    "conflictRule": "C1",
     "defaultBandWeights": [
       0.3,
       0.35,
@@ -18,6 +19,9 @@
       0.03
     ],
     "gammaBins": 10,
+    "kappa1": 0.3,
+    "kappa2": 0.7,
+    "kappaDegeneracy": 0.95,
     "methods": {
       "aura-banda-95": "AURA · banda de evidencia 95 %",
       "aura-existencial": "AURA · nivel existencial (Ec. 10)",

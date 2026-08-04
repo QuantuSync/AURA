@@ -29,7 +29,7 @@
         },
         "ligera": {
           "coverage": 1,
-          "meanWidth": 380.785714286,
+          "meanWidth": 373.785714286,
           "medianWidth": 500,
           "successes": 70,
           "total": 70,
@@ -47,7 +47,7 @@
         },
         "seco": {
           "coverage": 1,
-          "meanWidth": 162.5,
+          "meanWidth": 132.5,
           "medianWidth": 5,
           "successes": 66,
           "total": 66,
@@ -58,7 +58,7 @@
       "byCondition": {
         "clean": {
           "coverage": 1,
-          "meanWidth": 236.433566434,
+          "meanWidth": 222.622377622,
           "medianWidth": 30,
           "successes": 143,
           "total": 143,
@@ -76,7 +76,7 @@
         },
         "virga": {
           "coverage": 1,
-          "meanWidth": 305.892857143,
+          "meanWidth": 288.214285714,
           "medianWidth": 500,
           "successes": 28,
           "total": 28,
@@ -86,7 +86,7 @@
       },
       "global": {
         "coverage": 1,
-        "meanWidth": 283.775,
+        "meanWidth": 271.425,
         "medianWidth": 500,
         "successes": 200,
         "total": 200,
@@ -367,9 +367,9 @@
   },
   "fusionByCondition": {
     "clean": {
-      "cautious": 38,
-      "dempster": 79,
-      "envelope": 26
+      "cautious": 55,
+      "dempster": 83,
+      "envelope": 5
     },
     "delta-failure": {
       "cautious": 0,
@@ -377,15 +377,15 @@
       "envelope": 27
     },
     "virga": {
-      "cautious": 3,
-      "dempster": 11,
-      "envelope": 14
+      "cautious": 5,
+      "dempster": 12,
+      "envelope": 11
     }
   },
   "fusionMethods": {
-    "cautious": 41,
-    "dempster": 92,
-    "envelope": 67
+    "cautious": 60,
+    "dempster": 97,
+    "envelope": 43
   },
   "soundness": {
     "existentialMisses": 0,

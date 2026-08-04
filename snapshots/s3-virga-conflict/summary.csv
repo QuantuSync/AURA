@@ -1,2 +1,2 @@
-scenario,K_max,K_global,method,credal_lower,credal_upper,reachable_lower,reachable_upper,status,belLower,plUpper,decision
-s3-virga-conflict,0.915884772475,0.951199997033,envelope,0,500,-12,992,unsafe-possible,0,0.999970848848,critical
+scenario,K_max,K_global,rule,K_decision,guard,method,credal_lower,credal_upper,reachable_lower,reachable_upper,status,belLower,plUpper,decision
+s3-virga-conflict,0.915884772475,0.951199997033,C1,0.915884772475,1,envelope,0,500,-12,992,unsafe-possible,0,0.999970848848,critical

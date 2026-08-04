@@ -328,7 +328,8 @@
         0
       ]
     ],
-    "decisionConflict": 0.951199997033,
+    "decisionConflict": 0.915884772475,
+    "degeneracyGuard": true,
     "envelope": [
       {
         "lower": 0,
@@ -385,6 +386,8 @@
     "globalConflict": 0.951199997033,
     "maxConflict": 0.915884772475,
     "method": "envelope",
+    "normalizedConflict": null,
+    "rule": "C1",
     "sourceWeights": [
       0.334507042254,
       0.341549295775,

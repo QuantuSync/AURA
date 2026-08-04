@@ -1,2 +1,2 @@
-scenario,K_max,K_global,method,credal_lower,credal_upper,reachable_lower,reachable_upper,status,belLower,plUpper,decision
-s4-extreme,3.2211383104e-9,3.31578000303e-9,dempster,0,500,-12,992,unsafe-possible,0.999879999994,0.999999999999,critical
+scenario,K_max,K_global,rule,K_decision,guard,method,credal_lower,credal_upper,reachable_lower,reachable_upper,status,belLower,plUpper,decision
+s4-extreme,3.2211383104e-9,3.31578000303e-9,C1,3.2211383104e-9,0,dempster,0,500,-12,992,unsafe-possible,0.999879999994,0.999999999999,critical

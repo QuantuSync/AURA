@@ -10,6 +10,7 @@
       0.03
     ],
     "biasScale": 1,
+    "conflictRule": "C1",
     "declaredSourceBias": {
       "aemet": -0.2,
       "nasa-power": 0.5,
@@ -54,6 +55,9 @@
         "upper": 120
       }
     ],
+    "kappa1": 0.3,
+    "kappa2": 0.7,
+    "kappaDegeneracy": 0.95,
     "sources": [
       {
         "failureRate": 0.05,
