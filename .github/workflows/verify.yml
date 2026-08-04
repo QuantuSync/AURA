@@ -2,7 +2,8 @@ name: verify
 
 # Puerta de calidad del repositorio. `npm run verify` encadena, parando en el
 # primer fallo: tipos → tests → properties → repro → experimento smoke →
-# comparación byte a byte contra snapshots/.
+# experimentos de cobertura reducidos (N=200) → comparación byte a byte contra
+# snapshots/.
 #
 # DOS REGÍMENES DE PROPERTIES:
 #   · push y pull_request → FC_NUM_RUNS=1000, el mínimo del protocolo de

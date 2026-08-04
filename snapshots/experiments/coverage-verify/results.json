@@ -1,0 +1,397 @@
+{
+  "bandCounts": {
+    "extrema": 5,
+    "intensa": 27,
+    "ligera": 70,
+    "moderada": 32,
+    "seco": 66
+  },
+  "byMethod": {
+    "aura-banda-95": {
+      "byBand": {
+        "extrema": {
+          "coverage": 1,
+          "meanWidth": 452,
+          "medianWidth": 440,
+          "successes": 5,
+          "total": 5,
+          "wilsonLower": 0.565508505248,
+          "wilsonUpper": 1
+        },
+        "intensa": {
+          "coverage": 1,
+          "meanWidth": 238.888888889,
+          "medianWidth": 30,
+          "successes": 27,
+          "total": 27,
+          "wilsonLower": 0.875440962855,
+          "wilsonUpper": 1
+        },
+        "ligera": {
+          "coverage": 1,
+          "meanWidth": 380.785714286,
+          "medianWidth": 500,
+          "successes": 70,
+          "total": 70,
+          "wilsonLower": 0.947975125133,
+          "wilsonUpper": 1
+        },
+        "moderada": {
+          "coverage": 1,
+          "meanWidth": 333.28125,
+          "medianWidth": 500,
+          "successes": 32,
+          "total": 32,
+          "wilsonLower": 0.892817284943,
+          "wilsonUpper": 1
+        },
+        "seco": {
+          "coverage": 1,
+          "meanWidth": 162.5,
+          "medianWidth": 5,
+          "successes": 66,
+          "total": 66,
+          "wilsonLower": 0.944995532748,
+          "wilsonUpper": 1
+        }
+      },
+      "byCondition": {
+        "clean": {
+          "coverage": 1,
+          "meanWidth": 236.433566434,
+          "medianWidth": 30,
+          "successes": 143,
+          "total": 143,
+          "wilsonLower": 0.97383847629,
+          "wilsonUpper": 1
+        },
+        "delta-failure": {
+          "coverage": 1,
+          "meanWidth": 495.862068966,
+          "medianWidth": 500,
+          "successes": 29,
+          "total": 29,
+          "wilsonLower": 0.883026405534,
+          "wilsonUpper": 1
+        },
+        "virga": {
+          "coverage": 1,
+          "meanWidth": 305.892857143,
+          "medianWidth": 500,
+          "successes": 28,
+          "total": 28,
+          "wilsonLower": 0.879352796342,
+          "wilsonUpper": 1
+        }
+      },
+      "global": {
+        "coverage": 1,
+        "meanWidth": 283.775,
+        "medianWidth": 500,
+        "successes": 200,
+        "total": 200,
+        "wilsonLower": 0.981153994082,
+        "wilsonUpper": 1
+      },
+      "label": "AURA · banda de evidencia 95 %"
+    },
+    "aura-existencial": {
+      "byBand": {
+        "extrema": {
+          "coverage": 1,
+          "meanWidth": 500,
+          "medianWidth": 500,
+          "successes": 5,
+          "total": 5,
+          "wilsonLower": 0.565508505248,
+          "wilsonUpper": 1
+        },
+        "intensa": {
+          "coverage": 1,
+          "meanWidth": 500,
+          "medianWidth": 500,
+          "successes": 27,
+          "total": 27,
+          "wilsonLower": 0.875440962855,
+          "wilsonUpper": 1
+        },
+        "ligera": {
+          "coverage": 1,
+          "meanWidth": 500,
+          "medianWidth": 500,
+          "successes": 70,
+          "total": 70,
+          "wilsonLower": 0.947975125133,
+          "wilsonUpper": 1
+        },
+        "moderada": {
+          "coverage": 1,
+          "meanWidth": 500,
+          "medianWidth": 500,
+          "successes": 32,
+          "total": 32,
+          "wilsonLower": 0.892817284943,
+          "wilsonUpper": 1
+        },
+        "seco": {
+          "coverage": 1,
+          "meanWidth": 500,
+          "medianWidth": 500,
+          "successes": 66,
+          "total": 66,
+          "wilsonLower": 0.944995532748,
+          "wilsonUpper": 1
+        }
+      },
+      "byCondition": {
+        "clean": {
+          "coverage": 1,
+          "meanWidth": 500,
+          "medianWidth": 500,
+          "successes": 143,
+          "total": 143,
+          "wilsonLower": 0.97383847629,
+          "wilsonUpper": 1
+        },
+        "delta-failure": {
+          "coverage": 1,
+          "meanWidth": 500,
+          "medianWidth": 500,
+          "successes": 29,
+          "total": 29,
+          "wilsonLower": 0.883026405534,
+          "wilsonUpper": 1
+        },
+        "virga": {
+          "coverage": 1,
+          "meanWidth": 500,
+          "medianWidth": 500,
+          "successes": 28,
+          "total": 28,
+          "wilsonLower": 0.879352796342,
+          "wilsonUpper": 1
+        }
+      },
+      "global": {
+        "coverage": 1,
+        "meanWidth": 500,
+        "medianWidth": 500,
+        "successes": 200,
+        "total": 200,
+        "wilsonLower": 0.981153994082,
+        "wilsonUpper": 1
+      },
+      "label": "AURA · nivel existencial (Ec. 10)"
+    },
+    "kalman-estatico": {
+      "byBand": {
+        "extrema": {
+          "coverage": 0.4,
+          "meanWidth": 4.24076446233,
+          "medianWidth": 4.24076446233,
+          "successes": 2,
+          "total": 5,
+          "wilsonLower": 0.117618231159,
+          "wilsonUpper": 0.769280067791
+        },
+        "intensa": {
+          "coverage": 0.814814814815,
+          "meanWidth": 4.24076446233,
+          "medianWidth": 4.24076446233,
+          "successes": 22,
+          "total": 27,
+          "wilsonLower": 0.633009434948,
+          "wilsonUpper": 0.918194134257
+        },
+        "ligera": {
+          "coverage": 0.714285714286,
+          "meanWidth": 4.24076446233,
+          "medianWidth": 4.24076446233,
+          "successes": 50,
+          "total": 70,
+          "wilsonLower": 0.599495819546,
+          "wilsonUpper": 0.806779234082
+        },
+        "moderada": {
+          "coverage": 0.6875,
+          "meanWidth": 4.24076446233,
+          "medianWidth": 4.24076446233,
+          "successes": 22,
+          "total": 32,
+          "wilsonLower": 0.51433000302,
+          "wilsonUpper": 0.820476478834
+        },
+        "seco": {
+          "coverage": 0.878787878788,
+          "meanWidth": 4.24076446233,
+          "medianWidth": 4.24076446233,
+          "successes": 58,
+          "total": 66,
+          "wilsonLower": 0.778623413661,
+          "wilsonUpper": 0.937282292966
+        }
+      },
+      "byCondition": {
+        "clean": {
+          "coverage": 0.972027972028,
+          "meanWidth": 4.24076446233,
+          "medianWidth": 4.24076446233,
+          "successes": 139,
+          "total": 143,
+          "wilsonLower": 0.930288215372,
+          "wilsonUpper": 0.98906978672
+        },
+        "delta-failure": {
+          "coverage": 0,
+          "meanWidth": 4.24076446233,
+          "medianWidth": 4.24076446233,
+          "successes": 0,
+          "total": 29,
+          "wilsonLower": 0,
+          "wilsonUpper": 0.116973594466
+        },
+        "virga": {
+          "coverage": 0.535714285714,
+          "meanWidth": 4.24076446233,
+          "medianWidth": 4.24076446233,
+          "successes": 15,
+          "total": 28,
+          "wilsonLower": 0.358123951421,
+          "wilsonUpper": 0.704686962603
+        }
+      },
+      "global": {
+        "coverage": 0.77,
+        "meanWidth": 4.24076446233,
+        "medianWidth": 4.24076446233,
+        "successes": 154,
+        "total": 200,
+        "wilsonLower": 0.706915719218,
+        "wilsonUpper": 0.822907437586
+      },
+      "label": "Baseline 2 · Kalman estático"
+    },
+    "media-ponderada": {
+      "byBand": {
+        "extrema": {
+          "coverage": 0.4,
+          "meanWidth": 4.5953690346,
+          "medianWidth": 4.5953690346,
+          "successes": 2,
+          "total": 5,
+          "wilsonLower": 0.117618231159,
+          "wilsonUpper": 0.769280067791
+        },
+        "intensa": {
+          "coverage": 0.814814814815,
+          "meanWidth": 4.5953690346,
+          "medianWidth": 4.5953690346,
+          "successes": 22,
+          "total": 27,
+          "wilsonLower": 0.633009434948,
+          "wilsonUpper": 0.918194134257
+        },
+        "ligera": {
+          "coverage": 0.714285714286,
+          "meanWidth": 4.5953690346,
+          "medianWidth": 4.5953690346,
+          "successes": 50,
+          "total": 70,
+          "wilsonLower": 0.599495819546,
+          "wilsonUpper": 0.806779234082
+        },
+        "moderada": {
+          "coverage": 0.65625,
+          "meanWidth": 4.5953690346,
+          "medianWidth": 4.5953690346,
+          "successes": 21,
+          "total": 32,
+          "wilsonLower": 0.483107735088,
+          "wilsonUpper": 0.795897666457
+        },
+        "seco": {
+          "coverage": 0.893939393939,
+          "meanWidth": 4.5953690346,
+          "medianWidth": 4.5953690346,
+          "successes": 59,
+          "total": 66,
+          "wilsonLower": 0.796874742612,
+          "wilsonUpper": 0.947667192281
+        }
+      },
+      "byCondition": {
+        "clean": {
+          "coverage": 0.965034965035,
+          "meanWidth": 4.5953690346,
+          "medianWidth": 4.5953690346,
+          "successes": 138,
+          "total": 143,
+          "wilsonLower": 0.920763383896,
+          "wilsonUpper": 0.984974499647
+        },
+        "delta-failure": {
+          "coverage": 0,
+          "meanWidth": 4.5953690346,
+          "medianWidth": 4.5953690346,
+          "successes": 0,
+          "total": 29,
+          "wilsonLower": 0,
+          "wilsonUpper": 0.116973594466
+        },
+        "virga": {
+          "coverage": 0.571428571429,
+          "meanWidth": 4.5953690346,
+          "medianWidth": 4.5953690346,
+          "successes": 16,
+          "total": 28,
+          "wilsonLower": 0.390704789856,
+          "wilsonUpper": 0.734917038193
+        }
+      },
+      "global": {
+        "coverage": 0.77,
+        "meanWidth": 4.5953690346,
+        "medianWidth": 4.5953690346,
+        "successes": 154,
+        "total": 200,
+        "wilsonLower": 0.706915719218,
+        "wilsonUpper": 0.822907437586
+      },
+      "label": "Baseline 1 · media ponderada"
+    }
+  },
+  "conditionCounts": {
+    "clean": 143,
+    "delta-failure": 29,
+    "virga": 28
+  },
+  "fusionByCondition": {
+    "clean": {
+      "cautious": 38,
+      "dempster": 79,
+      "envelope": 26
+    },
+    "delta-failure": {
+      "cautious": 0,
+      "dempster": 2,
+      "envelope": 27
+    },
+    "virga": {
+      "cautious": 3,
+      "dempster": 11,
+      "envelope": 14
+    }
+  },
+  "fusionMethods": {
+    "cautious": 41,
+    "dempster": 92,
+    "envelope": 67
+  },
+  "soundness": {
+    "existentialMisses": 0,
+    "h0Violations": 0,
+    "note": "Cobertura existencial < 100 % en mundos con H0 y H1 satisfechas = bug de soundness.",
+    "witnesses": []
+  },
+  "worlds": 200
+}

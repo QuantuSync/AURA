@@ -1,0 +1,45 @@
+{
+  "description": "Cobertura de cada método frente a la fracción de mundos en que todas las fuentes fallan simultáneamente (violación directa de H1 del Teorema 6.1), de 0 % a 50 %.",
+  "experiment": "h1-violation-verify",
+  "parameters": {
+    "bandWeights": [
+      0.3,
+      0.35,
+      0.2,
+      0.12,
+      0.03
+    ],
+    "biasScale": 1,
+    "defaultBandWeights": [
+      0.3,
+      0.35,
+      0.2,
+      0.12,
+      0.03
+    ],
+    "fractions": [
+      0,
+      0.05,
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3,
+      0.35,
+      0.4,
+      0.45,
+      0.5
+    ],
+    "maxFraction": 0.5,
+    "methods": {
+      "aura-banda-95": "AURA · banda de evidencia 95 %",
+      "aura-existencial": "AURA · nivel existencial (Ec. 10)",
+      "kalman-estatico": "Baseline 2 · Kalman estático",
+      "media-ponderada": "Baseline 1 · media ponderada"
+    },
+    "step": 0.05,
+    "virgaProbability": 0,
+    "worldsPerPoint": 200
+  },
+  "seed": 20260804
+}

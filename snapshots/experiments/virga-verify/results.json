@@ -1,0 +1,722 @@
+{
+  "byMethod": {
+    "aura-banda-95": {
+      "allWorlds": {
+        "attenuatedCoverage": 0.985,
+        "both": 196,
+        "meanWidth": 312.425,
+        "neither": 0,
+        "neitherFraction": 0,
+        "neitherWilsonLower": 0,
+        "neitherWilsonUpper": 0.0188460059183,
+        "onlyAttenuated": 1,
+        "onlyTruth": 3,
+        "total": 200,
+        "truthCoverage": 0.995
+      },
+      "byGamma": {
+        "0.0-0.1": {
+          "attenuatedCoverage": 0.958333333333,
+          "both": 23,
+          "meanWidth": 332.5,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.137980575829,
+          "onlyAttenuated": 0,
+          "onlyTruth": 1,
+          "total": 24,
+          "truthCoverage": 1
+        },
+        "0.1-0.2": {
+          "attenuatedCoverage": 1,
+          "both": 17,
+          "meanWidth": 354.411764706,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.184323660372,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 17,
+          "truthCoverage": 1
+        },
+        "0.2-0.3": {
+          "attenuatedCoverage": 0.904761904762,
+          "both": 19,
+          "meanWidth": 355.952380952,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.154643823264,
+          "onlyAttenuated": 0,
+          "onlyTruth": 2,
+          "total": 21,
+          "truthCoverage": 1
+        },
+        "0.3-0.4": {
+          "attenuatedCoverage": 1,
+          "both": 20,
+          "meanWidth": 326.75,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.161130125495,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 20,
+          "truthCoverage": 1
+        },
+        "0.4-0.5": {
+          "attenuatedCoverage": 1,
+          "both": 25,
+          "meanWidth": 366.730769231,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 1.38777878078e-17,
+          "neitherWilsonUpper": 0.128733043805,
+          "onlyAttenuated": 1,
+          "onlyTruth": 0,
+          "total": 26,
+          "truthCoverage": 0.961538461538
+        },
+        "0.5-0.6": {
+          "attenuatedCoverage": 1,
+          "both": 17,
+          "meanWidth": 325.882352941,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.184323660372,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 17,
+          "truthCoverage": 1
+        },
+        "0.6-0.7": {
+          "attenuatedCoverage": 1,
+          "both": 16,
+          "meanWidth": 348.75,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.193613418273,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 16,
+          "truthCoverage": 1
+        },
+        "0.7-0.8": {
+          "attenuatedCoverage": 1,
+          "both": 19,
+          "meanWidth": 240.789473684,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.168184365368,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 19,
+          "truthCoverage": 1
+        },
+        "0.8-0.9": {
+          "attenuatedCoverage": 1,
+          "both": 17,
+          "meanWidth": 240.882352941,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.184323660372,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 17,
+          "truthCoverage": 1
+        },
+        "0.9-1.0": {
+          "attenuatedCoverage": 1,
+          "both": 23,
+          "meanWidth": 223.695652174,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.143121125417,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 23,
+          "truthCoverage": 1
+        }
+      },
+      "label": "AURA · banda de evidencia 95 %",
+      "withoutSourceFailure": {
+        "attenuatedCoverage": 0.994152046784,
+        "both": 169,
+        "meanWidth": 281.315789474,
+        "neither": 0,
+        "neitherFraction": 0,
+        "neitherWilsonLower": 0,
+        "neitherWilsonUpper": 0.0219718876972,
+        "onlyAttenuated": 1,
+        "onlyTruth": 1,
+        "total": 171,
+        "truthCoverage": 0.994152046784
+      }
+    },
+    "aura-existencial": {
+      "allWorlds": {
+        "attenuatedCoverage": 1,
+        "both": 200,
+        "meanWidth": 500,
+        "neither": 0,
+        "neitherFraction": 0,
+        "neitherWilsonLower": 0,
+        "neitherWilsonUpper": 0.0188460059183,
+        "onlyAttenuated": 0,
+        "onlyTruth": 0,
+        "total": 200,
+        "truthCoverage": 1
+      },
+      "byGamma": {
+        "0.0-0.1": {
+          "attenuatedCoverage": 1,
+          "both": 24,
+          "meanWidth": 500,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.137980575829,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 24,
+          "truthCoverage": 1
+        },
+        "0.1-0.2": {
+          "attenuatedCoverage": 1,
+          "both": 17,
+          "meanWidth": 500,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.184323660372,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 17,
+          "truthCoverage": 1
+        },
+        "0.2-0.3": {
+          "attenuatedCoverage": 1,
+          "both": 21,
+          "meanWidth": 500,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.154643823264,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 21,
+          "truthCoverage": 1
+        },
+        "0.3-0.4": {
+          "attenuatedCoverage": 1,
+          "both": 20,
+          "meanWidth": 500,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.161130125495,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 20,
+          "truthCoverage": 1
+        },
+        "0.4-0.5": {
+          "attenuatedCoverage": 1,
+          "both": 26,
+          "meanWidth": 500,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 1.38777878078e-17,
+          "neitherWilsonUpper": 0.128733043805,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 26,
+          "truthCoverage": 1
+        },
+        "0.5-0.6": {
+          "attenuatedCoverage": 1,
+          "both": 17,
+          "meanWidth": 500,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.184323660372,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 17,
+          "truthCoverage": 1
+        },
+        "0.6-0.7": {
+          "attenuatedCoverage": 1,
+          "both": 16,
+          "meanWidth": 500,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.193613418273,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 16,
+          "truthCoverage": 1
+        },
+        "0.7-0.8": {
+          "attenuatedCoverage": 1,
+          "both": 19,
+          "meanWidth": 500,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.168184365368,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 19,
+          "truthCoverage": 1
+        },
+        "0.8-0.9": {
+          "attenuatedCoverage": 1,
+          "both": 17,
+          "meanWidth": 500,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.184323660372,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 17,
+          "truthCoverage": 1
+        },
+        "0.9-1.0": {
+          "attenuatedCoverage": 1,
+          "both": 23,
+          "meanWidth": 500,
+          "neither": 0,
+          "neitherFraction": 0,
+          "neitherWilsonLower": 0,
+          "neitherWilsonUpper": 0.143121125417,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 23,
+          "truthCoverage": 1
+        }
+      },
+      "label": "AURA · nivel existencial (Ec. 10)",
+      "withoutSourceFailure": {
+        "attenuatedCoverage": 1,
+        "both": 171,
+        "meanWidth": 500,
+        "neither": 0,
+        "neitherFraction": 0,
+        "neitherWilsonLower": 0,
+        "neitherWilsonUpper": 0.0219718876972,
+        "onlyAttenuated": 0,
+        "onlyTruth": 0,
+        "total": 171,
+        "truthCoverage": 1
+      }
+    },
+    "kalman-estatico": {
+      "allWorlds": {
+        "attenuatedCoverage": 0.52,
+        "both": 84,
+        "meanWidth": 4.24076446233,
+        "neither": 71,
+        "neitherFraction": 0.355,
+        "neitherWilsonLower": 0.291985186532,
+        "neitherWilsonUpper": 0.423480155184,
+        "onlyAttenuated": 20,
+        "onlyTruth": 25,
+        "total": 200,
+        "truthCoverage": 0.545
+      },
+      "byGamma": {
+        "0.0-0.1": {
+          "attenuatedCoverage": 0.291666666667,
+          "both": 7,
+          "meanWidth": 4.24076446233,
+          "neither": 13,
+          "neitherFraction": 0.541666666667,
+          "neitherWilsonLower": 0.350745535531,
+          "neitherWilsonUpper": 0.721089416483,
+          "onlyAttenuated": 0,
+          "onlyTruth": 4,
+          "total": 24,
+          "truthCoverage": 0.458333333333
+        },
+        "0.1-0.2": {
+          "attenuatedCoverage": 0.470588235294,
+          "both": 6,
+          "meanWidth": 4.24076446233,
+          "neither": 9,
+          "neitherFraction": 0.529411764706,
+          "neitherWilsonLower": 0.309628973115,
+          "neitherWilsonUpper": 0.738351988039,
+          "onlyAttenuated": 2,
+          "onlyTruth": 0,
+          "total": 17,
+          "truthCoverage": 0.352941176471
+        },
+        "0.2-0.3": {
+          "attenuatedCoverage": 0.333333333333,
+          "both": 5,
+          "meanWidth": 4.24076446233,
+          "neither": 9,
+          "neitherFraction": 0.428571428571,
+          "neitherWilsonLower": 0.244696994865,
+          "neitherWilsonUpper": 0.63453783703,
+          "onlyAttenuated": 2,
+          "onlyTruth": 5,
+          "total": 21,
+          "truthCoverage": 0.47619047619
+        },
+        "0.3-0.4": {
+          "attenuatedCoverage": 0.5,
+          "both": 9,
+          "meanWidth": 4.24076446233,
+          "neither": 7,
+          "neitherFraction": 0.35,
+          "neitherWilsonLower": 0.181189547868,
+          "neitherWilsonUpper": 0.567149489781,
+          "onlyAttenuated": 1,
+          "onlyTruth": 3,
+          "total": 20,
+          "truthCoverage": 0.6
+        },
+        "0.4-0.5": {
+          "attenuatedCoverage": 0.461538461538,
+          "both": 9,
+          "meanWidth": 4.24076446233,
+          "neither": 10,
+          "neitherFraction": 0.384615384615,
+          "neitherWilsonLower": 0.224283595118,
+          "neitherWilsonUpper": 0.574654799606,
+          "onlyAttenuated": 3,
+          "onlyTruth": 4,
+          "total": 26,
+          "truthCoverage": 0.5
+        },
+        "0.5-0.6": {
+          "attenuatedCoverage": 0.588235294118,
+          "both": 6,
+          "meanWidth": 4.24076446233,
+          "neither": 5,
+          "neitherFraction": 0.294117647059,
+          "neitherWilsonLower": 0.132797938656,
+          "neitherWilsonUpper": 0.531335333262,
+          "onlyAttenuated": 4,
+          "onlyTruth": 2,
+          "total": 17,
+          "truthCoverage": 0.470588235294
+        },
+        "0.6-0.7": {
+          "attenuatedCoverage": 0.375,
+          "both": 4,
+          "meanWidth": 4.24076446233,
+          "neither": 7,
+          "neitherFraction": 0.4375,
+          "neitherWilsonLower": 0.230983633352,
+          "neitherWilsonUpper": 0.668218043932,
+          "onlyAttenuated": 2,
+          "onlyTruth": 3,
+          "total": 16,
+          "truthCoverage": 0.4375
+        },
+        "0.7-0.8": {
+          "attenuatedCoverage": 0.631578947368,
+          "both": 8,
+          "meanWidth": 4.24076446233,
+          "neither": 5,
+          "neitherFraction": 0.263157894737,
+          "neitherWilsonLower": 0.118062383395,
+          "neitherWilsonUpper": 0.487919684411,
+          "onlyAttenuated": 4,
+          "onlyTruth": 2,
+          "total": 19,
+          "truthCoverage": 0.526315789474
+        },
+        "0.8-0.9": {
+          "attenuatedCoverage": 0.647058823529,
+          "both": 10,
+          "meanWidth": 4.24076446233,
+          "neither": 4,
+          "neitherFraction": 0.235294117647,
+          "neitherWilsonLower": 0.0955488907168,
+          "neitherWilsonUpper": 0.472622458892,
+          "onlyAttenuated": 1,
+          "onlyTruth": 2,
+          "total": 17,
+          "truthCoverage": 0.705882352941
+        },
+        "0.9-1.0": {
+          "attenuatedCoverage": 0.913043478261,
+          "both": 20,
+          "meanWidth": 4.24076446233,
+          "neither": 2,
+          "neitherFraction": 0.0869565217391,
+          "neitherWilsonLower": 0.0241794954072,
+          "neitherWilsonUpper": 0.267964042981,
+          "onlyAttenuated": 1,
+          "onlyTruth": 0,
+          "total": 23,
+          "truthCoverage": 0.869565217391
+        }
+      },
+      "label": "Baseline 2 · Kalman estático",
+      "withoutSourceFailure": {
+        "attenuatedCoverage": 0.608187134503,
+        "both": 84,
+        "meanWidth": 4.24076446233,
+        "neither": 42,
+        "neitherFraction": 0.245614035088,
+        "neitherWilsonLower": 0.18715368304,
+        "neitherWilsonUpper": 0.315253066842,
+        "onlyAttenuated": 20,
+        "onlyTruth": 25,
+        "total": 171,
+        "truthCoverage": 0.637426900585
+      }
+    },
+    "media-ponderada": {
+      "allWorlds": {
+        "attenuatedCoverage": 0.53,
+        "both": 93,
+        "meanWidth": 4.5953690346,
+        "neither": 78,
+        "neitherFraction": 0.39,
+        "neitherWilsonLower": 0.325082297195,
+        "neitherWilsonUpper": 0.459063824107,
+        "onlyAttenuated": 13,
+        "onlyTruth": 16,
+        "total": 200,
+        "truthCoverage": 0.545
+      },
+      "byGamma": {
+        "0.0-0.1": {
+          "attenuatedCoverage": 0.375,
+          "both": 8,
+          "meanWidth": 4.5953690346,
+          "neither": 13,
+          "neitherFraction": 0.541666666667,
+          "neitherWilsonLower": 0.350745535531,
+          "neitherWilsonUpper": 0.721089416483,
+          "onlyAttenuated": 1,
+          "onlyTruth": 2,
+          "total": 24,
+          "truthCoverage": 0.416666666667
+        },
+        "0.1-0.2": {
+          "attenuatedCoverage": 0.352941176471,
+          "both": 6,
+          "meanWidth": 4.5953690346,
+          "neither": 10,
+          "neitherFraction": 0.588235294118,
+          "neitherWilsonLower": 0.360050743855,
+          "neitherWilsonUpper": 0.783892139609,
+          "onlyAttenuated": 0,
+          "onlyTruth": 1,
+          "total": 17,
+          "truthCoverage": 0.411764705882
+        },
+        "0.2-0.3": {
+          "attenuatedCoverage": 0.380952380952,
+          "both": 6,
+          "meanWidth": 4.5953690346,
+          "neither": 9,
+          "neitherFraction": 0.428571428571,
+          "neitherWilsonLower": 0.244696994865,
+          "neitherWilsonUpper": 0.63453783703,
+          "onlyAttenuated": 2,
+          "onlyTruth": 4,
+          "total": 21,
+          "truthCoverage": 0.47619047619
+        },
+        "0.3-0.4": {
+          "attenuatedCoverage": 0.45,
+          "both": 9,
+          "meanWidth": 4.5953690346,
+          "neither": 9,
+          "neitherFraction": 0.45,
+          "neitherWilsonLower": 0.258195020857,
+          "neitherWilsonUpper": 0.657917991692,
+          "onlyAttenuated": 0,
+          "onlyTruth": 2,
+          "total": 20,
+          "truthCoverage": 0.55
+        },
+        "0.4-0.5": {
+          "attenuatedCoverage": 0.5,
+          "both": 11,
+          "meanWidth": 4.5953690346,
+          "neither": 10,
+          "neitherFraction": 0.384615384615,
+          "neitherWilsonLower": 0.224283595118,
+          "neitherWilsonUpper": 0.574654799606,
+          "onlyAttenuated": 2,
+          "onlyTruth": 3,
+          "total": 26,
+          "truthCoverage": 0.538461538462
+        },
+        "0.5-0.6": {
+          "attenuatedCoverage": 0.588235294118,
+          "both": 7,
+          "meanWidth": 4.5953690346,
+          "neither": 7,
+          "neitherFraction": 0.411764705882,
+          "neitherWilsonLower": 0.216107860391,
+          "neitherWilsonUpper": 0.639949256145,
+          "onlyAttenuated": 3,
+          "onlyTruth": 0,
+          "total": 17,
+          "truthCoverage": 0.411764705882
+        },
+        "0.6-0.7": {
+          "attenuatedCoverage": 0.4375,
+          "both": 5,
+          "meanWidth": 4.5953690346,
+          "neither": 7,
+          "neitherFraction": 0.4375,
+          "neitherWilsonLower": 0.230983633352,
+          "neitherWilsonUpper": 0.668218043932,
+          "onlyAttenuated": 2,
+          "onlyTruth": 2,
+          "total": 16,
+          "truthCoverage": 0.4375
+        },
+        "0.7-0.8": {
+          "attenuatedCoverage": 0.631578947368,
+          "both": 9,
+          "meanWidth": 4.5953690346,
+          "neither": 6,
+          "neitherFraction": 0.315789473684,
+          "neitherWilsonLower": 0.153641710044,
+          "neitherWilsonUpper": 0.539899898249,
+          "onlyAttenuated": 3,
+          "onlyTruth": 1,
+          "total": 19,
+          "truthCoverage": 0.526315789474
+        },
+        "0.8-0.9": {
+          "attenuatedCoverage": 0.647058823529,
+          "both": 11,
+          "meanWidth": 4.5953690346,
+          "neither": 5,
+          "neitherFraction": 0.294117647059,
+          "neitherWilsonLower": 0.132797938656,
+          "neitherWilsonUpper": 0.531335333262,
+          "onlyAttenuated": 0,
+          "onlyTruth": 1,
+          "total": 17,
+          "truthCoverage": 0.705882352941
+        },
+        "0.9-1.0": {
+          "attenuatedCoverage": 0.913043478261,
+          "both": 21,
+          "meanWidth": 4.5953690346,
+          "neither": 2,
+          "neitherFraction": 0.0869565217391,
+          "neitherWilsonLower": 0.0241794954072,
+          "neitherWilsonUpper": 0.267964042981,
+          "onlyAttenuated": 0,
+          "onlyTruth": 0,
+          "total": 23,
+          "truthCoverage": 0.913043478261
+        }
+      },
+      "label": "Baseline 1 · media ponderada",
+      "withoutSourceFailure": {
+        "attenuatedCoverage": 0.619883040936,
+        "both": 93,
+        "meanWidth": 4.5953690346,
+        "neither": 49,
+        "neitherFraction": 0.286549707602,
+        "neitherWilsonLower": 0.2240540096,
+        "neitherWilsonUpper": 0.358425217312,
+        "onlyAttenuated": 13,
+        "onlyTruth": 16,
+        "total": 171,
+        "truthCoverage": 0.637426900585
+      }
+    }
+  },
+  "fusion": {
+    "byGamma": {
+      "0.0-0.1": {
+        "cautious": 1,
+        "dempster": 9,
+        "envelope": 14
+      },
+      "0.1-0.2": {
+        "cautious": 2,
+        "dempster": 5,
+        "envelope": 10
+      },
+      "0.2-0.3": {
+        "cautious": 5,
+        "dempster": 7,
+        "envelope": 9
+      },
+      "0.3-0.4": {
+        "cautious": 3,
+        "dempster": 7,
+        "envelope": 10
+      },
+      "0.4-0.5": {
+        "cautious": 4,
+        "dempster": 7,
+        "envelope": 15
+      },
+      "0.5-0.6": {
+        "cautious": 5,
+        "dempster": 6,
+        "envelope": 6
+      },
+      "0.6-0.7": {
+        "cautious": 3,
+        "dempster": 5,
+        "envelope": 8
+      },
+      "0.7-0.8": {
+        "cautious": 4,
+        "dempster": 10,
+        "envelope": 5
+      },
+      "0.8-0.9": {
+        "cautious": 2,
+        "dempster": 9,
+        "envelope": 6
+      },
+      "0.9-1.0": {
+        "cautious": 3,
+        "dempster": 14,
+        "envelope": 6
+      }
+    },
+    "counts": {
+      "cautious": 32,
+      "dempster": 79,
+      "envelope": 89
+    },
+    "decisionConflict": {
+      "max": 0.992339995869,
+      "median": 0.592519733036,
+      "min": 0,
+      "p25": 0.17227782394,
+      "p75": 0.922695932492
+    },
+    "shares": {
+      "cautious": 0.16,
+      "dempster": 0.395,
+      "envelope": 0.445
+    }
+  },
+  "metric": "fracción de mundos en que el intervalo no contiene NI P* NI γ·P* (el fallo que §3.4, Ejemplo 3.1 atribuye a la media)",
+  "pureWorlds": 171,
+  "worlds": 200
+}

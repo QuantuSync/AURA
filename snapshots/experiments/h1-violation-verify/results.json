@@ -1,0 +1,1354 @@
+{
+  "fractions": [
+    0,
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.4,
+    0.45,
+    0.5
+  ],
+  "points": {
+    "0.0000": {
+      "byMethod": {
+        "aura-banda-95": {
+          "all": {
+            "coverage": 1,
+            "meanWidth": 271.475,
+            "medianWidth": 500,
+            "successes": 200,
+            "total": 200,
+            "wilsonLower": 0.981153994082,
+            "wilsonUpper": 1
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 271.475,
+            "medianWidth": 500,
+            "successes": 200,
+            "total": 200,
+            "wilsonLower": 0.981153994082,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 0,
+            "medianWidth": 0,
+            "successes": 0,
+            "total": 0,
+            "wilsonLower": 0,
+            "wilsonUpper": 1
+          }
+        },
+        "aura-existencial": {
+          "all": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 200,
+            "total": 200,
+            "wilsonLower": 0.981153994082,
+            "wilsonUpper": 1
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 200,
+            "total": 200,
+            "wilsonLower": 0.981153994082,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 0,
+            "medianWidth": 0,
+            "successes": 0,
+            "total": 0,
+            "wilsonLower": 0,
+            "wilsonUpper": 1
+          }
+        },
+        "kalman-estatico": {
+          "all": {
+            "coverage": 0.835,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 167,
+            "total": 200,
+            "wilsonLower": 0.777341017261,
+            "wilsonUpper": 0.880032158773
+          },
+          "intact": {
+            "coverage": 0.835,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 167,
+            "total": 200,
+            "wilsonLower": 0.777341017261,
+            "wilsonUpper": 0.880032158773
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 0,
+            "medianWidth": 0,
+            "successes": 0,
+            "total": 0,
+            "wilsonLower": 0,
+            "wilsonUpper": 1
+          }
+        },
+        "media-ponderada": {
+          "all": {
+            "coverage": 0.825,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 165,
+            "total": 200,
+            "wilsonLower": 0.766354507899,
+            "wilsonUpper": 0.871395588254
+          },
+          "intact": {
+            "coverage": 0.825,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 165,
+            "total": 200,
+            "wilsonLower": 0.766354507899,
+            "wilsonUpper": 0.871395588254
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 0,
+            "medianWidth": 0,
+            "successes": 0,
+            "total": 0,
+            "wilsonLower": 0,
+            "wilsonUpper": 1
+          }
+        }
+      },
+      "fraction": 0
+    },
+    "0.0500": {
+      "byMethod": {
+        "aura-banda-95": {
+          "all": {
+            "coverage": 0.99,
+            "meanWidth": 298.025,
+            "medianWidth": 500,
+            "successes": 198,
+            "total": 200,
+            "wilsonLower": 0.964277514804,
+            "wilsonUpper": 0.997253399396
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 294.515306122,
+            "medianWidth": 500,
+            "successes": 196,
+            "total": 196,
+            "wilsonLower": 0.980776775206,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 0.5,
+            "meanWidth": 470,
+            "medianWidth": 470,
+            "successes": 2,
+            "total": 4,
+            "wilsonLower": 0.15003570882,
+            "wilsonUpper": 0.84996429118
+          }
+        },
+        "aura-existencial": {
+          "all": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 200,
+            "total": 200,
+            "wilsonLower": 0.981153994082,
+            "wilsonUpper": 1
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 196,
+            "total": 196,
+            "wilsonLower": 0.980776775206,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 4,
+            "total": 4,
+            "wilsonLower": 0.510099979596,
+            "wilsonUpper": 1
+          }
+        },
+        "kalman-estatico": {
+          "all": {
+            "coverage": 0.775,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 155,
+            "total": 200,
+            "wilsonLower": 0.712257534614,
+            "wilsonUpper": 0.827377162131
+          },
+          "intact": {
+            "coverage": 0.790816326531,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 155,
+            "total": 196,
+            "wilsonLower": 0.728557817458,
+            "wilsonUpper": 0.841893980366
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 0,
+            "total": 4,
+            "wilsonLower": 0,
+            "wilsonUpper": 0.489900020404
+          }
+        },
+        "media-ponderada": {
+          "all": {
+            "coverage": 0.775,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 155,
+            "total": 200,
+            "wilsonLower": 0.712257534614,
+            "wilsonUpper": 0.827377162131
+          },
+          "intact": {
+            "coverage": 0.790816326531,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 155,
+            "total": 196,
+            "wilsonLower": 0.728557817458,
+            "wilsonUpper": 0.841893980366
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 0,
+            "total": 4,
+            "wilsonLower": 0,
+            "wilsonUpper": 0.489900020404
+          }
+        }
+      },
+      "fraction": 0.05
+    },
+    "0.1000": {
+      "byMethod": {
+        "aura-banda-95": {
+          "all": {
+            "coverage": 0.96,
+            "meanWidth": 296.4,
+            "medianWidth": 500,
+            "successes": 192,
+            "total": 200,
+            "wilsonLower": 0.923067061706,
+            "wilsonUpper": 0.979594612849
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 282.486486486,
+            "medianWidth": 500,
+            "successes": 185,
+            "total": 185,
+            "wilsonLower": 0.979657024723,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 0.466666666667,
+            "meanWidth": 468,
+            "medianWidth": 440,
+            "successes": 7,
+            "total": 15,
+            "wilsonLower": 0.248092252597,
+            "wilsonUpper": 0.698833698489
+          }
+        },
+        "aura-existencial": {
+          "all": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 200,
+            "total": 200,
+            "wilsonLower": 0.981153994082,
+            "wilsonUpper": 1
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 185,
+            "total": 185,
+            "wilsonLower": 0.979657024723,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 15,
+            "total": 15,
+            "wilsonLower": 0.796110733696,
+            "wilsonUpper": 1
+          }
+        },
+        "kalman-estatico": {
+          "all": {
+            "coverage": 0.75,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 150,
+            "total": 200,
+            "wilsonLower": 0.685657765204,
+            "wilsonUpper": 0.804919231837
+          },
+          "intact": {
+            "coverage": 0.810810810811,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 150,
+            "total": 185,
+            "wilsonLower": 0.748269473531,
+            "wilsonUpper": 0.860706514811
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 0,
+            "total": 15,
+            "wilsonLower": 0,
+            "wilsonUpper": 0.203889266304
+          }
+        },
+        "media-ponderada": {
+          "all": {
+            "coverage": 0.745,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 149,
+            "total": 200,
+            "wilsonLower": 0.680369486928,
+            "wilsonUpper": 0.800395970172
+          },
+          "intact": {
+            "coverage": 0.805405405405,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 149,
+            "total": 185,
+            "wilsonLower": 0.742386706022,
+            "wilsonUpper": 0.855998395566
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 0,
+            "total": 15,
+            "wilsonLower": 0,
+            "wilsonUpper": 0.203889266304
+          }
+        }
+      },
+      "fraction": 0.1
+    },
+    "0.1500": {
+      "byMethod": {
+        "aura-banda-95": {
+          "all": {
+            "coverage": 0.89,
+            "meanWidth": 309.8,
+            "medianWidth": 470,
+            "successes": 178,
+            "total": 200,
+            "wilsonLower": 0.839072016991,
+            "wilsonUpper": 0.926228098393
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 288.965517241,
+            "medianWidth": 500,
+            "successes": 174,
+            "total": 174,
+            "wilsonLower": 0.978398754847,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 0.153846153846,
+            "meanWidth": 449.230769231,
+            "medianWidth": 440,
+            "successes": 4,
+            "total": 26,
+            "wilsonLower": 0.0614993399893,
+            "wilsonUpper": 0.335315844183
+          }
+        },
+        "aura-existencial": {
+          "all": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 200,
+            "total": 200,
+            "wilsonLower": 0.981153994082,
+            "wilsonUpper": 1
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 174,
+            "total": 174,
+            "wilsonLower": 0.978398754847,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 26,
+            "total": 26,
+            "wilsonLower": 0.871266956195,
+            "wilsonUpper": 1
+          }
+        },
+        "kalman-estatico": {
+          "all": {
+            "coverage": 0.69,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 138,
+            "total": 200,
+            "wilsonLower": 0.622826945087,
+            "wilsonUpper": 0.750011572664
+          },
+          "intact": {
+            "coverage": 0.793103448276,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 138,
+            "total": 174,
+            "wilsonLower": 0.726900161454,
+            "wilsonUpper": 0.846643936215
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 0,
+            "total": 26,
+            "wilsonLower": 1.38777878078e-17,
+            "wilsonUpper": 0.128733043805
+          }
+        },
+        "media-ponderada": {
+          "all": {
+            "coverage": 0.7,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 140,
+            "total": 200,
+            "wilsonLower": 0.633208040067,
+            "wilsonUpper": 0.759253557566
+          },
+          "intact": {
+            "coverage": 0.804597701149,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 140,
+            "total": 174,
+            "wilsonLower": 0.739371227543,
+            "wilsonUpper": 0.856664795525
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 0,
+            "total": 26,
+            "wilsonLower": 1.38777878078e-17,
+            "wilsonUpper": 0.128733043805
+          }
+        }
+      },
+      "fraction": 0.15
+    },
+    "0.2000": {
+      "byMethod": {
+        "aura-banda-95": {
+          "all": {
+            "coverage": 0.915,
+            "meanWidth": 310.275,
+            "medianWidth": 500,
+            "successes": 183,
+            "total": 200,
+            "wilsonLower": 0.868103114558,
+            "wilsonUpper": 0.94625470053
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 278.892215569,
+            "medianWidth": 500,
+            "successes": 167,
+            "total": 167,
+            "wilsonLower": 0.977513673485,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 0.484848484848,
+            "meanWidth": 469.090909091,
+            "medianWidth": 440,
+            "successes": 16,
+            "total": 33,
+            "wilsonLower": 0.325037816469,
+            "wilsonUpper": 0.647818954138
+          }
+        },
+        "aura-existencial": {
+          "all": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 200,
+            "total": 200,
+            "wilsonLower": 0.981153994082,
+            "wilsonUpper": 1
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 167,
+            "total": 167,
+            "wilsonLower": 0.977513673485,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 33,
+            "total": 33,
+            "wilsonLower": 0.895726569964,
+            "wilsonUpper": 1
+          }
+        },
+        "kalman-estatico": {
+          "all": {
+            "coverage": 0.695,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 139,
+            "total": 200,
+            "wilsonLower": 0.628013201219,
+            "wilsonUpper": 0.754636856473
+          },
+          "intact": {
+            "coverage": 0.832335329341,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 139,
+            "total": 167,
+            "wilsonLower": 0.768347859576,
+            "wilsonUpper": 0.88137679765
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 0,
+            "total": 33,
+            "wilsonLower": 0,
+            "wilsonUpper": 0.104273430036
+          }
+        },
+        "media-ponderada": {
+          "all": {
+            "coverage": 0.695,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 139,
+            "total": 200,
+            "wilsonLower": 0.628013201219,
+            "wilsonUpper": 0.754636856473
+          },
+          "intact": {
+            "coverage": 0.832335329341,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 139,
+            "total": 167,
+            "wilsonLower": 0.768347859576,
+            "wilsonUpper": 0.88137679765
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 0,
+            "total": 33,
+            "wilsonLower": 0,
+            "wilsonUpper": 0.104273430036
+          }
+        }
+      },
+      "fraction": 0.2
+    },
+    "0.2500": {
+      "byMethod": {
+        "aura-banda-95": {
+          "all": {
+            "coverage": 0.825,
+            "meanWidth": 319.4,
+            "medianWidth": 440,
+            "successes": 165,
+            "total": 200,
+            "wilsonLower": 0.766354507899,
+            "wilsonUpper": 0.871395588254
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 275.496688742,
+            "medianWidth": 500,
+            "successes": 151,
+            "total": 151,
+            "wilsonLower": 0.975190129784,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 0.285714285714,
+            "meanWidth": 454.693877551,
+            "medianWidth": 440,
+            "successes": 14,
+            "total": 49,
+            "wilsonLower": 0.178494349397,
+            "wilsonUpper": 0.424091492061
+          }
+        },
+        "aura-existencial": {
+          "all": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 200,
+            "total": 200,
+            "wilsonLower": 0.981153994082,
+            "wilsonUpper": 1
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 151,
+            "total": 151,
+            "wilsonLower": 0.975190129784,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 49,
+            "total": 49,
+            "wilsonLower": 0.927299703264,
+            "wilsonUpper": 1
+          }
+        },
+        "kalman-estatico": {
+          "all": {
+            "coverage": 0.615,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 123,
+            "total": 200,
+            "wilsonLower": 0.545997387818,
+            "wilsonUpper": 0.679668030821
+          },
+          "intact": {
+            "coverage": 0.814569536424,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 123,
+            "total": 151,
+            "wilsonLower": 0.745053350133,
+            "wilsonUpper": 0.86847686397
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 0,
+            "total": 49,
+            "wilsonLower": 0,
+            "wilsonUpper": 0.0727002967359
+          }
+        },
+        "media-ponderada": {
+          "all": {
+            "coverage": 0.625,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 125,
+            "total": 200,
+            "wilsonLower": 0.556141751573,
+            "wilsonUpper": 0.689146746948
+          },
+          "intact": {
+            "coverage": 0.827814569536,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 125,
+            "total": 151,
+            "wilsonLower": 0.759660820812,
+            "wilsonUpper": 0.879702244411
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 0,
+            "total": 49,
+            "wilsonLower": 0,
+            "wilsonUpper": 0.0727002967359
+          }
+        }
+      },
+      "fraction": 0.25
+    },
+    "0.3000": {
+      "byMethod": {
+        "aura-banda-95": {
+          "all": {
+            "coverage": 0.78,
+            "meanWidth": 366.9,
+            "medianWidth": 500,
+            "successes": 156,
+            "total": 200,
+            "wilsonLower": 0.71761077208,
+            "wilsonUpper": 0.831835464605
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 321.492537313,
+            "medianWidth": 500,
+            "successes": 134,
+            "total": 134,
+            "wilsonLower": 0.972130329306,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 0.333333333333,
+            "meanWidth": 459.090909091,
+            "medianWidth": 440,
+            "successes": 22,
+            "total": 66,
+            "wilsonLower": 0.231562670045,
+            "wilsonUpper": 0.453438819039
+          }
+        },
+        "aura-existencial": {
+          "all": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 200,
+            "total": 200,
+            "wilsonLower": 0.981153994082,
+            "wilsonUpper": 1
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 134,
+            "total": 134,
+            "wilsonLower": 0.972130329306,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 66,
+            "total": 66,
+            "wilsonLower": 0.944995532748,
+            "wilsonUpper": 1
+          }
+        },
+        "kalman-estatico": {
+          "all": {
+            "coverage": 0.53,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 106,
+            "total": 200,
+            "wilsonLower": 0.460915573354,
+            "wilsonUpper": 0.597953666291
+          },
+          "intact": {
+            "coverage": 0.791044776119,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 106,
+            "total": 134,
+            "wilsonLower": 0.714578108218,
+            "wilsonUpper": 0.851288799885
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 0,
+            "total": 66,
+            "wilsonLower": 3.46944695195e-18,
+            "wilsonUpper": 0.0550044672516
+          }
+        },
+        "media-ponderada": {
+          "all": {
+            "coverage": 0.54,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 108,
+            "total": 200,
+            "wilsonLower": 0.470821630936,
+            "wilsonUpper": 0.60767068859
+          },
+          "intact": {
+            "coverage": 0.805970149254,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 108,
+            "total": 134,
+            "wilsonLower": 0.730876827566,
+            "wilsonUpper": 0.864008896337
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 0,
+            "total": 66,
+            "wilsonLower": 3.46944695195e-18,
+            "wilsonUpper": 0.0550044672516
+          }
+        }
+      },
+      "fraction": 0.3
+    },
+    "0.3500": {
+      "byMethod": {
+        "aura-banda-95": {
+          "all": {
+            "coverage": 0.78,
+            "meanWidth": 363.175,
+            "medianWidth": 500,
+            "successes": 156,
+            "total": 200,
+            "wilsonLower": 0.71761077208,
+            "wilsonUpper": 0.831835464605
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 321.268115942,
+            "medianWidth": 500,
+            "successes": 138,
+            "total": 138,
+            "wilsonLower": 0.97291626716,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 0.290322580645,
+            "meanWidth": 456.451612903,
+            "medianWidth": 440,
+            "successes": 18,
+            "total": 62,
+            "wilsonLower": 0.192234063854,
+            "wilsonUpper": 0.412878813111
+          }
+        },
+        "aura-existencial": {
+          "all": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 200,
+            "total": 200,
+            "wilsonLower": 0.981153994082,
+            "wilsonUpper": 1
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 138,
+            "total": 138,
+            "wilsonLower": 0.97291626716,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 62,
+            "total": 62,
+            "wilsonLower": 0.941653908775,
+            "wilsonUpper": 1
+          }
+        },
+        "kalman-estatico": {
+          "all": {
+            "coverage": 0.535,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 107,
+            "total": 200,
+            "wilsonLower": 0.46586521029,
+            "wilsonUpper": 0.602815569296
+          },
+          "intact": {
+            "coverage": 0.775362318841,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 107,
+            "total": 138,
+            "wilsonLower": 0.698817978456,
+            "wilsonUpper": 0.83699098027
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 0,
+            "total": 62,
+            "wilsonLower": 0,
+            "wilsonUpper": 0.058346091225
+          }
+        },
+        "media-ponderada": {
+          "all": {
+            "coverage": 0.535,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 107,
+            "total": 200,
+            "wilsonLower": 0.46586521029,
+            "wilsonUpper": 0.602815569296
+          },
+          "intact": {
+            "coverage": 0.775362318841,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 107,
+            "total": 138,
+            "wilsonLower": 0.698817978456,
+            "wilsonUpper": 0.83699098027
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 0,
+            "total": 62,
+            "wilsonLower": 0,
+            "wilsonUpper": 0.058346091225
+          }
+        }
+      },
+      "fraction": 0.35
+    },
+    "0.4000": {
+      "byMethod": {
+        "aura-banda-95": {
+          "all": {
+            "coverage": 0.765,
+            "meanWidth": 336.2,
+            "medianWidth": 440,
+            "successes": 153,
+            "total": 200,
+            "wilsonLower": 0.701585070133,
+            "wilsonUpper": 0.818426546731
+          },
+          "intact": {
+            "coverage": 0.992307692308,
+            "meanWidth": 270.615384615,
+            "medianWidth": 500,
+            "successes": 129,
+            "total": 130,
+            "wilsonLower": 0.957713516367,
+            "wilsonUpper": 0.998640860747
+          },
+          "violated": {
+            "coverage": 0.342857142857,
+            "meanWidth": 458,
+            "medianWidth": 440,
+            "successes": 24,
+            "total": 70,
+            "wilsonLower": 0.242458270829,
+            "wilsonUpper": 0.459606689844
+          }
+        },
+        "aura-existencial": {
+          "all": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 200,
+            "total": 200,
+            "wilsonLower": 0.981153994082,
+            "wilsonUpper": 1
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 130,
+            "total": 130,
+            "wilsonLower": 0.971297414257,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 70,
+            "total": 70,
+            "wilsonLower": 0.947975125133,
+            "wilsonUpper": 1
+          }
+        },
+        "kalman-estatico": {
+          "all": {
+            "coverage": 0.54,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 108,
+            "total": 200,
+            "wilsonLower": 0.470821630936,
+            "wilsonUpper": 0.60767068859
+          },
+          "intact": {
+            "coverage": 0.830769230769,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 108,
+            "total": 130,
+            "wilsonLower": 0.757045394846,
+            "wilsonUpper": 0.885505202278
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 0,
+            "total": 70,
+            "wilsonLower": 0,
+            "wilsonUpper": 0.0520248748673
+          }
+        },
+        "media-ponderada": {
+          "all": {
+            "coverage": 0.525,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 105,
+            "total": 200,
+            "wilsonLower": 0.455972707105,
+            "wilsonUpper": 0.593084992599
+          },
+          "intact": {
+            "coverage": 0.807692307692,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 105,
+            "total": 130,
+            "wilsonLower": 0.731509140002,
+            "wilsonUpper": 0.866212345695
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 0,
+            "total": 70,
+            "wilsonLower": 0,
+            "wilsonUpper": 0.0520248748673
+          }
+        }
+      },
+      "fraction": 0.4
+    },
+    "0.4500": {
+      "byMethod": {
+        "aura-banda-95": {
+          "all": {
+            "coverage": 0.695,
+            "meanWidth": 350.6,
+            "medianWidth": 440,
+            "successes": 139,
+            "total": 200,
+            "wilsonLower": 0.628013201219,
+            "wilsonUpper": 0.754636856473
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 260,
+            "medianWidth": 440,
+            "successes": 108,
+            "total": 108,
+            "wilsonLower": 0.965651421296,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 0.336956521739,
+            "meanWidth": 456.956521739,
+            "medianWidth": 440,
+            "successes": 31,
+            "total": 92,
+            "wilsonLower": 0.248634595236,
+            "wilsonUpper": 0.438348927577
+          }
+        },
+        "aura-existencial": {
+          "all": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 200,
+            "total": 200,
+            "wilsonLower": 0.981153994082,
+            "wilsonUpper": 1
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 108,
+            "total": 108,
+            "wilsonLower": 0.965651421296,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 92,
+            "total": 92,
+            "wilsonLower": 0.959917196708,
+            "wilsonUpper": 1
+          }
+        },
+        "kalman-estatico": {
+          "all": {
+            "coverage": 0.405,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 81,
+            "total": 200,
+            "wilsonLower": 0.339376561124,
+            "wilsonUpper": 0.47420418
+          },
+          "intact": {
+            "coverage": 0.75,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 81,
+            "total": 108,
+            "wilsonLower": 0.660702895835,
+            "wilsonUpper": 0.822122814813
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 0,
+            "total": 92,
+            "wilsonLower": 0,
+            "wilsonUpper": 0.0400828032921
+          }
+        },
+        "media-ponderada": {
+          "all": {
+            "coverage": 0.41,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 82,
+            "total": 200,
+            "wilsonLower": 0.344155591791,
+            "wilsonUpper": 0.479236689274
+          },
+          "intact": {
+            "coverage": 0.759259259259,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 82,
+            "total": 108,
+            "wilsonLower": 0.670618917901,
+            "wilsonUpper": 0.830089226474
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 0,
+            "total": 92,
+            "wilsonLower": 0,
+            "wilsonUpper": 0.0400828032921
+          }
+        }
+      },
+      "fraction": 0.45
+    },
+    "0.5000": {
+      "byMethod": {
+        "aura-banda-95": {
+          "all": {
+            "coverage": 0.68,
+            "meanWidth": 340.475,
+            "medianWidth": 440,
+            "successes": 136,
+            "total": 200,
+            "wilsonLower": 0.612479733946,
+            "wilsonUpper": 0.740735703923
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 236.933962264,
+            "medianWidth": 30,
+            "successes": 106,
+            "total": 106,
+            "wilsonLower": 0.965026001078,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 0.31914893617,
+            "meanWidth": 457.234042553,
+            "medianWidth": 440,
+            "successes": 30,
+            "total": 94,
+            "wilsonLower": 0.23361018709,
+            "wilsonUpper": 0.418889363203
+          }
+        },
+        "aura-existencial": {
+          "all": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 200,
+            "total": 200,
+            "wilsonLower": 0.981153994082,
+            "wilsonUpper": 1
+          },
+          "intact": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 106,
+            "total": 106,
+            "wilsonLower": 0.965026001078,
+            "wilsonUpper": 1
+          },
+          "violated": {
+            "coverage": 1,
+            "meanWidth": 500,
+            "medianWidth": 500,
+            "successes": 94,
+            "total": 94,
+            "wilsonLower": 0.960736537424,
+            "wilsonUpper": 1
+          }
+        },
+        "kalman-estatico": {
+          "all": {
+            "coverage": 0.455,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 91,
+            "total": 200,
+            "wilsonLower": 0.387480990902,
+            "wilsonUpper": 0.52421514963
+          },
+          "intact": {
+            "coverage": 0.858490566038,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 91,
+            "total": 106,
+            "wilsonLower": 0.779575033519,
+            "wilsonUpper": 0.912330401216
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.24076446233,
+            "medianWidth": 4.24076446233,
+            "successes": 0,
+            "total": 94,
+            "wilsonLower": 3.46944695195e-18,
+            "wilsonUpper": 0.0392634625762
+          }
+        },
+        "media-ponderada": {
+          "all": {
+            "coverage": 0.455,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 91,
+            "total": 200,
+            "wilsonLower": 0.387480990902,
+            "wilsonUpper": 0.52421514963
+          },
+          "intact": {
+            "coverage": 0.858490566038,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 91,
+            "total": 106,
+            "wilsonLower": 0.779575033519,
+            "wilsonUpper": 0.912330401216
+          },
+          "violated": {
+            "coverage": 0,
+            "meanWidth": 4.5953690346,
+            "medianWidth": 4.5953690346,
+            "successes": 0,
+            "total": 94,
+            "wilsonLower": 3.46944695195e-18,
+            "wilsonUpper": 0.0392634625762
+          }
+        }
+      },
+      "fraction": 0.5
+    }
+  },
+  "scopes": {
+    "all": "todos los mundos del punto",
+    "intact": "solo los mundos restantes (H1 puede cumplirse)",
+    "violated": "solo los mundos con las tres fuentes caídas (H1 falsa)"
+  },
+  "worldsPerPoint": 200
+}

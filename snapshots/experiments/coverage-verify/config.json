@@ -1,0 +1,79 @@
+{
+  "description": "Cobertura empírica y anchura del intervalo de los dos niveles de AURA frente a media ponderada y Kalman estático, sobre mundos sintéticos con ground truth conocido.",
+  "experiment": "coverage-verify",
+  "parameters": {
+    "bandWeights": [
+      0.3,
+      0.35,
+      0.2,
+      0.12,
+      0.03
+    ],
+    "biasScale": 1,
+    "declaredSourceBias": {
+      "aemet": -0.2,
+      "nasa-power": 0.5,
+      "open-meteo": 0.3
+    },
+    "defaultBandWeights": [
+      0.3,
+      0.35,
+      0.2,
+      0.12,
+      0.03
+    ],
+    "domain": {
+      "lower": 0,
+      "upper": 500
+    },
+    "evidenceBandMass": 0.95,
+    "intensityBands": [
+      {
+        "lower": 0,
+        "name": "seco",
+        "upper": 2
+      },
+      {
+        "lower": 2,
+        "name": "ligera",
+        "upper": 15
+      },
+      {
+        "lower": 15,
+        "name": "moderada",
+        "upper": 30
+      },
+      {
+        "lower": 30,
+        "name": "intensa",
+        "upper": 60
+      },
+      {
+        "lower": 60,
+        "name": "extrema",
+        "upper": 120
+      }
+    ],
+    "sources": [
+      {
+        "failureRate": 0.05,
+        "precipitationStddev": 1.5,
+        "sourceId": "aemet"
+      },
+      {
+        "failureRate": 0.03,
+        "precipitationStddev": 2,
+        "sourceId": "open-meteo"
+      },
+      {
+        "failureRate": 0.08,
+        "precipitationStddev": 2.5,
+        "sourceId": "nasa-power"
+      }
+    ],
+    "virgaProbability": 0.15,
+    "worlds": 200,
+    "z95": 1.96
+  },
+  "seed": 20260804
+}

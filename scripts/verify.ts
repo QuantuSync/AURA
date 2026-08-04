@@ -9,11 +9,21 @@
  *   3. npm run test:properties campaña de property-based testing
  *   4. npm run repro          regeneración de todos los resultados
  *   5. npm run exp:smoke      experimento de ejemplo (contrato del runner)
- *   6. npm run snapshots:check comparación byte a byte contra snapshots/
+ *   6. npm run exp:verify     los tres experimentos de cobertura, reducidos
+ *   7. npm run snapshots:check comparación byte a byte contra snapshots/
  *
  * EL ORDEN NO ES ARBITRARIO: va de lo barato y general a lo caro y específico.
  * Un error de tipos invalida todo lo demás, así que se detecta en segundos en
  * lugar de después de una campaña de properties de minuto y medio.
+ *
+ * POR QUÉ LOS EXPERIMENTOS ENTRAN REDUCIDOS. Las campañas citables son de
+ * 10.000 / 2.000×11 / 5.000 mundos y tardan minutos; meterlas aquí haría que
+ * nadie ejecutara `verify` antes de commitear. El paso 6 corre los MISMOS
+ * scripts con N = 200 y `--profile verify`, que escriben en
+ * `out/experiments/<nombre>-verify/` y están en `snapshots/`: cualquier cambio
+ * en el pipeline credal, en el modelo de mundo o en los baselines aparece como
+ * diff, aunque el número publicado venga de la campaña larga. Ver
+ * `scripts/experiments/lib/profile.ts`.
  *
  * FC_NUM_RUNS se propaga al paso 3: CI lo fija en 1.000 para el ciclo rápido y
  * el job manual en 20.000. Sin él, `test:properties` usa su valor por defecto
@@ -34,6 +44,7 @@ const STEPS: Step[] = [
   { name: 'properties', command: 'npm', args: ['run', 'test:properties'] },
   { name: 'repro', command: 'npm', args: ['run', 'repro'] },
   { name: 'experimento smoke', command: 'npm', args: ['run', 'exp:smoke'] },
+  { name: 'experimentos (N=200)', command: 'npm', args: ['run', 'exp:verify'] },
   { name: 'snapshots', command: 'npm', args: ['run', 'snapshots:check'] },
 ];
 

@@ -1,0 +1,31 @@
+{
+  "description": "Caso virga (Ejemplo 3.1): fracción de mundos en que el intervalo de cada método no contiene ni P* ni γ·P*, y reparto de estrategias de fusión de AURA por tramo de γ.",
+  "experiment": "virga-verify",
+  "parameters": {
+    "bandWeights": [
+      0.3,
+      0.35,
+      0.2,
+      0.12,
+      0.03
+    ],
+    "biasScale": 1,
+    "defaultBandWeights": [
+      0.3,
+      0.35,
+      0.2,
+      0.12,
+      0.03
+    ],
+    "gammaBins": 10,
+    "methods": {
+      "aura-banda-95": "AURA · banda de evidencia 95 %",
+      "aura-existencial": "AURA · nivel existencial (Ec. 10)",
+      "kalman-estatico": "Baseline 2 · Kalman estático",
+      "media-ponderada": "Baseline 1 · media ponderada"
+    },
+    "virgaOnly": true,
+    "worlds": 200
+  },
+  "seed": 20260804
+}
